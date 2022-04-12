@@ -44,7 +44,7 @@
     "rimraf": "3.0.2",
     "rxjs": "7.5.5",
     "tsc-alias": "1.5.0",
-    "typeorm": "0.3.5",
+    "typeorm": "0.2.41",
     "uuid": "8.3.2",
     "web3": "1.7.3",
     "web3-eth-contract": "1.7.3"
