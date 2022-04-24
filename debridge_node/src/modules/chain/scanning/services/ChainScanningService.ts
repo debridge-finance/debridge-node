@@ -1,8 +1,8 @@
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { Injectable, Logger } from '@nestjs/common';
-import { ChainScanStatus } from '../enums/ChainScanStatus';
-import { AddNewEventsAction } from '../subscribe/actions/AddNewEventsAction';
-import { ChainConfigService } from './ChainConfigService';
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { ChainScanStatus } from '../../../../enums/ChainScanStatus';
+import { AddNewEventsAction } from './AddNewEventsAction';
+import { ChainConfigService } from '../../config/services/ChainConfigService';
 
 /**
  * Service for controlling scanning chain
@@ -12,6 +12,7 @@ export class ChainScanningService {
   private readonly logger = new Logger(ChainScanningService.name);
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,
+    @Inject(forwardRef(() => AddNewEventsAction))
     private readonly addNewEventsAction: AddNewEventsAction,
     private readonly chainConfigService: ChainConfigService,
   ) {}
@@ -26,7 +27,7 @@ export class ChainScanningService {
    */
   status(chainId: number): ChainScanStatus {
     const intervalName = ChainScanningService.getIntervalName(chainId);
-    if (this.schedulerRegistry.doesExists('interval', intervalName)) {
+    if (this.schedulerRegistry.doesExist('interval', intervalName)) {
       return ChainScanStatus.IN_PROGRESS;
     }
     return ChainScanStatus.PAUSE;
@@ -61,6 +62,7 @@ export class ChainScanningService {
       this.logger.warn(message);
       return false;
     }
+    const chainDetail = this.chainConfigService.get(chainId);
     const callback = async () => {
       try {
         await this.addNewEventsAction.action(chainId);
@@ -68,8 +70,6 @@ export class ChainScanningService {
         this.logger.error(e);
       }
     };
-
-    const chainDetail = this.chainConfigService.get(chainId);
 
     const interval = setInterval(callback, chainDetail.interval);
     this.schedulerRegistry.addInterval(intervalName, interval);

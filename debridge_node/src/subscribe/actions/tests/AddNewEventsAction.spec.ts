@@ -1,11 +1,11 @@
-import { AddNewEventsAction, NonceValidationEnum, ProcessNewTransferResultStatusEnum } from '../AddNewEventsAction';
+import { AddNewEventsAction, NonceValidationEnum, ProcessNewTransferResultStatusEnum } from '../../../modules/chain/scan/services/AddNewEventsAction';
 import { Web3Custom } from '../../../services/Web3Service';
 import { AuthType, ChainProvider } from '../../../services/ChainConfigService';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
-import { DebrdigeApiService } from '../../../services/DebrdigeApiService';
-import { ChainScanningService } from '../../../services/ChainScanningService';
+import { DebrdigeApiService } from '../../../modules/debridge_api/services/DebrdigeApiService';
+import { ChainScanningService } from '../../../modules/chain/scan/services/ChainScanningService';
 
 describe('AddNewEventsActionSimple', () => {
   const provider = 'debridge.io';

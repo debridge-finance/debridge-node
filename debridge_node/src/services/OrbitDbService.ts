@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { DebrdigeApiService } from './DebrdigeApiService';
+import { DebrdigeApiService } from '../modules/debridge_api/services/DebrdigeApiService';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { UserLoginDto } from '../api/auth/user.login.dto';
+import { UserLoginDto } from '../modules/api/auth/user.login.dto';
 import { HttpAuthService } from './HttpAuthService';
 import { GetNamesResponseDTO } from '../dto/orbitdb/output/GetNamesResponseDTO';
 import { AddDocsConfirmNewAssetsRequestDTO } from '../dto/orbitdb/input/AddDocsConfirmNewAssetsRequestDTO';

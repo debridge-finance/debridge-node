@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StatisticToApiAction } from '../StatisticToApiAction';
-import { DebrdigeApiService } from '../../../services/DebrdigeApiService';
+import { DebrdigeApiService } from '../../../modules/debridge_api/services/DebrdigeApiService';
 import { ConfigModule } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../entities/SupportedChainEntity';
-import { ProgressInfoDTO } from '../../../dto/debridge_api/ValidationProgressDTO';
+import { ProgressInfoDTO } from '../../../modules/debridge_api/dto/request/ValidationProgressDTO';
 
 describe('StatisticToApiAction', () => {
   let service: StatisticToApiAction;

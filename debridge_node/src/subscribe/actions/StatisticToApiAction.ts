@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IAction } from './IAction';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DebrdigeApiService } from '../../services/DebrdigeApiService';
+import { DebrdigeApiService } from '../../modules/debridge_api/services/DebrdigeApiService';
 import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
-import { ProgressInfoDTO } from '../../dto/debridge_api/ValidationProgressDTO';
+import { ProgressInfoDTO } from '../../modules/debridge_api/dto/request/ValidationProgressDTO';
 
 @Injectable()
 export class StatisticToApiAction extends IAction {

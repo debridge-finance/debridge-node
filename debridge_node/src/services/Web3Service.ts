@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Web3 from 'web3';
-import { ChainProvider } from './ChainConfigService';
 import { ConfigService } from '@nestjs/config';
+import { ChainProvider } from '../modules/chain/config/models/ChainProvider';
 
 export class Web3Custom extends Web3 {
   constructor(readonly chainProvider: string, httpProvider) {

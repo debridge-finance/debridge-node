@@ -1,23 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import chainConfigs from '../config/chains_config.json';
-
-export enum AuthType {
-  NONE = 'NONE',
-  BASIC = 'BASIC',
-}
-
-interface ChainProviderDetail {
-  isValid: boolean;
-  isActive: boolean;
-  provider: string;
-  user?: string;
-  password?: string;
-  authType: AuthType;
-}
-
 /**
  * Chain provider
  */
+import { ChainProviderDetail } from './ChainProviderDetail';
+import { AuthType } from '../enums/AuthType';
+
 export class ChainProvider {
   private readonly providers = new Map<string, ChainProviderDetail>();
   constructor(private readonly providerList: ChainProviderDetail[], private readonly chainId: number) {
@@ -132,101 +118,5 @@ export class ChainProvider {
    */
   getChainId(): number {
     return this.chainId;
-  }
-}
-
-export class ChainConfig {
-  chainId: number;
-  name: string;
-  debridgeAddr: string;
-  firstStartBlock: number;
-  providers: ChainProvider;
-  interval: number;
-  blockConfirmation: number;
-  maxBlockRange: number;
-}
-
-/**
- * Service for controlling configs of chain
- */
-@Injectable()
-export class ChainConfigService {
-  private readonly configs = new Map<number, ChainConfig>();
-  private readonly chains: number[] = [];
-
-  constructor() {
-    chainConfigs.forEach(config => {
-      this.chains.push(config.chainId);
-      this.configs.set(config.chainId, {
-        chainId: config.chainId,
-        name: config.name,
-        debridgeAddr: config.debridgeAddr,
-        firstStartBlock: config.firstStartBlock,
-        providers: this.generateChainProvides(config),
-        interval: config.interval,
-        blockConfirmation: config.blockConfirmation,
-        maxBlockRange: config.maxBlockRange,
-      } as ChainConfig);
-    });
-  }
-
-  /**
-   * Get chain config
-   * @param chainId
-   */
-  get(chainId: number) {
-    return this.configs.get(chainId);
-  }
-
-  /**
-   * Get chains
-   */
-  getChains() {
-    return this.chains;
-  }
-
-  /**
-   * Get chains
-   */
-  getConfig() {
-    return chainConfigs;
-  }
-
-  private generateChainProvides(config: any): ChainProvider {
-    let providers: ChainProviderDetail[] = [];
-    if (config.providers) {
-      providers = config.providers.map(provider => {
-        return ChainConfigService.transformConfigToProvider(provider);
-      });
-    } else if (config.provider) {
-      providers = [ChainConfigService.transformConfigToProvider(config.provider)];
-    }
-    return new ChainProvider(providers, config.chainId);
-  }
-
-  private static transformConfigToProvider(config: string | Partial<ChainProviderDetail>): ChainProviderDetail {
-    if (typeof config === 'string') {
-      return {
-        provider: config,
-        isValid: false,
-        isActive: true,
-        authType: AuthType.NONE,
-      };
-    } else {
-      config.isValid = false;
-      config.isActive = true;
-      let authType = AuthType.NONE;
-      if (config.user) {
-        authType = AuthType.BASIC;
-      }
-      return {
-        isValid: false,
-        isActive: true,
-        provider: config.provider,
-        user: config.user,
-        password: config.password,
-        authType,
-      };
-    }
   }
 }

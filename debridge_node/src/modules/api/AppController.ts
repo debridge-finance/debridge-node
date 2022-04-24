@@ -6,8 +6,8 @@ import { RescanDto } from './dto/RescanDto';
 import { RescanService } from './services/RescanService';
 import { AuthGuard } from '@nestjs/passport';
 import { GetSupportedChainsService } from './services/GetSupportedChainsService';
-import { ChainScanningService } from '../services/ChainScanningService';
-import { ChainConfigService } from '../services/ChainConfigService';
+import { ChainConfigService } from '../chain/config/services/ChainConfigService';
+import { ChainScanningService } from '../chain/scanning/services/ChainScanningService';
 
 @Controller()
 export class AppController {
@@ -67,7 +67,7 @@ export class AppController {
     return this.chainConfigService.getConfig();
   }
 
-  @Get('/chain/scan/pause')
+  @Get('/chain/scanning/pause')
   @ApiOperation({
     summary: 'Api for pause chain scanning',
   })
@@ -78,7 +78,7 @@ export class AppController {
     return this.chainScanningService.pause(chainId);
   }
 
-  @Get('/chain/scan/start')
+  @Get('/chain/scanning/start')
   @ApiQuery({ name: 'chainId', required: true })
   @ApiOperation({
     summary: 'Api for start chain scanning',
@@ -89,7 +89,7 @@ export class AppController {
     return this.chainScanningService.start(chainId);
   }
 
-  @Get('/chain/scan/status')
+  @Get('/chain/scanning/status')
   @ApiQuery({ name: 'chainId', required: true })
   @ApiOperation({
     summary: 'Api for status chain scanning',

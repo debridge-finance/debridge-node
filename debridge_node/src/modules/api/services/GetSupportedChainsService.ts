@@ -1,7 +1,7 @@
 /**
  * Service for working with SupportedChain
  */
-import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
+import { SupportedChainEntity } from '../../../entities/SupportedChainEntity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

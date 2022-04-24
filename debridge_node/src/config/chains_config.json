@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "chainId": 7565164,
+    "name": "SOLANA",
+    "debridgeAddr": "",
+    "firstStartBlock": 0,
+    "provider": "",
+    "interval": 10000,
+    "blockConfirmation": 0,
+    "maxBlockRange": 9
+  }
+]

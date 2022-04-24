@@ -1,20 +1,23 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { SubmissionsConfirmationsRequestDTO } from '../dto/debridge_api/SubmissionsConfirmationsRequestDTO';
-import { SubmissionConfirmationResponse, SubmissionsConfirmationsResponseDTO } from '../dto/debridge_api/SubmissionsConfirmationsResponseDTO';
+import { SubmissionsConfirmationsRequestDTO } from '../dto/request/SubmissionsConfirmationsRequestDTO';
+import {
+  SubmissionConfirmationResponse,
+  SubmissionsConfirmationsResponseDTO,
+} from '../dto/response/SubmissionsConfirmationsResponseDTO';
 import { Account } from 'web3-core';
 import Web3 from 'web3';
 import { readFileSync } from 'fs';
-import { ProgressInfoDTO, ValidationProgressDTO } from '../dto/debridge_api/ValidationProgressDTO';
-import { UpdateOrbirDbDTO } from '../dto/debridge_api/UpdateOrbirDbDTO';
-import { HttpAuthService } from './HttpAuthService';
-import { SubmissionEntity } from '../entities/SubmissionEntity';
-import { ConfirmNewAssetEntity } from '../entities/ConfirmNewAssetEntity';
-import { ConfrimNewAssetsResponseDTO } from '../dto/debridge_api/ConfrimNewAssetsResponseDTO';
-import { ConfrimNewAssetsRequestDTO } from '../dto/debridge_api/ConfrimNewAssetsRequestDTO';
-import { ErrorNotificationDTO } from '../dto/debridge_api/ErrorNotificationDTO';
-import { Web3Service } from './Web3Service';
+import { ProgressInfoDTO, ValidationProgressDTO } from '../dto/request/ValidationProgressDTO';
+import { UpdateOrbirDbDTO } from '../dto/request/UpdateOrbirDbDTO';
+import { HttpAuthService } from '../../../services/HttpAuthService';
+import { SubmissionEntity } from '../../../entities/SubmissionEntity';
+import { ConfirmNewAssetEntity } from '../../../entities/ConfirmNewAssetEntity';
+import { ConfrimNewAssetsResponseDTO } from '../dto/response/ConfrimNewAssetsResponseDTO';
+import { ConfrimNewAssetsRequestDTO } from '../dto/request/ConfrimNewAssetsRequestDTO';
+import { ErrorNotificationDTO } from '../dto/request/ErrorNotificationDTO';
+import { Web3Service } from '../../../services/Web3Service';
 
 @Injectable()
 export class DebrdigeApiService extends HttpAuthService implements OnModuleInit {

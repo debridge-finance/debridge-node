@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Cron, SchedulerRegistry } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SupportedChainEntity } from '../entities/SupportedChainEntity';
@@ -9,8 +9,9 @@ import { UploadToApiAction } from './actions/UploadToApiAction';
 import { CheckAssetsEventAction } from './actions/CheckAssetsEventAction';
 import { StatisticToApiAction } from './actions/StatisticToApiAction';
 import { Web3Service } from '../services/Web3Service';
-import { ChainScanningService } from '../services/ChainScanningService';
-import { ChainConfigService } from '../services/ChainConfigService';
+import { ChainConfigService } from '../modules/chain/config/services/ChainConfigService';
+import { ClassicChainConfig } from '../modules/chain/config/models/configs/ClassicChainConfig';
+import { ChainScanningService } from '../modules/chain/scanning/services/ChainScanningService';
 
 @Injectable()
 export class SubscribeHandler implements OnModuleInit {
@@ -37,19 +38,24 @@ export class SubscribeHandler implements OnModuleInit {
           chainId: chainId,
         },
       });
-      if (chainConfig.maxBlockRange <= 100) {
-        this.logger.error(`Cant up application maxBlockRange(${chainConfig.maxBlockRange}) < 100`);
+      if (chainConfig.isSolana) {
+        continue;
+      }
+      const chainConfigClassic = chainConfig as ClassicChainConfig;
+      if (chainConfigClassic.maxBlockRange <= 100) {
+        this.logger.error(`Cant up application maxBlockRange(${chainConfigClassic.maxBlockRange}) < 100`);
         process.exit(1);
       }
-      if (chainConfig.blockConfirmation <= 8) {
-        this.logger.error(`Cant up application maxBlockRange(${chainConfig.blockConfirmation}) < 8`);
+      if (chainConfigClassic.blockConfirmation <= 8) {
+        this.logger.error(`Cant up application maxBlockRange(${chainConfigClassic.blockConfirmation}) < 8`);
         process.exit(1);
       }
+
       if (!configInDd) {
         await this.supportedChainRepository.save({
           chainId: chainId,
-          latestBlock: chainConfig.firstStartBlock,
-          network: chainConfig.name,
+          latestBlock: chainConfigClassic.firstStartBlock,
+          network: chainConfigClassic.name,
         });
       }
     }
@@ -65,10 +71,13 @@ export class SubscribeHandler implements OnModuleInit {
           this.logger.error(`${chain.chainId} ChainId from chains_config are not the same with the value from db`);
           continue;
         }
-
+        if (chainDetail.isSolana) {
+          continue;
+        }
+        const chainConfigClassic = chainDetail as ClassicChainConfig;
         await Promise.all(
-          chainDetail.providers.getAllProviders().map(provider => {
-            return this.web3Service.validateChainId(chainDetail.providers, provider);
+          chainConfigClassic.providers.getAllProviders().map(provider => {
+            return this.web3Service.validateChainId(chainConfigClassic.providers, provider);
           }),
         );
       } catch (e) {
@@ -84,7 +93,7 @@ export class SubscribeHandler implements OnModuleInit {
 
   @Cron('*/3 * * * * *')
   async Sign() {
-    await this.signAction.action();
+    //await this.signAction.action();
   }
 
   //TODO: comment out when go orbitDb will ready
@@ -95,17 +104,17 @@ export class SubscribeHandler implements OnModuleInit {
 
   @Cron('*/3 * * * * *')
   async UploadToApiAction() {
-    await this.uploadToApiAction.action();
+    //await this.uploadToApiAction.action();
   }
 
   @Cron('*/3 * * * * *')
   async checkAssetsEvent() {
-    await this.checkAssetsEventAction.action();
+    //await this.checkAssetsEventAction.action();
   }
 
   @Cron('* * * * *')
   async UploadStatisticToApiAction() {
-    await this.statisticToApiAction.action();
+    //await this.statisticToApiAction.action();
   }
 
   async onModuleInit() {

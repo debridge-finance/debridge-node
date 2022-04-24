@@ -4,7 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SubmissionEntity } from '../../../entities/SubmissionEntity';
 import { ConfirmNewAssetEntity } from '../../../entities/ConfirmNewAssetEntity';
-import { DebrdigeApiService } from '../../../services/DebrdigeApiService';
+import { DebrdigeApiService } from '../../../modules/debridge_api/services/DebrdigeApiService';
 import { UploadToApiAction } from '../UploadToApiAction';
 import { Repository } from 'typeorm';
 import { UploadStatusEnum } from '../../../enums/UploadStatusEnum';

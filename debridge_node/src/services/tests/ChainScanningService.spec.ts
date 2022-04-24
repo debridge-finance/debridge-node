@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChainScanningService } from '../ChainScanningService';
+import { ChainScanningService } from '../../modules/chain/scan/services/ChainScanningService';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AddNewEventsAction } from '../../subscribe/actions/AddNewEventsAction';
+import { AddNewEventsAction } from '../../modules/chain/scan/services/AddNewEventsAction';
 import { ChainScanStatus } from '../../enums/ChainScanStatus';
 import { ChainConfigService } from '../ChainConfigService';
 

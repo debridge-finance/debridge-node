@@ -1,50 +1,41 @@
-import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './api/AppController';
+import { AppController } from './modules/api/AppController';
 import { SubmissionEntity } from './entities/SubmissionEntity';
 import { SupportedChainEntity } from './entities/SupportedChainEntity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './api/auth/jwt.strategy';
-import { AuthService } from './api/auth/auth.service';
+import { JwtStrategy } from './modules/api/auth/jwt.strategy';
+import { AuthService } from './modules/api/auth/auth.service';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AddNewEventsAction } from './subscribe/actions/AddNewEventsAction';
 import { SignAction } from './subscribe/actions/SignAction';
 import { SubscribeHandler } from './subscribe/SubscribeHandler';
 import { CheckAssetsEventAction } from './subscribe/actions/CheckAssetsEventAction';
 import { ConfirmNewAssetEntity } from './entities/ConfirmNewAssetEntity';
 import { OrbitDbService } from './services/OrbitDbService';
-import { DebrdigeApiService } from './services/DebrdigeApiService';
 import { UploadToApiAction } from './subscribe/actions/UploadToApiAction';
-import { NonceControllingService } from './services/NonceControllingService';
-import { RescanService } from './api/services/RescanService';
-import { GetSupportedChainsService } from './api/services/GetSupportedChainsService';
+import { RescanService } from './modules/api/services/RescanService';
+import { GetSupportedChainsService } from './modules/api/services/GetSupportedChainsService';
 import { UploadToIPFSAction } from './subscribe/actions/UploadToIPFSAction';
 import { StatisticToApiAction } from './subscribe/actions/StatisticToApiAction';
 import { Web3Service } from './services/Web3Service';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { ChainScanningService } from './services/ChainScanningService';
-import { ChainConfigService } from './services/ChainConfigService';
 import { FixNotExistsNonceBlockNumber } from './datafixes/FixNotExistsNonceBlockNumber';
 import { DataFixModule } from './datafixes/DataFixModule';
+import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
+import { SolanaSyncEntity } from './entities/SolanaSyncEntity';
+import { DebridgeApiModule } from './modules/debridge_api/DebridgeApiModule';
+import { ChainScanningModule } from './modules/chain/scanning/ChainScanningModule';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    ChainConfigModule,
     DataFixModule,
-    HttpModule.register({
-      timeout: 30000, //30s
-    }),
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        ttl: configService.get('THROTTLER_TTL', 60),
-        limit: configService.get('THROTTLER_LIMIT', 10),
-      }),
-    }),
+    HttpModule,
+    ChainScanningModule,
     ConfigModule.forRoot(),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
@@ -59,39 +50,24 @@ import { DataFixModule } from './datafixes/DataFixModule';
         password: configService.get('POSTGRES_PASSWORD', 'password'),
         database: configService.get('POSTGRES_DATABASE', 'postgres'),
         synchronize: true,
-        entities: [SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity],
+        entities: [SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, SolanaSyncEntity],
       }),
     }),
-    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-    }),
+    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, SupportedChainEntity]),
+    DebridgeApiModule,
   ],
-  controllers: [AppController],
+  //controllers: [AppController],
   providers: [
-    Web3Service,
-    RescanService,
-    JwtStrategy,
-    AuthService,
-    AddNewEventsAction,
-    SignAction,
-    UploadToIPFSAction,
-    UploadToApiAction,
-    NonceControllingService,
-    CheckAssetsEventAction,
-    SubscribeHandler,
-    GetSupportedChainsService,
-    OrbitDbService,
-    DebrdigeApiService,
-    StatisticToApiAction,
-    ChainScanningService,
-    ChainConfigService,
-    FixNotExistsNonceBlockNumber,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    //Web3Service,
+    //RescanService,
+    //SignAction,
+    //UploadToIPFSAction,
+    //UploadToApiAction,
+    //CheckAssetsEventAction,
+    //SubscribeHandler,
+    //GetSupportedChainsService,
+    //OrbitDbService,
+    //StatisticToApiAction,
   ],
 })
 export class AppModule {}

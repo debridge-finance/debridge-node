@@ -14,7 +14,8 @@ import { Account } from 'web3-core';
 import { createProxy } from '../../utils/create.proxy';
 import { getTokenName } from '../../utils/getTokenName';
 import { Web3Service } from '../../services/Web3Service';
-import { ChainConfigService } from '../../services/ChainConfigService';
+import { ChainConfigService } from '../../modules/chain/config/services/ChainConfigService';
+import { ClassicChainConfig } from '../../modules/chain/config/models/configs/ClassicChainConfig';
 
 @Injectable()
 export class CheckAssetsEventAction extends IAction {
@@ -54,7 +55,7 @@ export class CheckAssetsEventAction extends IAction {
       if (!confirmNewAction) {
         try {
           this.logger.log(`Process debridgeId: ${submission.debridgeId}`);
-          const chainDetail = this.chainConfigService.get(submission.chainFrom);
+          const chainDetail = this.chainConfigService.get(submission.chainFrom) as ClassicChainConfig;
 
           const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
           const deBridgeGateInstance = createProxy(new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr), { logger: this.logger });
@@ -75,7 +76,7 @@ export class CheckAssetsEventAction extends IAction {
           // }
           const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
           this.logger.log(JSON.stringify(nativeTokenInfo));
-          const tokenChainDetail = this.chainConfigService.get(parseInt(nativeTokenInfo.nativeChainId));
+          const tokenChainDetail = this.chainConfigService.get(parseInt(nativeTokenInfo.nativeChainId)) as ClassicChainConfig;
           const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
           const nativeTokenInstance = createProxy(new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenInfo.nativeAddress), {
             logger: this.logger,

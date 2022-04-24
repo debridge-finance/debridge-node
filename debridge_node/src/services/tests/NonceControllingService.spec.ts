@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NonceControllingService } from '../NonceControllingService';
+import { NonceControllingService } from '../../modules/chain/scanning/services/NonceControllingService';
 import { getEntityManagerToken } from '@nestjs/typeorm/dist/common/typeorm.utils';
 
 describe('NonceControllingService', () => {

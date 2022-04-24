@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../enums/SubmisionStatusEnum';
-import { DebrdigeApiService } from '../../services/DebrdigeApiService';
+import { DebrdigeApiService } from '../../modules/debridge_api/services/DebrdigeApiService';
 import { UploadStatusEnum } from '../../enums/UploadStatusEnum';
 import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
 
