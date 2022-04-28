@@ -1,8 +1,8 @@
-import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
-import { Web3Custom } from '../../../../services/Web3Service';
-import { DebrdigeApiService } from '../../../debridge_api/services/DebrdigeApiService';
+import { Web3Custom } from '../../../web3/services/Web3Service';
+import { DebrdigeApiService } from '../../../external/debridge_api/services/DebrdigeApiService';
 import { NonceValidationEnum } from '../enums/NonceValidationEnum';
 import { ProcessNewTransferResult } from '../entities/ProcessNewTransferResult';
 import { ChainConfig } from '../../config/models/configs/ChainConfig';
@@ -36,12 +36,11 @@ export class NonceControllingService implements OnModuleInit {
     //todo check script for solana
   }
 
-  get(chainId: number): number {
+  getMaxNonce(chainId: number): number {
     return this.maxNonceChains.get(chainId);
   }
 
-  //todo rename
-  set(chainId: number, nonce: number) {
+  setMaxNonce(chainId: number, nonce: number) {
     this.maxNonceChains.set(chainId, nonce);
   }
 
@@ -69,12 +68,9 @@ export class NonceControllingService implements OnModuleInit {
    * @param nonce
    * @param nonceExists
    */
-  //todo
   validateNonce(nonceDb: number, nonce: number, nonceExists: boolean): NonceValidationEnum {
     if (nonceExists) {
       return NonceValidationEnum.DUPLICATED_NONCE;
-    } else if (nonce <= nonceDb) {
-      return NonceValidationEnum.SUCCESS;
     } else if ((nonceDb === undefined && nonce !== 0) || (nonceDb != undefined && nonce !== nonceDb + 1)) {
       // (nonceDb === undefined && nonce !== 0) may occur in empty db
       return NonceValidationEnum.MISSED_NONCE;

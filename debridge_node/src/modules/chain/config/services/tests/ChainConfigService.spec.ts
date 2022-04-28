@@ -3,7 +3,7 @@ import { ChainScanningService } from '../../../scan/services/ChainScanningServic
 import { ScheduleModule } from '@nestjs/schedule';
 import { AddNewEventsAction } from '../../../scan/services/AddNewEventsAction';
 import { ChainConfigService, ChainProvider } from '../ChainConfigService';
-import { SolanaReaderService } from '../../../scanning/services/solana/SolanaReaderService';
+import { SolanaReaderService } from '../../../scanning/services/SolanaReaderService';
 
 jest.mock('../../config/chains_config.json', () => {
   return [

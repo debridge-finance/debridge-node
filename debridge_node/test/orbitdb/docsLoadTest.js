@@ -47,7 +47,7 @@ async function main() {
     });
 
     try {
-        const orbit = await OrbitDB.createInstance(ipfs, { directory: './orbitdb/docsbenchmarks' })
+        const orbit = await OrbitDB.createInstance(ipfs, { directory: './orbitdb_api/docsbenchmarks' })
         const options = {
             // Give write access to ourselves
             accessController: {

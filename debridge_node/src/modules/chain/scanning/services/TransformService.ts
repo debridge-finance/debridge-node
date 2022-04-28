@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EventFromTransaction } from '../dto/response/get.events.from.transactions.response.dto';
+import { EventFromTransaction } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';

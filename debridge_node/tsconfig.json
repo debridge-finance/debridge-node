@@ -25,6 +25,5 @@
     "noEmit": false,
     "esModuleInterop": true,
     "importHelpers": true,
-
   }
 }

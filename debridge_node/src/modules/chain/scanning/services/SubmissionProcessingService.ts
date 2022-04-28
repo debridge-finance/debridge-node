@@ -9,7 +9,7 @@ import { NonceValidationEnum } from '../enums/NonceValidationEnum';
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { ChainConfig } from '../../config/models/configs/ChainConfig';
-import { Web3Custom } from '../../../../services/Web3Service';
+import { Web3Custom } from '../../../web3/services/Web3Service';
 
 @Injectable()
 export class SubmissionProcessingService {
@@ -22,16 +22,13 @@ export class SubmissionProcessingService {
     private readonly chainConfigService: ChainConfigService,
   ) {}
 
-  async process(submissions: SubmissionEntity[], chainId: number, lastBlockOrTransactionOfPage: number | string, web3: Web3Custom) {
+  async process(submissions: SubmissionEntity[], chainId: number, lastBlockOrTransactionOfPage: number | string, web3?: Web3Custom) {
     const logger = new Logger(`${SubmissionProcessingService.name} chainId ${chainId}`);
     const chainDetail = this.chainConfigService.get(chainId);
     const result = await this.processNewTransfers(logger, submissions, chainDetail);
     const updatedBlockOrTransaction: number | string =
-      result.status === ProcessNewTransferResultStatusEnum.SUCCESS ?
-        lastBlockOrTransactionOfPage
-        : result.blockOrTransactionToOverwrite;
+      result.status === ProcessNewTransferResultStatusEnum.SUCCESS ? lastBlockOrTransactionOfPage : result.blockOrTransactionToOverwrite;
 
-    //todo check if
     // updatedBlock can be undefined if incorrect nonce occures in the first event
     if (updatedBlockOrTransaction) {
       logger.log(`updateSupportedChainBlock; key: latestBlock; value: ${updatedBlockOrTransaction};`);
@@ -64,12 +61,10 @@ export class SubmissionProcessingService {
     const { chainId: chainIdFrom } = chainDetail;
     let blockOrTransactionToOverwrite;
 
-
-    //todo start and logs and try to add scope in loop
-    //todo log save sub
     for (const submission of submissions) {
       const submissionId = submission.submissionId;
       logger.log(`submissionId: ${submissionId}`);
+      logger.verbose(`Processing ${submissionId} is started`);
       const nonce = submission.nonce;
 
       // check nonce collission
@@ -82,11 +77,11 @@ export class SubmissionProcessingService {
       if (submissionInDb) {
         logger.verbose(`Submission already found in db submissionId: ${submissionId}`);
         blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submissionInDb);
-        this.nonceControllingService.set(chainIdFrom, submissionInDb.nonce);
+        this.nonceControllingService.setMaxNonce(chainIdFrom, submissionInDb.nonce);
         continue;
       }
 
-      const chainMaxNonce = this.nonceControllingService.get(chainIdFrom);
+      const chainMaxNonce = this.nonceControllingService.getMaxNonce(chainIdFrom);
 
       const submissionWithMaxNonceDb = await this.submissionsRepository.findOne({
         where: {
@@ -105,7 +100,6 @@ export class SubmissionProcessingService {
       const nonceValidationStatus = this.nonceControllingService.validateNonce(chainMaxNonce, nonce, nonceExists);
 
       logger.verbose(`Nonce validation status ${nonceValidationStatus}; maxNonceFromDb: ${chainMaxNonce}; nonce: ${nonce};`);
-      //todo check in table submission is empty
       if (nonceValidationStatus !== NonceValidationEnum.SUCCESS) {
         const blockOrTransaction =
           blockOrTransactionToOverwrite !== undefined ? blockOrTransactionToOverwrite : this.getBlockNumberOrTransaction(submissionWithMaxNonceDb);
@@ -121,13 +115,16 @@ export class SubmissionProcessingService {
       }
 
       try {
+        logger.verbose(`Saving submission ${submissionId} is started`);
         await this.submissionsRepository.save(submission);
+        logger.verbose(`Saving submission ${submissionId} is finished`);
         blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submission);
-        this.nonceControllingService.set(chainIdFrom, nonce);
+        this.nonceControllingService.setMaxNonce(chainIdFrom, nonce);
       } catch (e) {
         logger.error(`Error in saving ${submissionId}`);
         throw e;
       }
+      logger.verbose(`Processing ${submissionId} is started`);
     }
     return {
       status: ProcessNewTransferResultStatusEnum.SUCCESS,
@@ -135,11 +132,14 @@ export class SubmissionProcessingService {
   }
 
   private getBlockNumberOrTransaction(submission: SubmissionEntity): number | string {
+    if (!submission) {
+      return;
+    }
     const chainDetail = this.chainConfigService.get(submission.chainFrom);
-    if (chainDetail.isSolana) {
-      return submission?.txHash;
+    if (chainDetail?.isSolana) {
+      return submission.txHash;
     } else {
-      return submission?.blockNumber;
+      return submission.blockNumber;
     }
   }
 }

@@ -1,19 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
-import { Web3Service } from '../../../../services/Web3Service';
+import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainScanningService } from './ChainScanningService';
-import { SolanaReaderService } from './solana/SolanaReaderService';
+import { SolanaReaderService } from './SolanaReaderService';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { ClassicChainConfig } from '../../config/models/configs/ClassicChainConfig';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity';
 import { Repository } from 'typeorm';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
-import { SubmisionStatusEnum } from 'src/enums/SubmisionStatusEnum';
-import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
-import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
-import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
-import { TransformService } from "./TransformService";
+import { TransformService } from './TransformService';
 
 @Injectable()
 export class AddNewEventsAction {

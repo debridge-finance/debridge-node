@@ -16,9 +16,9 @@ async function main() {
   });
 
   try {
-    const orbit = await OrbitDB.createInstance(ipfs, { directory: './orbitdb/testReplicate' });
+    const orbit = await OrbitDB.createInstance(ipfs, { directory: './orbitdb_api/testReplicate' });
 
-    const db = await orbit.eventlog('/orbitdb/zdpuAue7dLmSfmDFdoPY6Hw56XBPBiR5tREKv5Tgks1T4xYZW/orbit-db.benchmark'); //, options);
+    const db = await orbit.eventlog('/orbitdb_api/zdpuAue7dLmSfmDFdoPY6Hw56XBPBiR5tREKv5Tgks1T4xYZW/orbit-db.benchmark'); //, options);
     await db.load();
     console.log(db.address);
 
