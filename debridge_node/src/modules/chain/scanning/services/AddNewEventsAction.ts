@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainScanningService } from './ChainScanningService';
@@ -17,6 +17,7 @@ export class AddNewEventsAction {
   private readonly locker = new Map();
 
   constructor(
+    @Inject(forwardRef(() => ChainScanningService))
     private readonly chainScanningService: ChainScanningService,
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,

@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ChainConfigService } from '../../chain/config/services/ChainConfigService';
 import { ClassicChainConfig } from '../../chain/config/models/configs/ClassicChainConfig';
-import { AddNewEventsAction } from "../../chain/scanning/services/AddNewEventsAction";
+import { AddNewEventsAction } from '../../chain/scanning/services/AddNewEventsAction';
 
 /**
  * Rescan service

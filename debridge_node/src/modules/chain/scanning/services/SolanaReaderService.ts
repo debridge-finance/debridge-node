@@ -6,7 +6,6 @@ import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SolanaApiService } from '../../../external/solana_api/services/SolanaApiService';
 import { TransformService } from './TransformService';
 import { ConfigService } from '@nestjs/config';
-import { SolanaSyncEntity } from '../../../../entities/SolanaSyncEntity';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 
 @Injectable()
@@ -18,8 +17,6 @@ export class SolanaReaderService {
     private readonly solanaApiService: SolanaApiService,
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
-    @InjectRepository(SolanaSyncEntity)
-    private readonly solanaSyncRepository: Repository<SolanaSyncEntity>,
     @InjectRepository(SubmissionEntity)
     private readonly submissionsRepository: Repository<SubmissionEntity>,
     private readonly transformService: TransformService,

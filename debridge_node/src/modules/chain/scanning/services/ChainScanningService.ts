@@ -1,5 +1,5 @@
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ChainScanStatus } from '../../../../enums/ChainScanStatus';
 import { AddNewEventsAction } from './AddNewEventsAction';
 import { ChainConfigService } from '../../config/services/ChainConfigService';

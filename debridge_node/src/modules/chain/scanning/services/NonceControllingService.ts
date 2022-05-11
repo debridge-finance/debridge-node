@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { Web3Custom } from '../../../web3/services/Web3Service';
@@ -18,6 +18,7 @@ export class NonceControllingService implements OnModuleInit {
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
     private readonly debridgeApiService: DebrdigeApiService,
+    @Inject(forwardRef(() => ChainScanningService))
     private readonly chainScanningService: ChainScanningService,
   ) {}
 

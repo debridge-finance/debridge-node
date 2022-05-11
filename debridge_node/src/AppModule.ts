@@ -6,13 +6,13 @@ import { SupportedChainEntity } from './entities/SupportedChainEntity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfirmNewAssetEntity } from './entities/ConfirmNewAssetEntity';
 import { DataFixModule } from './datafixes/DataFixModule';
-import { SolanaSyncEntity } from './entities/SolanaSyncEntity';
 import { DebridgeApiModule } from './modules/external/debridge_api/DebridgeApiModule';
 import { SolanaApiModule } from './modules/external/solana_api/SolanaApiModule';
 import { Web3Module } from './modules/web3/Web3Module';
 import { JobModule } from './modules/jobs/JobModule';
 import { OrbitDbModule } from './modules/external/orbitdb_api/OrbitDbModule';
 import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
+import { ApiModule } from './modules/api/ApiModule';
 
 @Module({
   imports: [
@@ -32,15 +32,16 @@ import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
         password: configService.get('POSTGRES_PASSWORD', 'password'),
         database: configService.get('POSTGRES_DATABASE', 'postgres'),
         synchronize: true,
-        entities: [SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, SolanaSyncEntity],
+        entities: [SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity],
       }),
     }),
-    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, SolanaSyncEntity]),
+    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
     Web3Module,
     DebridgeApiModule,
     SolanaApiModule,
     OrbitDbModule,
     JobModule,
+    ApiModule,
   ],
 })
 export class AppModule {}

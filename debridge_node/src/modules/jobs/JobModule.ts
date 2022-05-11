@@ -10,9 +10,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SubmissionEntity } from '../../entities/SubmissionEntity';
 import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
 import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
+import { StartScanningService } from './services/StartScanningService';
+import { ChainScanningModule } from '../chain/scanning/ChainScanningModule';
 
 @Module({
-  imports: [ConfigModule, TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity])],
-  providers: [CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToIPFSAction, JobService],
+  imports: [ConfigModule, TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]), ChainScanningModule],
+  providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToIPFSAction, JobService],
 })
 export class JobModule {}

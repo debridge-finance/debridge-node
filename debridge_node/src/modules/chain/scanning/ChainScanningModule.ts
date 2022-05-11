@@ -11,10 +11,9 @@ import { NonceControllingService } from './services/NonceControllingService';
 import { SubmissionProcessingService } from './services/SubmissionProcessingService';
 import { SolanaReaderService } from './services/SolanaReaderService';
 import { TransformService } from './services/TransformService';
-import { SolanaSyncEntity } from '../../../entities/SolanaSyncEntity';
 
 @Module({
-  imports: [ConfigModule, ScheduleModule.forRoot(), TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, SolanaSyncEntity])],
+  imports: [ConfigModule, ScheduleModule.forRoot(), TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity])],
   providers: [
     Web3Service,
     ChainScanningService,

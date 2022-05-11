@@ -11,6 +11,7 @@ import { Web3Service } from '../../web3/services/Web3Service';
 import { ChainScanningService } from '../../chain/scanning/services/ChainScanningService';
 import { ChainConfigService } from '../../chain/config/services/ChainConfigService';
 import { ClassicChainConfig } from '../../chain/config/models/configs/ClassicChainConfig';
+import { SolanaChainConfig } from '../../chain/config/models/configs/SolanaChainConfig';
 
 @Injectable()
 export class StartScanningService implements OnModuleInit {
@@ -38,6 +39,12 @@ export class StartScanningService implements OnModuleInit {
         },
       });
       if (chainConfig.isSolana) {
+        const chainConfigSolana = chainConfig as SolanaChainConfig;
+        await this.supportedChainRepository.save({
+          chainId: chainId,
+          latestSolanaTransaction: null,
+          network: chainConfigSolana.name,
+        });
         continue;
       }
       const chainConfigClassic = chainConfig as ClassicChainConfig;
