@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
     container_name: debridge-solanadatareader${DOCKER_ID}
     environment:
-      - PORT=${DEBRIDGE_NODE_PORT}
+      - PORT=${SOLANA_DATA_READER_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -46,7 +46,7 @@ services:
       - ./stats/debridge-node:/app/stats
       - ./config:/app/dist/config
     environment:
-      - PORT=${SOLANA_DATA_READER_PORT}
+      - PORT=${DEBRIDGE_NODE_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
