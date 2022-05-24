@@ -8,11 +8,12 @@ import { EventFromTransaction, GetEventsFromTransactionsResponseDto } from '../d
 import { GetEventsFromTransactionsRequestDto } from '../dto/request/get.events.from.transactions.request.dto';
 import { GetAddressInfoRequestDto } from '../dto/request/get.address.info.request.dto';
 import { GetAddressInfoResponseDto } from '../dto/response/get.address.info.response.dto';
+import { GetBridgeInfoRequestDto } from '../dto/request/get.bridge.info.request.dto';
 
 @Injectable()
 export class SolanaApiService extends HttpAuthService {
   constructor(readonly httpService: HttpService, private readonly configService: ConfigService) {
-    super(httpService, new Logger(SolanaApiService.name), configService.get('SOLANA_API_BASE_URL'), '/login');
+    super(httpService, new Logger(SolanaApiService.name), configService.get('SOLANA_DATA_READER_API_BASE_URL'), '/login');
   }
 
   /**
@@ -57,6 +58,20 @@ export class SolanaApiService extends HttpAuthService {
     const httpResult = await this.authRequest('/getChainInfo', dto, this.getLoginDto());
     const response = httpResult.data as GetAddressInfoResponseDto;
     this.logger.log(`getAddressInfo account ${address} is finished`);
+    return response;
+  }
+
+  /**
+   * Get bridge info
+   * @param bridgeId
+   */
+  async getBridgeInfo(bridgeId: string): Promise<string[]> {
+    this.logger.log(`getBridgeInfo ${bridgeId} is started`);
+    const dto = { bridgeId } as GetBridgeInfoRequestDto;
+    this.logger.verbose(`getBridgeInfo dto ${JSON.stringify(dto)}`);
+    const httpResult = await this.authRequest('/getBridgeInfo', dto, this.getLoginDto());
+    const response = httpResult.data as string[];
+    this.logger.log(`getBridgeInfo ${bridgeId} is finished`);
     return response;
   }
 

@@ -3,7 +3,7 @@ FROM node:16.15.0 as builder
 RUN npm install -g \
     npm@8.5.5 \
     typescript@4.6.4 \
-    @nestjs/cli@8.2.5
+    @nestjs/cli@8.2.6
 
 WORKDIR /build
 

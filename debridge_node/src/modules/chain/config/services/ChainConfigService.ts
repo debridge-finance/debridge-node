@@ -25,6 +25,7 @@ export class ChainConfigService {
           chainId: config.chainId,
           name: config.name,
           interval: config.interval,
+          lastTransaction: config.lastTransaction,
           isSolana,
         } as SolanaChainConfig);
       } else {

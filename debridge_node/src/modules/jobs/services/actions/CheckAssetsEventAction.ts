@@ -11,7 +11,6 @@ import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { abi as ERC20Abi } from '../../../../assets/ERC20.json';
 import { readFileSync } from 'fs';
 import { Account } from 'web3-core';
-import { createProxy } from '../../../../utils/create.proxy';
 import { getTokenName } from '../../../../utils/getTokenName';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
@@ -58,40 +57,46 @@ export class CheckAssetsEventAction extends IAction {
         try {
           this.logger.log(`Process debridgeId: ${submission.debridgeId}`);
           const chainDetail = this.chainConfigService.get(submission.chainFrom) as ClassicChainConfig;
-
-          const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
-          const deBridgeGateInstance = createProxy(new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr), { logger: this.logger });
-          // struct DebridgeInfo {
-          //   uint256 chainId; // native chain id
-          //   uint256 maxAmount; // maximum amount to transfer
-          //   uint256 balance; // total locked assets
-          //   uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
-          //   address tokenAddress; // asset address on the current chain
-          //   uint16 minReservesBps; // minimal hot reserves in basis points (1/10000)
-          //   bool exist;
-          // }
-          const debridgeInfo = await deBridgeGateInstance.methods.getDebridge(submission.debridgeId).call();
-          this.logger.log(JSON.stringify(debridgeInfo));
-          // struct TokenInfo {
-          //   uint256 nativeChainId;
-          //   bytes nativeAddress;
-          // }
-          const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
-          this.logger.log(JSON.stringify(nativeTokenInfo));
-          const tokenChainDetail = this.chainConfigService.get(parseInt(nativeTokenInfo.nativeChainId)) as ClassicChainConfig;
-          const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
-          const nativeTokenInstance = createProxy(new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenInfo.nativeAddress), {
-            logger: this.logger,
-          });
           let tokenName;
           let tokenSymbol;
           let tokenDecimals;
+          let nativeChainId;
+          let nativeAdress;
+
           if (chainDetail.isSolana) {
-            const response = await this.solanaApiService.getAddressInfo(nativeTokenInfo.nativeAddress);
+            //
+            const [chainId, address] = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
+            const response = await this.solanaApiService.getAddressInfo(address);
             tokenName = response.tokenName;
             tokenSymbol = response.tokenSymbol;
             tokenDecimals = response.tokenDecimals;
+            nativeChainId = chainId;
+            nativeAdress = address;
           } else {
+            const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
+            const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
+            // struct DebridgeInfo {
+            //   uint256 chainId; // native chain id
+            //   uint256 maxAmount; // maximum amount to transfer
+            //   uint256 balance; // total locked assets
+            //   uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
+            //   address tokenAddress; // asset address on the current chain
+            //   uint16 minReservesBps; // minimal hot reserves in basis points (1/10000)
+            //   bool exist;
+            // }
+            const debridgeInfo = await deBridgeGateInstance.methods.getDebridge(submission.debridgeId).call();
+            nativeChainId = debridgeInfo.chainId;
+            nativeChainId = debridgeInfo.nativeAddress;
+            this.logger.log(JSON.stringify(debridgeInfo));
+            // struct TokenInfo {
+            //   uint256 nativeChainId;
+            //   bytes nativeAddress;
+            // }
+            const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
+            this.logger.log(JSON.stringify(nativeTokenInfo));
+            const tokenChainDetail = this.chainConfigService.get(parseInt(nativeTokenInfo.nativeChainId)) as ClassicChainConfig;
+            const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
+            const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenInfo.nativeAddress);
             tokenName = await getTokenName(nativeTokenInstance, nativeTokenInfo.nativeAddress, { logger: this.logger });
             tokenSymbol = await nativeTokenInstance.methods.symbol().call();
             tokenDecimals = await nativeTokenInstance.methods.decimals().call();
@@ -99,16 +104,18 @@ export class CheckAssetsEventAction extends IAction {
 
           const prefix = 2;
 
-          const nameKeccak = web3.utils.soliditySha3Raw({ t: 'string', v: tokenName });
-          const symbolKeccak = web3.utils.soliditySha3Raw({ t: 'string', v: tokenSymbol });
+          const nameKeccak = this.web3Service.web3().utils.soliditySha3Raw({ t: 'string', v: tokenName });
+          const symbolKeccak = this.web3Service.web3().utils.soliditySha3Raw({ t: 'string', v: tokenSymbol });
 
-          const deployId = web3.utils.soliditySha3Raw(
-            { t: 'uint256', v: prefix },
-            { t: 'bytes32', v: submission.debridgeId },
-            { t: 'bytes32', v: nameKeccak },
-            { t: 'bytes32', v: symbolKeccak },
-            { t: 'uint8', v: tokenDecimals },
-          );
+          const deployId = this.web3Service
+            .web3()
+            .utils.soliditySha3Raw(
+              { t: 'uint256', v: prefix },
+              { t: 'bytes32', v: submission.debridgeId },
+              { t: 'bytes32', v: nameKeccak },
+              { t: 'bytes32', v: symbolKeccak },
+              { t: 'uint8', v: tokenDecimals },
+            );
           this.logger.log(`prefix: ${prefix}`);
           this.logger.log(`tokenName: ${tokenName}`);
           this.logger.log(`tokenSymbol: ${tokenSymbol}`);
@@ -121,8 +128,8 @@ export class CheckAssetsEventAction extends IAction {
           await this.confirmNewAssetEntityRepository.save({
             debridgeId: submission.debridgeId,
             submissionTxHash: submission.txHash,
-            nativeChainId: debridgeInfo.chainId,
-            tokenAddress: nativeTokenInfo.nativeAddress,
+            nativeChainId: nativeChainId,
+            tokenAddress: nativeAdress,
             name: tokenName,
             symbol: tokenSymbol,
             decimals: tokenDecimals,

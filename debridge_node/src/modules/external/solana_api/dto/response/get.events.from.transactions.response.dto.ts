@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class EventFromTransaction {
@@ -20,11 +20,11 @@ export class EventFromTransaction {
   bridgeId: string;
 
   @ApiProperty()
-  @IsNumber()
+  @IsInt()
   chainToId: number;
 
   @ApiProperty()
-  @IsNumber()
+  @IsInt()
   nonce: number;
 
   @ApiProperty()
@@ -39,24 +39,40 @@ export class EventFromTransaction {
   @IsString()
   submissionId: string;
 
-  @ApiProperty()
-  @IsNumber()
+  @ApiProperty({
+    nullable: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
   referralCode: number;
 
   @ApiProperty()
   @IsString()
   executionFee: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    required: false,
+  })
   @IsString()
+  @IsOptional()
   flags: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    required: false,
+  })
   @IsString()
+  @IsOptional()
   fallbackAddress: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    nullable: true,
+    required: false,
+  })
   @IsString()
+  @IsOptional()
   extCallShortcut: string;
 
   @ApiProperty()
@@ -83,13 +99,24 @@ export class EventFromTransaction {
   @IsString()
   tokenTotalSupply: string;
 
+  /*@ApiProperty()
+  @IsNumber()
+  decimalDenominator: number;*/
+
+  @ApiProperty()
+  @IsString()
+  receivedAmount: string;
+
   @ApiProperty()
   @IsNumber()
-  decimalDenominator: number;
+  slotNumber: number;
 }
 
 export class GetEventsFromTransactionsResponseDto {
-  @ApiProperty()
+  @ApiProperty({
+    type: EventFromTransaction,
+    isArray: true,
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => EventFromTransaction)

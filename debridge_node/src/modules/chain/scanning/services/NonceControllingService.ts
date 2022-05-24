@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { Web3Custom } from '../../../web3/services/Web3Service';
@@ -28,13 +28,12 @@ export class NonceControllingService implements OnModuleInit {
       FROM public.submissions as submissions
       JOIN public.supported_chains as chains
       ON (chains."chainId" = submissions."chainFrom")
-      WHERE submissions."blockNumber" <= chains."latestBlock"  GROUP BY "chainFrom"
+      WHERE (submissions."blockNumber" <= chains."latestBlock"  OR chains."chainId"='7565164')  GROUP BY "chainFrom"
         `);
     for (const { chainFrom, max } of chains) {
       this.maxNonceChains.set(chainFrom, max);
       this.logger.verbose(`Max nonce in chain ${chainFrom} is ${max}`);
     }
-    //todo check script for solana
   }
 
   getMaxNonce(chainId: number): number {

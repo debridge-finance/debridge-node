@@ -39,12 +39,14 @@ export class StartScanningService implements OnModuleInit {
         },
       });
       if (chainConfig.isSolana) {
-        const chainConfigSolana = chainConfig as SolanaChainConfig;
-        await this.supportedChainRepository.save({
-          chainId: chainId,
-          latestSolanaTransaction: null,
-          network: chainConfigSolana.name,
-        });
+        if (!configInDd) {
+          const chainConfigSolana = chainConfig as SolanaChainConfig;
+          await this.supportedChainRepository.save({
+            chainId: chainId,
+            latestSolanaTransaction: chainConfigSolana.lastTransaction,
+            network: chainConfigSolana.name,
+          });
+        }
         continue;
       }
       const chainConfigClassic = chainConfig as ClassicChainConfig;

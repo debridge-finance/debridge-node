@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainScanningService } from './ChainScanningService';
@@ -96,6 +96,9 @@ export class AddNewEventsAction {
       const submissions = sentEvents.map(sendEvent => {
         const submissionId = sendEvent.returnValues.submissionId;
         try {
+          if (sendEvent.returnValues.chainIdFrom === undefined || sendEvent.returnValues.chainIdFrom === null) {
+            sendEvent.returnValues.chainIdFrom = chainId;
+          }
           return this.transformService.generateSubmissionFromSentEvent(sendEvent);
         } catch (e) {
           this.logger.error(`Error in transforming sent event to submission ${submissionId}: ${e.message}`);

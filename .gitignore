@@ -21,3 +21,5 @@ data
 .DS_Store
 heap_info.json
 config/chains_config.json
+
+.idea/*
