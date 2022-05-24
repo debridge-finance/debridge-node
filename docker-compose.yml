@@ -46,7 +46,7 @@ services:
       - ./stats/debridge-node:/app/stats
       - ./config:/app/dist/config
     environment:
-      - PORT=${DEBRIDGE_NODE_PORT}
+      - PORT=${SOLANA_DATA_READER_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
