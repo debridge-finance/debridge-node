@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpAuthService } from '../../common/HttpAuthService';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { GetHistoricalDataRequestDto } from '../dto/request/get.historical.data.request.dto';
@@ -9,11 +8,15 @@ import { GetEventsFromTransactionsRequestDto } from '../dto/request/get.events.f
 import { GetAddressInfoRequestDto } from '../dto/request/get.address.info.request.dto';
 import { GetAddressInfoResponseDto } from '../dto/response/get.address.info.response.dto';
 import { GetBridgeInfoRequestDto } from '../dto/request/get.bridge.info.request.dto';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
-export class SolanaApiService extends HttpAuthService {
+export class SolanaApiService {
+  private readonly logger = new Logger(SolanaApiService.name);
+  private readonly BASIC_URL: string;
+
   constructor(readonly httpService: HttpService, private readonly configService: ConfigService) {
-    super(httpService, new Logger(SolanaApiService.name), configService.get('SOLANA_DATA_READER_API_BASE_URL'), '/login');
+    this.BASIC_URL = configService.get('SOLANA_DATA_READER_API_BASE_URL');
   }
 
   /**
@@ -27,7 +30,7 @@ export class SolanaApiService extends HttpAuthService {
     const limit = limitSignatures;
     const dto = { limit, searchFrom, searchTo } as GetHistoricalDataRequestDto;
     this.logger.verbose(`getHistoricalData dto ${JSON.stringify(dto)}`);
-    const httpResult = await this.authRequest('/getHistoricalData', dto, this.getLoginDto());
+    const httpResult = await this.request('/getHistoricalData', dto);
     const { signatures } = httpResult.data as GetHistoricalDataResponseDto;
     this.logger.log(`getHistoricalData ${JSON.stringify({ searchFrom, searchTo })} is finished`);
     return signatures;
@@ -41,7 +44,7 @@ export class SolanaApiService extends HttpAuthService {
     this.logger.log(`getEventsFromTransactions to ${JSON.stringify(signatures)} is started`);
     const dto = { signatures } as GetEventsFromTransactionsRequestDto;
     this.logger.verbose(`getEventsFromTransactions dto ${JSON.stringify(dto)}`);
-    const httpResult = await this.authRequest('/getEventsFromTransactions', dto, this.getLoginDto());
+    const httpResult = await this.request('/getEventsFromTransactions', dto);
     const { events } = httpResult.data as GetEventsFromTransactionsResponseDto;
     this.logger.log(`getEventsFromTransactions to ${JSON.stringify(signatures)} is finished`);
     return events;
@@ -55,7 +58,7 @@ export class SolanaApiService extends HttpAuthService {
     this.logger.log(`getAddressInfo account ${address} is started`);
     const dto = { address } as GetAddressInfoRequestDto;
     this.logger.verbose(`getAddressInfo dto ${JSON.stringify(dto)}`);
-    const httpResult = await this.authRequest('/getChainInfo', dto, this.getLoginDto());
+    const httpResult = await this.request('/getChainInfo', dto);
     const response = httpResult.data as GetAddressInfoResponseDto;
     this.logger.log(`getAddressInfo account ${address} is finished`);
     return response;
@@ -69,16 +72,24 @@ export class SolanaApiService extends HttpAuthService {
     this.logger.log(`getBridgeInfo ${bridgeId} is started`);
     const dto = { bridgeId } as GetBridgeInfoRequestDto;
     this.logger.verbose(`getBridgeInfo dto ${JSON.stringify(dto)}`);
-    const httpResult = await this.authRequest('/getBridgeInfo', dto, this.getLoginDto());
+    const httpResult = await this.request('/getBridgeInfo', dto);
     const response = httpResult.data as string[];
     this.logger.log(`getBridgeInfo ${bridgeId} is finished`);
     return response;
   }
 
-  private getLoginDto() {
-    return {
-      login: this.configService.get('SOLANA_API_USER'),
-      password: this.configService.get('SOLANA_API_PASSWORD'),
-    };
+  private async request<T>(api: string, requestBody: T) {
+    const url = `${this.BASIC_URL}${api}`;
+    let httpResult;
+    try {
+      httpResult = await lastValueFrom(this.httpService.post(url, requestBody));
+    } catch (e) {
+      const response = e.response;
+      this.logger.error(
+        `Error request to ${url} (status: ${response?.status}, message: ${response?.statusText}, data: ${JSON.stringify(response?.data)})`,
+      );
+      throw e;
+    }
+    return httpResult;
   }
 }
