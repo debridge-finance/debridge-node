@@ -86,7 +86,6 @@ export class CheckAssetsEventAction extends IAction {
             // }
             const debridgeInfo = await deBridgeGateInstance.methods.getDebridge(submission.debridgeId).call();
             nativeChainId = debridgeInfo.chainId;
-            nativeChainId = debridgeInfo.nativeAddress;
             this.logger.log(JSON.stringify(debridgeInfo));
             // struct TokenInfo {
             //   uint256 nativeChainId;
@@ -100,6 +99,7 @@ export class CheckAssetsEventAction extends IAction {
             tokenName = await getTokenName(nativeTokenInstance, nativeTokenInfo.nativeAddress, { logger: this.logger });
             tokenSymbol = await nativeTokenInstance.methods.symbol().call();
             tokenDecimals = await nativeTokenInstance.methods.decimals().call();
+            nativeAdress = nativeTokenInfo.nativeAddress;
           }
 
           const prefix = 2;
