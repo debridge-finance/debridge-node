@@ -59,7 +59,7 @@ export class SolanaApiService {
     this.logger.log(`getAddressInfo account ${address} is started`);
     const dto = { address } as GetAddressInfoRequestDto;
     this.logger.verbose(`getAddressInfo dto ${JSON.stringify(dto)}`);
-    const httpResult = await this.request('/getChainInfo', dto, 'GET');
+    const httpResult = await this.request('/getAddressInfo', dto, 'GET');
     const response = httpResult.data as GetAddressInfoResponseDto;
     this.logger.log(`getAddressInfo account ${address} is finished`);
     return response;
