@@ -64,14 +64,13 @@ export class CheckAssetsEventAction extends IAction {
           let nativeAdress;
 
           if (chainDetail.isSolana) {
-            //
-            const [chainId, address] = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
-            const response = await this.solanaApiService.getAddressInfo(address);
+            const { nativeChainId: nativeChain, nativeTokenAddress } = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
+            const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
             tokenName = response.tokenName;
             tokenSymbol = response.tokenSymbol;
             tokenDecimals = response.tokenDecimals;
-            nativeChainId = chainId;
-            nativeAdress = address;
+            nativeChainId = nativeChain;
+            nativeAdress = nativeTokenAddress;
           } else {
             const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
             const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);

@@ -9,6 +9,7 @@ import { GetAddressInfoRequestDto } from '../dto/request/get.address.info.reques
 import { GetAddressInfoResponseDto } from '../dto/response/get.address.info.response.dto';
 import { GetBridgeInfoRequestDto } from '../dto/request/get.bridge.info.request.dto';
 import { lastValueFrom } from 'rxjs';
+import { GetBridgeInfoResponseDto } from '../dto/response/get.bridge.info.response.dto';
 
 @Injectable()
 export class SolanaApiService {
@@ -68,21 +69,25 @@ export class SolanaApiService {
    * Get bridge info
    * @param bridgeId
    */
-  async getBridgeInfo(bridgeId: string): Promise<string[]> {
+  async getBridgeInfo(bridgeId: string): Promise<GetBridgeInfoResponseDto> {
     this.logger.log(`getBridgeInfo ${bridgeId} is started`);
     const dto = { bridgeId } as GetBridgeInfoRequestDto;
     this.logger.verbose(`getBridgeInfo dto ${JSON.stringify(dto)}`);
-    const httpResult = await this.request('/getBridgeInfo', dto);
-    const response = httpResult.data as string[];
+    const httpResult = await this.request('/getBridgeInfo', dto, 'GET');
+    const response = httpResult.data as GetBridgeInfoResponseDto;
     this.logger.log(`getBridgeInfo ${bridgeId} is finished`);
     return response;
   }
 
-  private async request<T>(api: string, requestBody: T) {
+  private async request<T>(api: string, requestBody: T, method: 'POST' | 'GET' = 'POST') {
     const url = `${this.BASIC_URL}${api}`;
     let httpResult;
     try {
-      httpResult = await lastValueFrom(this.httpService.post(url, requestBody));
+      if (method === 'POST') {
+        httpResult = await lastValueFrom(this.httpService.post(url, requestBody));
+      } else {
+        httpResult = await lastValueFrom(this.httpService.get(url, { params: requestBody }));
+      }
     } catch (e) {
       const response = e.response;
       this.logger.error(
