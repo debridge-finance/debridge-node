@@ -10,6 +10,7 @@ import { AddDocsSignedSubmissionRequestDTO } from '../dto/request/AddDocsSignedS
 import { AddLogConfirmNewAssetsRequestDTO } from '../dto/request/AddLogConfirmNewAssetsRequestDTO';
 import { AddLogSignedSubmissionRequestDTO } from '../dto/request/AddLogSignedSubmissionRequestDTO';
 import { readFileSync } from 'fs';
+import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
 
 @Injectable()
 export class OrbitDbService extends HttpAuthService implements OnModuleInit {
@@ -24,6 +25,7 @@ export class OrbitDbService extends HttpAuthService implements OnModuleInit {
       login: configService.get('ORBITDB_LOGIN'),
       password: configService.get('ORBITDB_PASSWORD'),
     } as UserLoginDto);
+    addHttpServiceLogging(httpService, this.logger);
   }
 
   async onModuleInit() {

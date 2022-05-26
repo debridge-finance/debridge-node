@@ -10,6 +10,7 @@ import { GetAddressInfoResponseDto } from '../dto/response/get.address.info.resp
 import { GetBridgeInfoRequestDto } from '../dto/request/get.bridge.info.request.dto';
 import { lastValueFrom } from 'rxjs';
 import { GetBridgeInfoResponseDto } from '../dto/response/get.bridge.info.response.dto';
+import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
 
 @Injectable()
 export class SolanaApiService {
@@ -18,6 +19,7 @@ export class SolanaApiService {
 
   constructor(readonly httpService: HttpService, private readonly configService: ConfigService) {
     this.BASIC_URL = configService.get('SOLANA_DATA_READER_API_BASE_URL');
+    addHttpServiceLogging(httpService, this.logger);
   }
 
   /**
