@@ -1,8 +1,8 @@
 FROM node:16.15.0 as builder
 
 RUN npm install -g \
-    npm@8.5.5 \
-    typescript@4.6.4 \
+    npm@8.11.0 \
+    typescript@4.7.2 \
     @nestjs/cli@8.2.6
 
 WORKDIR /build
