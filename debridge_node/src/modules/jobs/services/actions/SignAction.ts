@@ -10,6 +10,7 @@ import { readFileSync } from 'fs';
 import { Account } from 'web3-core';
 import { ConfigService } from '@nestjs/config';
 import { Web3Service } from '../../../web3/services/Web3Service';
+import { readConfiguration } from '../../../../utils/readConfiguration';
 
 //Simple action that sign submissionId and save signatures to DB
 @Injectable()
@@ -28,7 +29,10 @@ export class SignAction extends IAction {
     super();
     this.logger = new Logger(SignAction.name);
     this.web3 = this.web3Service.web3();
-    this.account = this.web3.eth.accounts.decrypt(JSON.parse(readFileSync('./keystore.json', 'utf-8')), configService.get('KEYSTORE_PASSWORD'));
+    this.account = this.web3.eth.accounts.decrypt(
+      JSON.parse(readFileSync('./keystore.json', 'utf-8')),
+      readConfiguration(configService, this.logger, 'KEYSTORE_PASSWORD'),
+    );
   }
 
   async process(): Promise<void> {
@@ -36,7 +40,9 @@ export class SignAction extends IAction {
 
     //TODO: check is supported chainIdTo
     const submissions = await this.submissionsRepository.find({
-      status: SubmisionStatusEnum.NEW,
+      where: {
+        status: SubmisionStatusEnum.NEW,
+      },
     });
 
     for (const submission of submissions) {

@@ -38,7 +38,7 @@ export class AddNewEventsAction {
       this.logger.log(`Is locked chainId: ${chainId}`);
       const chain = this.chainConfigService.get(chainId);
       if (chain.isSolana) {
-        await this.solanaReaderService.read(chainId);
+        await this.solanaReaderService.syncTransactions(chainId);
       } else {
         await this.process(chainId);
       }

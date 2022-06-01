@@ -16,6 +16,7 @@ import { ConfrimNewAssetsRequestDTO } from '../dto/request/ConfrimNewAssetsReque
 import { ErrorNotificationDTO } from '../dto/request/ErrorNotificationDTO';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
+import { readConfiguration } from '../../../../utils/readConfiguration';
 
 @Injectable()
 export class DebrdigeApiService extends HttpAuthService implements OnModuleInit {
@@ -24,7 +25,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   private web3: Web3;
 
   constructor(readonly web3Service: Web3Service, readonly httpService: HttpService, private readonly configService: ConfigService) {
-    super(httpService, new Logger(DebrdigeApiService.name), configService.get('API_BASE_URL'), '/Account/authenticate');
+    const logger = new Logger(DebrdigeApiService.name);
+    const apiBaseUrl = readConfiguration(configService, logger, 'API_BASE_URL');
+    super(httpService, logger, apiBaseUrl, '/Account/authenticate');
     this.web3 = web3Service.web3();
     this.account = this.web3.eth.accounts.decrypt(JSON.parse(readFileSync('./keystore.json', 'utf-8')), process.env.KEYSTORE_PASSWORD);
     addHttpServiceLogging(httpService, this.logger);

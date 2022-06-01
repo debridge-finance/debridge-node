@@ -8,6 +8,9 @@ import { TransformService } from './TransformService';
 import { ConfigService } from '@nestjs/config';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 
+/**
+ * Service for reading transaction from solana
+ */
 @Injectable()
 export class SolanaReaderService {
   private readonly logger = new Logger(SupportedChainEntity.name);
@@ -26,7 +29,11 @@ export class SolanaReaderService {
     this.GET_HISTORICAL_LIMIT = parseInt(this.configService.get('SOLANA_TRANSACTION_BATCH_SIZE'));
   }
 
-  async read(chainId: number) {
+  /**
+   * Sync transactions
+   * @param {string} chainId
+   */
+  async syncTransactions(chainId: number) {
     const chain = await this.supportedChainRepository.findOne({
       where: {
         chainId,

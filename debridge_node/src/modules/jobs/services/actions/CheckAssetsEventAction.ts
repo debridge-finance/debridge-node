@@ -38,7 +38,9 @@ export class CheckAssetsEventAction extends IAction {
   async process() {
     this.logger.log(`Check assets event`);
     const submissions = await this.submissionsRepository.find({
-      assetsStatus: SubmisionAssetsStatusEnum.NEW,
+      where: {
+        assetsStatus: SubmisionAssetsStatusEnum.NEW,
+      },
     });
 
     const newSubmitionIds = [];
