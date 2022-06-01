@@ -7,6 +7,7 @@ import { SolanaApiService } from '../../../external/solana_api/services/SolanaAp
 import { TransformService } from './TransformService';
 import { ConfigService } from '@nestjs/config';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
+import { readConfiguration } from '../../../../utils/readConfiguration';
 
 /**
  * Service for reading transaction from solana
@@ -15,6 +16,7 @@ import { SubmissionProcessingService } from './SubmissionProcessingService';
 export class SolanaReaderService {
   private readonly logger = new Logger(SupportedChainEntity.name);
   private readonly GET_HISTORICAL_LIMIT: number;
+  private readonly GET_EVENTS_LIMIT: number;
 
   constructor(
     private readonly solanaApiService: SolanaApiService,
@@ -26,7 +28,8 @@ export class SolanaReaderService {
     private readonly configService: ConfigService,
     private readonly chainProcessingService: SubmissionProcessingService,
   ) {
-    this.GET_HISTORICAL_LIMIT = parseInt(this.configService.get('SOLANA_TRANSACTION_BATCH_SIZE'));
+    this.GET_HISTORICAL_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_HISTORICAL_BATCH_SIZE'));
+    this.GET_EVENTS_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_EVENTS_BATCH_SIZE'));
   }
 
   /**
@@ -39,9 +42,6 @@ export class SolanaReaderService {
         chainId,
       },
     });
-    if (!chain) {
-      this.logger.warn(`Solana chain is not found`);
-    }
     const latestTransactionInChain = (await this.solanaApiService.getHistoricalData(1))[0]; // get latest transaction
     let earliestTransactionInSyncSession = undefined;
     const previousSyncLastTransaction = chain.latestSolanaTransaction;
@@ -65,9 +65,19 @@ export class SolanaReaderService {
         break;
       }
       this.logger.verbose(`Transactions ${transactions.length} are received`);
-      const events = await this.solanaApiService.getEventsFromTransactions(transactions);
-      this.logger.verbose(`Events ${events.length} from transaction are received`);
-      events.sort((a, b) => b.nonce - a.nonce); //sort
+
+      const events = [];
+      const size = Math.ceil(transactions.length / this.GET_EVENTS_LIMIT);
+      for (let pageNumber = 0; pageNumber < size; pageNumber++) {
+        const skip = pageNumber * this.GET_EVENTS_LIMIT;
+        const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactions.length);
+        const batchEvents = await this.solanaApiService.getEventsFromTransactions(transactions.slice(skip, end));
+        events.push(...batchEvents);
+        this.logger.verbose(`Events ${batchEvents.length} from transaction are received`);
+      }
+
+      //sort in desc, we need it for correct reading data from solana
+      events.sort((a, b) => b.nonce - a.nonce);
       earliestTransactionInSyncSession = events.at(-1).transactionHash; // get earliest from batch
       //events for saving in database
       const eventsForSave = events.map(event => {
@@ -77,6 +87,7 @@ export class SolanaReaderService {
           return submission;
         } catch (e) {
           this.logger.error(`Can't generate submission ${event.submissionId} from solana event`);
+          this.logger.error(e);
           throw e;
         }
       });
@@ -86,9 +97,8 @@ export class SolanaReaderService {
       this.logger.log(`searchFrom = ${earliestTransactionInSyncSession}`);
     } while (transactions.length === this.GET_HISTORICAL_LIMIT);
 
-    submissions.sort((a, b) => a.nonce - b.nonce); //sort
-    if (submissions.length > 0) {
-      await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
-    }
+    //sort in asc, we need it for correct updating last tracked value and nonxe validation
+    submissions.sort((a, b) => a.nonce - b.nonce);
+    await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
   }
 }
