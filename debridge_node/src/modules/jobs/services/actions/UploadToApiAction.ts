@@ -29,8 +29,10 @@ export class UploadToApiAction extends IAction {
 
     try {
       const submissions = await this.submissionsRepository.find({
-        status: SubmisionStatusEnum.SIGNED,
-        apiStatus: UploadStatusEnum.NEW,
+        where: {
+          status: SubmisionStatusEnum.SIGNED,
+          apiStatus: UploadStatusEnum.NEW,
+        },
       });
 
       if (submissions.length > 0) {
@@ -48,8 +50,10 @@ export class UploadToApiAction extends IAction {
     try {
       //Process Assets
       const assets = await this.confirmNewAssetEntityRepository.find({
-        status: SubmisionStatusEnum.SIGNED,
-        apiStatus: UploadStatusEnum.NEW,
+        where: {
+          status: SubmisionStatusEnum.SIGNED,
+          apiStatus: UploadStatusEnum.NEW,
+        },
       });
 
       if (assets.length > 0) {

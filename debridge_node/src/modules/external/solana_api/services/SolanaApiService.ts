@@ -11,6 +11,7 @@ import { GetBridgeInfoRequestDto } from '../dto/request/get.bridge.info.request.
 import { lastValueFrom } from 'rxjs';
 import { GetBridgeInfoResponseDto } from '../dto/response/get.bridge.info.response.dto';
 import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
+import { readConfiguration } from '../../../../utils/readConfiguration';
 
 @Injectable()
 export class SolanaApiService {
@@ -18,7 +19,7 @@ export class SolanaApiService {
   private readonly BASIC_URL: string;
 
   constructor(readonly httpService: HttpService, private readonly configService: ConfigService) {
-    this.BASIC_URL = configService.get('SOLANA_DATA_READER_API_BASE_URL');
+    this.BASIC_URL = readConfiguration(configService, this.logger, 'SOLANA_DATA_READER_API_BASE_URL');
     addHttpServiceLogging(httpService, this.logger);
   }
 
@@ -27,6 +28,7 @@ export class SolanaApiService {
    * @param limitSignatures
    * @param searchFrom
    * @param searchTo
+   * @return string[] transaction hashes from solana
    */
   async getHistoricalData(limitSignatures: number, searchFrom?: string, searchTo?: string): Promise<string[]> {
     this.logger.log(`getHistoricalData ${JSON.stringify({ searchFrom, searchTo })} is started`);
@@ -42,6 +44,7 @@ export class SolanaApiService {
   /**
    * Get events from transaction
    * @param signatures
+   * @return EventFromTransaction[] detailed information about sendevents by their hashes
    */
   async getEventsFromTransactions(signatures: string[]): Promise<EventFromTransaction[]> {
     this.logger.log(`getEventsFromTransactions to ${JSON.stringify(signatures)} is started`);
@@ -55,7 +58,8 @@ export class SolanaApiService {
 
   /**
    * Get address info
-   * @param address
+   * @param {string} address
+   * @return GetAddressInfoResponseDto return tokenName, tokenDecimals, tokenSymbol by token address
    */
   async getAddressInfo(address: string): Promise<GetAddressInfoResponseDto> {
     this.logger.log(`getAddressInfo account ${address} is started`);
@@ -69,7 +73,8 @@ export class SolanaApiService {
 
   /**
    * Get bridge info
-   * @param bridgeId
+   * @param {string} bridgeId
+   * @return GetBridgeInfoResponseDto return nativeChainId, nativeTokenAddress, tokenToReceiveAddress by bridge id
    */
   async getBridgeInfo(bridgeId: string): Promise<GetBridgeInfoResponseDto> {
     this.logger.log(`getBridgeInfo ${bridgeId} is started`);

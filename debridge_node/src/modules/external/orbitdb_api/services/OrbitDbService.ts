@@ -11,6 +11,7 @@ import { AddLogConfirmNewAssetsRequestDTO } from '../dto/request/AddLogConfirmNe
 import { AddLogSignedSubmissionRequestDTO } from '../dto/request/AddLogSignedSubmissionRequestDTO';
 import { readFileSync } from 'fs';
 import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
+import { readConfiguration } from '../../../../utils/readConfiguration';
 
 @Injectable()
 export class OrbitDbService extends HttpAuthService implements OnModuleInit {
@@ -21,9 +22,13 @@ export class OrbitDbService extends HttpAuthService implements OnModuleInit {
     readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    super(httpService, new Logger(OrbitDbService.name), configService.get('ORBITDB_URL'), '/login', {
-      login: configService.get('ORBITDB_LOGIN'),
-      password: configService.get('ORBITDB_PASSWORD'),
+    const logger = new Logger(OrbitDbService.name);
+    const orbitdbLogin = readConfiguration(configService, console, 'ORBITDB_LOGIN');
+    const orbitdbUrl = readConfiguration(configService, console, 'ORBITDB_URL');
+    const orbitdbPassword = readConfiguration(configService, console, 'ORBITDB_PASSWORD');
+    super(httpService, logger, orbitdbUrl, '/login', {
+      login: orbitdbLogin,
+      password: orbitdbPassword,
     } as UserLoginDto);
     addHttpServiceLogging(httpService, this.logger);
   }

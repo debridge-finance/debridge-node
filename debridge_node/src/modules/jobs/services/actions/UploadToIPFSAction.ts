@@ -25,8 +25,10 @@ export class UploadToIPFSAction extends IAction {
     this.logger.log(`process UploadToIPFSAction`);
 
     const submissions = await this.submissionsRepository.find({
-      status: SubmisionStatusEnum.SIGNED,
-      ipfsStatus: UploadStatusEnum.NEW,
+      where: {
+        status: SubmisionStatusEnum.SIGNED,
+        ipfsStatus: UploadStatusEnum.NEW,
+      },
     });
 
     for (const submission of submissions) {
@@ -55,8 +57,10 @@ export class UploadToIPFSAction extends IAction {
 
     //Process Assets
     const assets = await this.confirmNewAssetEntityRepository.find({
-      status: SubmisionStatusEnum.SIGNED,
-      ipfsStatus: UploadStatusEnum.NEW,
+      where: {
+        status: SubmisionStatusEnum.SIGNED,
+        ipfsStatus: UploadStatusEnum.NEW,
+      },
     });
 
     for (const asset of assets) {
