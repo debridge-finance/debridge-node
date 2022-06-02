@@ -14,4 +14,15 @@ export class SupportedChainEntity {
 
   @Column({ nullable: true })
   latestSolanaTransaction: string;
+
+  @Column({
+    nullable: true,
+  })
+  latestBlockMonitoring?: number;
+
+  @Column({
+    nullable: true,
+    type: 'bigint',
+  })
+  validationTimestamp: number;
 }

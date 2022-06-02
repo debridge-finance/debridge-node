@@ -8,6 +8,7 @@
     "interval": 10000,
     "blockConfirmation": 0,
     "maxBlockRange": 9,
-    "lastTransaction": null
+    "lastTransaction": null,
+    "firstMonitoringBlock": 0
   }
 ]

@@ -4,6 +4,7 @@ import { SignAction } from './services/actions/SignAction';
 import { UploadToApiAction } from './services/actions/UploadToApiAction';
 import { CheckAssetsEventAction } from './services/actions/CheckAssetsEventAction';
 import { StatisticToApiAction } from './services/actions/StatisticToApiAction';
+import { ValidationBalanceAction } from './services/actions/ValidationBalanceAction';
 
 @Injectable()
 export class JobService {
@@ -12,6 +13,7 @@ export class JobService {
     private readonly uploadToApiAction: UploadToApiAction,
     private readonly checkAssetsEventAction: CheckAssetsEventAction,
     private readonly statisticToApiAction: StatisticToApiAction,
+    private readonly validationBalanceAction: ValidationBalanceAction,
   ) {}
 
   @Cron('*/3 * * * * *')
@@ -38,5 +40,10 @@ export class JobService {
   @Cron('* * * * *')
   async UploadStatisticToApiAction() {
     await this.statisticToApiAction.action();
+  }
+
+  @Cron('*/3 * * * * *')
+  async ValidateBalanceAction() {
+    await this.validationBalanceAction.action();
   }
 }

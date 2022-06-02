@@ -3,4 +3,5 @@ export class ChainConfig {
   name: string;
   isSolana: boolean;
   interval: number;
+  firstMonitoringBlock: number;
 }

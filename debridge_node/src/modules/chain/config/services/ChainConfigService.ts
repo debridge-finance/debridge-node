@@ -25,6 +25,7 @@ export class ChainConfigService {
           chainId: config.chainId,
           name: config.name,
           interval: config.interval,
+          firstMonitoringBlock: config.firstMonitoringBlock,
           lastTransaction: config.lastTransaction,
           isSolana,
         } as SolanaChainConfig);
@@ -36,6 +37,7 @@ export class ChainConfigService {
           firstStartBlock: config.firstStartBlock,
           providers: this.generateChainProvides(config),
           interval: config.interval,
+          firstMonitoringBlock: config.firstMonitoringBlock,
           blockConfirmation: config.blockConfirmation,
           maxBlockRange: config.maxBlockRange,
           isSolana,
@@ -90,19 +92,19 @@ export class ChainConfigService {
       return {
         provider: config,
         isValid: false,
-        isActive: true,
+        isActive: false,
         authType: AuthType.NONE,
       };
     } else {
       config.isValid = false;
-      config.isActive = true;
+      config.isActive = false;
       let authType = AuthType.NONE;
       if (config.user) {
         authType = AuthType.BASIC;
       }
       return {
         isValid: false,
-        isActive: true,
+        isActive: false,
         provider: config.provider,
         user: config.user,
         password: config.password,

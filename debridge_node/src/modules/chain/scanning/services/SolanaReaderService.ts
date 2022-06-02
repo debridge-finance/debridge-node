@@ -8,6 +8,7 @@ import { TransformService } from './TransformService';
 import { ConfigService } from '@nestjs/config';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { readConfiguration } from '../../../../utils/readConfiguration';
+import { MonitoringSentEventEntity } from '../../../../entities/MonitoringSentEventEntity';
 
 /**
  * Service for reading transaction from solana
@@ -52,6 +53,7 @@ export class SolanaReaderService {
     }
 
     const submissions: SubmissionEntity[] = [];
+    const monitoringEvents: MonitoringSentEventEntity[] = [];
 
     let transactions;
     do {
@@ -80,25 +82,30 @@ export class SolanaReaderService {
       events.sort((a, b) => b.nonce - a.nonce);
       earliestTransactionInSyncSession = events.at(-1).transactionHash; // get earliest from batch
       //events for saving in database
-      const eventsForSave = events.map(event => {
+      const eventsForSave: SubmissionEntity[] = [];
+      const monitorsForSave: MonitoringSentEventEntity[] = [];
+      events.map(event => {
         try {
-          const submission = this.transformService.generateSubmissionFromSolanaEvent(event);
-          this.logger.verbose(`submission ${event.submissionId} is generated`);
-          return submission;
+          const { submission, monitoringEvent } = this.transformService.generateSubmissionAndMonitorFromSolanaEvent(event);
+          this.logger.verbose(`submission and monitor ${event.submissionId} is generated`);
+          eventsForSave.push(submission);
+          monitorsForSave.push(monitoringEvent);
         } catch (e) {
           this.logger.error(`Can't generate submission ${event.submissionId} from solana event`);
           this.logger.error(e);
           throw e;
         }
       });
+
       this.logger.verbose(`Events ${eventsForSave.length} are prepared for db storing`);
       submissions.push(...eventsForSave);
-      this.logger.log(`submission ${JSON.stringify(eventsForSave)} is stored`);
+      monitoringEvents.push(...monitorsForSave);
+      this.logger.log(`submission ${JSON.stringify(eventsForSave)} is prepared for storing`);
       this.logger.log(`searchFrom = ${earliestTransactionInSyncSession}`);
     } while (transactions.length === this.GET_HISTORICAL_LIMIT);
 
     //sort in asc, we need it for correct updating last tracked value and nonxe validation
     submissions.sort((a, b) => a.nonce - b.nonce);
-    await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+    await this.chainProcessingService.process(submissions, monitoringEvents, chainId, submissions.at(-1).txHash);
   }
 }

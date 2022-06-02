@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
 import { promisify } from 'util';
+import { readConfiguration } from '../../utils/readConfiguration';
 
 @Injectable()
 export class FixNotExistsNonceBlockNumber implements OnModuleInit {
@@ -20,7 +21,7 @@ export class FixNotExistsNonceBlockNumber implements OnModuleInit {
 
   async onModuleInit() {
     this.logger.log('datafix service started');
-    if (this.configService.get('ENABLE_DATAFIX') !== 'true') {
+    if (readConfiguration(this.configService, this.logger, 'ENABLE_DATAFIX_BLOCKNUMBER_NONCE') !== 'true') {
       await this.pool.end();
       return;
     }

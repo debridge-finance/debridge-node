@@ -11,9 +11,10 @@ import { NonceControllingService } from './services/NonceControllingService';
 import { SubmissionProcessingService } from './services/SubmissionProcessingService';
 import { SolanaReaderService } from './services/SolanaReaderService';
 import { TransformService } from './services/TransformService';
+import { MonitoringSentEventEntity } from '../../../entities/MonitoringSentEventEntity';
 
 @Module({
-  imports: [ConfigModule, ScheduleModule.forRoot(), TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity])],
+  imports: [ConfigModule, ScheduleModule.forRoot(), TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, MonitoringSentEventEntity])],
   providers: [
     Web3Service,
     ChainScanningService,

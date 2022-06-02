@@ -7,4 +7,5 @@ export interface ProcessNewTransferResult {
   nonceValidationStatus?: NonceValidationEnum;
   submissionId?: string;
   nonce?: number;
+  validationTimestamp?: number;
 }

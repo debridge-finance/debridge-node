@@ -10,6 +10,7 @@ import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity'
 import { Repository } from 'typeorm';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { TransformService } from './TransformService';
+import { MonitoringSentEventEntity } from '../../../../entities/MonitoringSentEventEntity';
 
 @Injectable()
 export class AddNewEventsAction {
@@ -21,6 +22,8 @@ export class AddNewEventsAction {
     private readonly chainScanningService: ChainScanningService,
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
+    @InjectRepository(MonitoringSentEventEntity)
+    private readonly monitoringSentEventRepository: Repository<MonitoringSentEventEntity>,
     private readonly chainConfigService: ChainConfigService,
     private readonly web3Service: Web3Service,
     private readonly solanaReaderService: SolanaReaderService,
@@ -68,9 +71,9 @@ export class AddNewEventsAction {
 
     const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
 
-    const registerInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
+    const contract = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
     // @ts-ignore
-    web3.eth.setProvider = registerInstance.setProvider;
+    web3.eth.setProvider = contract.setProvider;
 
     const toBlock = to || (await web3.eth.getBlockNumber()) - chainDetail.blockConfirmation;
     let fromBlock = from || (supportedChain.latestBlock > 0 ? supportedChain.latestBlock : toBlock - 1);
@@ -84,12 +87,14 @@ export class AddNewEventsAction {
         logger.warn(`latestBlock in db ${supportedChain.latestBlock} == lastBlockOfPage ${lastBlockOfPage}`);
         continue;
       }
-      const sentEvents = await this.getEvents(registerInstance, fromBlock, lastBlockOfPage);
+      const monitoringSentEvents = await this.getEvents(contract, 'MonitoringSendEvent', fromBlock, lastBlockOfPage);
+      const sentEvents = await this.getEvents(contract, 'Sent', fromBlock, lastBlockOfPage);
       logger.log(`sentEvents: ${JSON.stringify(sentEvents)}`);
       if (!sentEvents || sentEvents.length === 0) {
         logger.verbose(`Not found any events for ${chainId} ${fromBlock} - ${lastBlockOfPage}`);
         await this.supportedChainRepository.update(chainId, {
           latestBlock: lastBlockOfPage,
+          validationTimestamp: await this.transformService.getBlockTimestamp(chainId, lastBlockOfPage),
         });
         continue;
       }
@@ -104,14 +109,24 @@ export class AddNewEventsAction {
           this.logger.error(`Error in transforming sent event to submission ${submissionId}: ${e.message}`);
         }
       });
-      await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
+      const monitors = monitoringSentEvents.map(monitoringSentEvent => {
+        return {
+          submissionId: monitoringSentEvent.returnValues.submissionId,
+          nonce: monitoringSentEvent.returnValues.nonce,
+          blockNumber: monitoringSentEvent.blockNumber,
+          lockedOrMintedAmount: monitoringSentEvent.returnValues.lockedOrMintedAmount,
+          totalSupply: monitoringSentEvent.returnValues.totalSupply,
+          chainId: chainId,
+        } as MonitoringSentEventEntity;
+      });
+      await this.chainProcessingService.process(submissions, monitors, chainId, lastBlockOfPage, web3);
     }
   }
 
-  async getEvents(registerInstance, fromBlock: number, toBlock) {
+  async getEvents(contract, eventType: 'Sent' | 'MonitoringSendEvent', fromBlock: number, toBlock) {
     if (fromBlock >= toBlock) return;
 
     /* get events */
-    return await registerInstance.getPastEvents('Sent', { fromBlock, toBlock });
+    return await contract.getPastEvents(eventType, { fromBlock, toBlock });
   }
 }

@@ -10,6 +10,7 @@ import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferR
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { ChainConfig } from '../../config/models/configs/ChainConfig';
 import { Web3Custom } from '../../../web3/services/Web3Service';
+import { MonitoringSentEventEntity } from '../../../../entities/MonitoringSentEventEntity';
 
 @Injectable()
 export class SubmissionProcessingService {
@@ -18,14 +19,22 @@ export class SubmissionProcessingService {
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
     @InjectRepository(SubmissionEntity)
     private readonly submissionsRepository: Repository<SubmissionEntity>,
+    @InjectRepository(MonitoringSentEventEntity)
+    private readonly monitoringSentEventsRepository: Repository<MonitoringSentEventEntity>,
     private readonly nonceControllingService: NonceControllingService,
     private readonly chainConfigService: ChainConfigService,
   ) {}
 
-  async process(submissions: SubmissionEntity[], chainId: number, lastBlockOrTransactionOfPage: number | string, web3?: Web3Custom) {
+  async process(
+    submissions: SubmissionEntity[],
+    monitoringSentEvents: MonitoringSentEventEntity[],
+    chainId: number,
+    lastBlockOrTransactionOfPage: number | string,
+    web3?: Web3Custom,
+  ) {
     const logger = new Logger(`${SubmissionProcessingService.name} chainId ${chainId}`);
     const chainDetail = this.chainConfigService.get(chainId);
-    const result = await this.processNewTransfers(logger, submissions, chainDetail);
+    const result = await this.processNewTransfers(logger, submissions, monitoringSentEvents, chainDetail);
     const updatedBlockOrTransaction: number | string =
       result.status === ProcessNewTransferResultStatusEnum.SUCCESS ? lastBlockOrTransactionOfPage : result.blockOrTransactionToOverwrite;
 
@@ -36,10 +45,12 @@ export class SubmissionProcessingService {
         //check type
         await this.supportedChainRepository.update(chainId, {
           latestSolanaTransaction: updatedBlockOrTransaction as string,
+          validationTimestamp: result.validationTimestamp,
         });
       } else {
         await this.supportedChainRepository.update(chainId, {
           latestBlock: updatedBlockOrTransaction as number,
+          validationTimestamp: result.validationTimestamp,
         });
       }
     }
@@ -54,12 +65,23 @@ export class SubmissionProcessingService {
    * Process new transfers
    * @param logger
    * @param submissions
+   * @param monitoringSentEvents
    * @param {ChainConfig} chainDetail
    * @private
    */
-  async processNewTransfers(logger: Logger, submissions: SubmissionEntity[], chainDetail: ChainConfig): Promise<ProcessNewTransferResult> {
+  async processNewTransfers(
+    logger: Logger,
+    submissions: SubmissionEntity[],
+    monitoringSentEvents: MonitoringSentEventEntity[],
+    chainDetail: ChainConfig,
+  ): Promise<ProcessNewTransferResult> {
     const { chainId: chainIdFrom } = chainDetail;
     let blockOrTransactionToOverwrite;
+
+    const monitoringSentEventsMap = new Map<string, any>();
+    for (const event of monitoringSentEvents) {
+      monitoringSentEventsMap.set(event.submissionId, event);
+    }
 
     for (const submission of submissions) {
       const submissionId = submission.submissionId;
@@ -74,15 +96,29 @@ export class SubmissionProcessingService {
           submissionId,
         },
       });
-      if (submissionInDb) {
+      const monitoringInDb = await this.monitoringSentEventsRepository.findOne({
+        where: {
+          submissionId,
+          nonce: submission.nonce,
+        },
+      });
+
+      if (submissionInDb && monitoringInDb) {
         logger.verbose(`Submission already found in db submissionId: ${submissionId}`);
         blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submissionInDb);
         this.nonceControllingService.setMaxNonce(chainIdFrom, submissionInDb.nonce);
         continue;
       }
 
-      const chainMaxNonce = this.nonceControllingService.getMaxNonce(chainIdFrom);
+      if (submissionInDb && submissionInDb.blockNumber < chainDetail.firstMonitoringBlock) {
+        logger.verbose(`Submission already found in db; submissionId: ${submissionId}`);
+        blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submissionInDb);
+        this.nonceControllingService.setMaxNonce(chainIdFrom, submission.nonce);
+        continue;
+      }
 
+      // validate nonce
+      const chainMaxNonce = this.nonceControllingService.getMaxNonce(chainIdFrom);
       const submissionWithMaxNonceDb = await this.submissionsRepository.findOne({
         where: {
           chainFrom: chainIdFrom,
@@ -114,6 +150,20 @@ export class SubmissionProcessingService {
         };
       }
 
+      if (submission.blockNumber >= chainDetail.firstMonitoringBlock) {
+        const monitoringSentEvent = monitoringSentEventsMap.get(submissionId);
+        if (!monitoringSentEvent || monitoringSentEvent.nonce !== nonce) {
+          logger.error(`Monitoring event for submissionId: ${submissionId}; with nonce: ${nonce} not found;`);
+          return {
+            blockOrTransactionToOverwrite: this.getBlockNumberOrTransaction(submission), // it would be empty only if incorrect nonce occures in the first event
+            status: ProcessNewTransferResultStatusEnum.ERROR,
+            submissionId,
+            nonce,
+          };
+        }
+        await this.saveMonitoringEvents(monitoringSentEvent, logger);
+      }
+
       try {
         logger.verbose(`Saving submission ${submissionId} is started`);
         await this.submissionsRepository.save(submission);
@@ -141,5 +191,15 @@ export class SubmissionProcessingService {
     } else {
       return submission.blockNumber;
     }
+  }
+
+  private async saveMonitoringEvents(monitoringEvent: MonitoringSentEventEntity, logger: Logger) {
+    try {
+      await this.monitoringSentEventsRepository.save(monitoringEvent);
+    } catch (e) {
+      logger.error(`Error in saving monitoringSentEvent submissionId: ${monitoringEvent.submissionId}; nonce: ${monitoringEvent.nonce}`);
+      throw e;
+    }
+    logger.verbose(`Monitoring event for submissionId: ${monitoringEvent.submissionId}; with nonce: ${monitoringEvent.nonce} was added to the db;`);
   }
 }

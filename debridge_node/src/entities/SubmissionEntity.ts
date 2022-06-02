@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, UpdateDateColumn, Entity, Index, PrimaryColum
 import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
+import { SubmisionBalanceStatusEnum } from '../enums/SubmisionBalanceStatusEnum';
 
 @Entity('submissions')
 @Unique(['submissionId'])
@@ -75,6 +76,19 @@ export class SubmissionEntity {
   @Column({ nullable: true })
   @Index()
   blockNumber: number;
+
+  @Column({ nullable: true, type: 'bigint' })
+  @Index()
+  blockTimestamp: number;
+
+  @Column({
+    default: SubmisionBalanceStatusEnum.RECIEVED,
+  })
+  @Index()
+  balanceStatus: SubmisionBalanceStatusEnum;
+
+  @Column({ nullable: true })
+  executionFee: string;
 
   @CreateDateColumn()
   createdAt: Date;

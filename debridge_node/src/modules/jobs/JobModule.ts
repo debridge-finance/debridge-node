@@ -12,9 +12,25 @@ import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
 import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
 import { StartScanningService } from './services/StartScanningService';
 import { ChainScanningModule } from '../chain/scanning/ChainScanningModule';
+import { BalanceValidationModule } from '../balance/validation/BalanceValidationModule';
+import { ValidationBalanceAction } from './services/actions/ValidationBalanceAction';
 
 @Module({
-  imports: [ConfigModule, TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]), ChainScanningModule],
-  providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToIPFSAction, JobService],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
+    ChainScanningModule,
+    BalanceValidationModule,
+  ],
+  providers: [
+    ValidationBalanceAction,
+    StartScanningService,
+    CheckAssetsEventAction,
+    SignAction,
+    StatisticToApiAction,
+    UploadToApiAction,
+    UploadToIPFSAction,
+    JobService,
+  ],
 })
 export class JobModule {}
