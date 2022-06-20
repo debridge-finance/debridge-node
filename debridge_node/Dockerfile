@@ -1,8 +1,8 @@
-FROM node:16.15.0 as builder
+FROM node:16.15.1-alpine as builder
 
 RUN npm install -g \
-    npm@8.11.0 \
-    typescript@4.7.2 \
+    npm@8.12.2 \
+    typescript@4.7.4 \
     @nestjs/cli@8.2.6
 
 WORKDIR /build
@@ -19,7 +19,7 @@ COPY src  /build/src
 RUN mkdir stats
 RUN npm run build
 
-FROM node:16.15.0
+FROM node:16.15.1-alpine
 WORKDIR /app
 COPY --from=builder /build/dist /app/dist
 COPY --from=builder /build/node_modules /app/node_modules

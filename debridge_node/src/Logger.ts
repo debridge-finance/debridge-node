@@ -1,5 +1,5 @@
 import { ConsoleLogger } from '@nestjs/common';
-import * as Sentry from '@sentry/minimal';
+import * as Sentry from '@sentry/node';
 
 export class Logger extends ConsoleLogger {
   error(message: any, stack?: string) {

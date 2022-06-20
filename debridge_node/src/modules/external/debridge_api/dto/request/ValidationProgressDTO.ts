@@ -1,14 +1,28 @@
 import { IsArray, IsNotEmpty, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ProgressInfoDTO {
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   chainId: number;
 
+  @ApiProperty()
   @IsNumber()
-  @IsNotEmpty()
   lastBlock: number;
+
+  @ApiProperty()
+  @IsNumber()
+  lastTxHash: string;
+
+  @ApiProperty()
+  @IsNumber()
+  lastTxTimestamp: string;
+
+  @ApiProperty()
+  @IsNumber()
+  lastTransactionSlotNumber: number;
 }
 
 export class ValidationProgressDTO {
