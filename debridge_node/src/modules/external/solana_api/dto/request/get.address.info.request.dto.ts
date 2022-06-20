@@ -5,5 +5,5 @@ export class GetAddressInfoRequestDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  address: string;
+  splTokenMint: string;
 }

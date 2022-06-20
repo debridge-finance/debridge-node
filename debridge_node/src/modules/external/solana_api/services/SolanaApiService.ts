@@ -58,16 +58,16 @@ export class SolanaApiService {
 
   /**
    * Get address info
-   * @param {string} address
+   * @param {string} splTokenMint
    * @return GetAddressInfoResponseDto return tokenName, tokenDecimals, tokenSymbol by token address
    */
-  async getAddressInfo(address: string): Promise<GetAddressInfoResponseDto> {
-    this.logger.log(`getAddressInfo account ${address} is started`);
-    const dto = { address } as GetAddressInfoRequestDto;
+  async getAddressInfo(splTokenMint: string): Promise<GetAddressInfoResponseDto> {
+    this.logger.log(`getAddressInfo account ${splTokenMint} is started`);
+    const dto = { splTokenMint } as GetAddressInfoRequestDto;
     this.logger.verbose(`getAddressInfo dto ${JSON.stringify(dto)}`);
     const httpResult = await this.request('/getAddressInfo', dto, 'GET');
     const response = httpResult.data as GetAddressInfoResponseDto;
-    this.logger.log(`getAddressInfo account ${address} is finished`);
+    this.logger.log(`getAddressInfo account ${splTokenMint} is finished`);
     return response;
   }
 
