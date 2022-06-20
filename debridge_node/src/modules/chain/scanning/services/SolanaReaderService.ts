@@ -99,6 +99,8 @@ export class SolanaReaderService {
 
     //sort in asc, we need it for correct updating last tracked value and nonxe validation
     submissions.sort((a, b) => a.nonce - b.nonce);
-    await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+    if (submissions.length > 0) {
+      await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+    }
   }
 }
