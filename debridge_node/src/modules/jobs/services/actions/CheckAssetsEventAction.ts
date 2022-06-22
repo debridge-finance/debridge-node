@@ -58,24 +58,31 @@ export class CheckAssetsEventAction extends IAction {
       if (!confirmNewAction) {
         try {
           this.logger.log(`Process debridgeId: ${submission.debridgeId}`);
-          const chainDetail = this.chainConfigService.get(submission.chainFrom) as ClassicChainConfig;
+          const chainFromConfig = this.chainConfigService.get(submission.chainFrom) as ClassicChainConfig;
           let tokenName;
           let tokenSymbol;
           let tokenDecimals;
           let nativeChainId;
-          let nativeAdress;
+          let nativeTokenAddress;
 
-          if (chainDetail.isSolana) {
-            const { nativeChainId: nativeChain, nativeTokenAddress } = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
-            const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
-            tokenName = response.tokenName;
-            tokenSymbol = response.tokenSymbol;
-            tokenDecimals = response.tokenDecimals;
-            nativeChainId = nativeChain;
-            nativeAdress = nativeTokenAddress;
+          if (chainFromConfig.isSolana) {
+            const bridgeInfo = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
+            nativeChainId = bridgeInfo.nativeChainId;
+            nativeTokenAddress = bridgeInfo.nativeTokenAddress;
+            //if native chain for token is EVM network
+            if ((this.chainConfigService.get(nativeChainId) as ClassicChainConfig).isSolana) {
+              const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
+              tokenName = response.tokenName;
+              tokenSymbol = response.tokenSymbol;
+              tokenDecimals = response.tokenDecimals;
+            }
+            //if native chain for token is EVM network
+            else {
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
+            }
           } else {
-            const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
-            const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
+            const web3 = await this.web3Service.web3HttpProvider(chainFromConfig.providers);
+            const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainFromConfig.debridgeAddr);
             // struct DebridgeInfo {
             //   uint256 chainId; // native chain id
             //   uint256 maxAmount; // maximum amount to transfer
@@ -86,21 +93,26 @@ export class CheckAssetsEventAction extends IAction {
             //   bool exist;
             // }
             const debridgeInfo = await deBridgeGateInstance.methods.getDebridge(submission.debridgeId).call();
-            nativeChainId = debridgeInfo.chainId;
             this.logger.log(JSON.stringify(debridgeInfo));
-            // struct TokenInfo {
-            //   uint256 nativeChainId;
-            //   bytes nativeAddress;
-            // }
-            const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
-            this.logger.log(JSON.stringify(nativeTokenInfo));
-            const tokenChainDetail = this.chainConfigService.get(parseInt(nativeTokenInfo.nativeChainId)) as ClassicChainConfig;
-            const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
-            const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenInfo.nativeAddress);
-            tokenName = await getTokenName(nativeTokenInstance, nativeTokenInfo.nativeAddress, { logger: this.logger });
-            tokenSymbol = await nativeTokenInstance.methods.symbol().call();
-            tokenDecimals = await nativeTokenInstance.methods.decimals().call();
-            nativeAdress = nativeTokenInfo.nativeAddress;
+            nativeChainId = debridgeInfo.chainId;
+            //if native chain for token is Solana network
+            if ((this.chainConfigService.get(nativeChainId) as ClassicChainConfig).isSolana) {
+              const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
+              tokenName = response.tokenName;
+              tokenSymbol = response.tokenSymbol;
+              tokenDecimals = response.tokenDecimals;
+            }
+            //if native chain for token is EVM network
+            else {
+              // struct TokenInfo {
+              //   uint256 nativeChainId;
+              //   bytes nativeAddress;
+              // }
+              const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
+              this.logger.log(JSON.stringify(nativeTokenInfo));
+              nativeTokenAddress = nativeTokenInfo.nativeAddress;
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeTokenInfo.nativeChainId, nativeTokenInfo.nativeAddress));
+            }
           }
 
           const prefix = 2;
@@ -130,7 +142,7 @@ export class CheckAssetsEventAction extends IAction {
             debridgeId: submission.debridgeId,
             submissionTxHash: submission.txHash,
             nativeChainId: nativeChainId,
-            tokenAddress: nativeAdress,
+            tokenAddress: nativeTokenAddress,
             name: tokenName,
             symbol: tokenSymbol,
             decimals: tokenDecimals,
@@ -173,5 +185,16 @@ export class CheckAssetsEventAction extends IAction {
       );
     }
     this.logger.log(`Finish Check assets event`);
+  }
+
+  private async getTokenInfo(nativeChainId: number, nativeTokenAddress: string) {
+    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as ClassicChainConfig;
+    const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
+    const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenAddress);
+    const tokenName = await getTokenName(nativeTokenInstance, nativeTokenAddress, { logger: this.logger });
+    const tokenSymbol = await nativeTokenInstance.methods.symbol().call();
+    const tokenDecimals = await nativeTokenInstance.methods.decimals().call();
+    // nativeAdress = nativeTokenInfo.nativeAddress;
+    return { tokenName, tokenSymbol, tokenDecimals };
   }
 }
