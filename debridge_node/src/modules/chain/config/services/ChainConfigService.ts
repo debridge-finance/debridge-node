@@ -48,7 +48,10 @@ export class ChainConfigService {
    * Get chain config
    * @param chainId
    */
-  get(chainId: number): ChainConfig {
+  get(chainId: number | string): ChainConfig {
+    if (typeof chainId === 'string') {
+      return this.configs.get(parseInt(chainId));
+    }
     return this.configs.get(chainId);
   }
 

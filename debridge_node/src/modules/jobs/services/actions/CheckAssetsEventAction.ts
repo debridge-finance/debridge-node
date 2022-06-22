@@ -70,11 +70,11 @@ export class CheckAssetsEventAction extends IAction {
             nativeChainId = bridgeInfo.nativeChainId;
             nativeTokenAddress = bridgeInfo.nativeTokenAddress;
             //if native chain for token is EVM network
-            if ((this.chainConfigService.get(nativeChainId) as ClassicChainConfig).isSolana) {
+            if (this.chainConfigService.get(nativeChainId).isSolana) {
               const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
               tokenName = response.tokenName;
               tokenSymbol = response.tokenSymbol;
-              tokenDecimals = response.tokenDecimals;
+              tokenDecimals = await this.solanaApiService.getTokenDecimals(nativeTokenAddress);
             }
             //if native chain for token is EVM network
             else {
@@ -96,11 +96,11 @@ export class CheckAssetsEventAction extends IAction {
             this.logger.log(JSON.stringify(debridgeInfo));
             nativeChainId = debridgeInfo.chainId;
             //if native chain for token is Solana network
-            if ((this.chainConfigService.get(nativeChainId) as ClassicChainConfig).isSolana) {
+            if (this.chainConfigService.get(nativeChainId).isSolana) {
               const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
               tokenName = response.tokenName;
               tokenSymbol = response.tokenSymbol;
-              tokenDecimals = response.tokenDecimals;
+              tokenDecimals = await this.solanaApiService.getTokenDecimals(nativeTokenAddress);
             }
             //if native chain for token is EVM network
             else {

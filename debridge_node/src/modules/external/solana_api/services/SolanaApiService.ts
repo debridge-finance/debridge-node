@@ -12,6 +12,8 @@ import { lastValueFrom } from 'rxjs';
 import { GetBridgeInfoResponseDto } from '../dto/response/get.bridge.info.response.dto';
 import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
 import { readConfiguration } from '../../../../utils/readConfiguration';
+import { TokenRequestDto } from '../dto/request/token.request.dto';
+import { GetTokenDecimalsResponseDto } from '../dto/response/get.token.decimals.response.dto';
 
 @Injectable()
 export class SolanaApiService {
@@ -59,7 +61,7 @@ export class SolanaApiService {
   /**
    * Get address info
    * @param {string} splTokenMint
-   * @return GetAddressInfoResponseDto return tokenName, tokenDecimals, tokenSymbol by token address
+   * @return GetAddressInfoResponseDto return tokenName, tokenSymbol by token address
    */
   async getAddressInfo(splTokenMint: string): Promise<GetAddressInfoResponseDto> {
     this.logger.log(`getAddressInfo account ${splTokenMint} is started`);
@@ -84,6 +86,21 @@ export class SolanaApiService {
     const response = httpResult.data as GetBridgeInfoResponseDto;
     this.logger.log(`getBridgeInfo ${bridgeId} is finished`);
     return response;
+  }
+
+  /**
+   * Get decimal
+   * @return number return decimals
+   * @param token
+   */
+  async getTokenDecimals(token: string): Promise<number> {
+    this.logger.log(`getTokenDecimals ${token} is started`);
+    const dto = { splTokenMint: token } as TokenRequestDto;
+    this.logger.verbose(`getTokenDecimals dto ${JSON.stringify(dto)}`);
+    const httpResult = await this.request('/getTokenDecimals', dto, 'GET');
+    const response = httpResult.data as GetTokenDecimalsResponseDto;
+    this.logger.log(`getTokenDecimals ${token} is finished`);
+    return response.decimals;
   }
 
   private async request<T>(api: string, requestBody: T, method: 'POST' | 'GET' = 'POST') {
