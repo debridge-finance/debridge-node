@@ -32,7 +32,7 @@ services:
       - SOLANA_WS=${SOLANA_WS}
       - DEBRIDGE_PK=${DEBRIDGE_PK}
       - SETTINGS_PK=${SETTINGS_PK}
-      - DEBRIDGE_API=${API_BASE_URL}
+      - DEBRIDGE_API=${SOLANA_DEBRIDGE_API}
     depends_on:
       - postgres
     networks:
