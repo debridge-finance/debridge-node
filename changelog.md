@@ -36,6 +36,20 @@ SOLANA_GET_EVENTS_BATCH_SIZE=200
 SOLANA_API_REQUEST_TIMEOUT=30000
 ```
 
+### Add to array in config/chains_config.json
+```
+{
+"chainId": 7565164,
+"name": "SOLANA",
+"debridgeAddr": "",
+"firstStartBlock": <your value>,
+"provider": "",
+"interval": <your value>,
+"blockConfirmation": <your value>,
+"maxBlockRange": <your value>
+}
+```
+
 ## v2.2.2(21.03.2022)
 * fix memory leak issue
 * don't exit if there are no valid rpc's for the chain
