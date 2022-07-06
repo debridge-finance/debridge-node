@@ -8,6 +8,34 @@
 
 # Changelog
 
+## v2.3.0(06.07.2022)
+* add solana support
+* refactoring
+* update packages
+* add http request/response logging for external service
+* add checking .env
+
+## How to update to v2.3.0
+### Pull latest changes
+```shell
+git checkout mainnet
+git pull origin mainnet
+```
+
+### Add to env
+```
+SOLANA_DATA_READER_PORT=3007
+SOLANA_RPC=
+SOLANA_WS=
+DEBRIDGE_PK=
+SETTINGS_PK=
+
+SOLANA_DATA_READER_API_BASE_URL=http://debridge-solanadatareader${DOCKER_ID}:${SOLANA_DATA_READER_PORT}
+SOLANA_GET_HISTORICAL_BATCH_SIZE=200
+SOLANA_GET_EVENTS_BATCH_SIZE=200
+SOLANA_API_REQUEST_TIMEOUT=30000
+```
+
 ## v2.2.2(21.03.2022)
 * fix memory leak issue
 * don't exit if there are no valid rpc's for the chain
