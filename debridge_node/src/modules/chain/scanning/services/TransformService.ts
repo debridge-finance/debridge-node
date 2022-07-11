@@ -33,6 +33,7 @@ export class TransformService {
     submission.status = SubmisionStatusEnum.NEW;
     submission.ipfsStatus = UploadStatusEnum.NEW;
     submission.apiStatus = UploadStatusEnum.NEW;
+    submission.decimalDenominator = transaction.decimalDenominator;
     submission.assetsStatus = SubmisionAssetsStatusEnum.NEW;
 
     return submission;

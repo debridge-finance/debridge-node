@@ -99,9 +99,9 @@ export class EventFromTransaction {
   @IsString()
   tokenTotalSupply: string;
 
-  /*@ApiProperty()
+  @ApiProperty()
   @IsNumber()
-  decimalDenominator: number;*/
+  decimalDenominator: number;
 
   @ApiProperty()
   @IsString()

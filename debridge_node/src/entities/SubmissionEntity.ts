@@ -76,6 +76,9 @@ export class SubmissionEntity {
   @Index()
   blockNumber: number;
 
+  @Column({ nullable: true, default: 0 })
+  decimalDenominator?: number;
+
   @CreateDateColumn()
   createdAt: Date;
 
