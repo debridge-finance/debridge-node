@@ -43,7 +43,7 @@ export class SubmissionProcessingService {
         await this.supportedChainRepository.update(chainId, {
           latestSolanaTransaction: updatedBlockOrTransaction as string,
           latestBlock: lastSubmission.blockNumber,
-          lastTxTimestamp: event.lastTxTimestamp,
+          lastTxTimestamp: event.transactionTimestamp,
           lastTransactionSlotNumber: lastSubmission.blockNumber,
         });
       } else {
