@@ -18,7 +18,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@main
 
       - name: build and push to registry
-        uses: opspresso/action-docker@master]
+        uses: opspresso/action-docker@master
         env:          
           USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -26,7 +26,7 @@ jobs:
           LATEST: "false"
           TAG_NAME: ${{ steps.package-version.outputs.current-version}}
           directory: ./debridge_node
-          DOCKER_BUILD_ARGS: --directory --build-arg VERSION=${{ steps.package-version.outputs.current-version }} --build-arg SSH_KEY=${{ secrets.SSH_SDK_KEY }}
+          DOCKER_BUILD_ARGS: --build-arg VERSION=${{ steps.package-version.outputs.current-version }} --build-arg SSH_KEY=${{ secrets.SSH_SDK_KEY }}
 
       - name: notification
         if: cancelled() == false
