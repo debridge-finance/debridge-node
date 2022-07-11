@@ -14,6 +14,7 @@ import { addHttpServiceLogging } from '../../common/addHttpServiceLogging';
 import { readConfiguration } from '../../../../utils/readConfiguration';
 import { TokenRequestDto } from '../dto/request/token.request.dto';
 import { GetTokenDecimalsResponseDto } from '../dto/response/get.token.decimals.response.dto';
+import { SlotNumberResponse } from '../dto/response/slot.number.response';
 
 @Injectable()
 export class SolanaApiService {
@@ -86,6 +87,17 @@ export class SolanaApiService {
     const response = httpResult.data as GetBridgeInfoResponseDto;
     this.logger.log(`getBridgeInfo ${bridgeId} is finished`);
     return response;
+  }
+
+  /**
+   * Get last block
+   */
+  async getLastBlock(): Promise<number> {
+    this.logger.log(`getLastBlock is started`);
+    const httpResult = await this.request('/getLastBlock', 'GET');
+    const response = httpResult.data as SlotNumberResponse;
+    this.logger.log(`getLastBlock is finished`);
+    return response.slot;
   }
 
   /**

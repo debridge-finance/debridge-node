@@ -9,9 +9,15 @@ export class SupportedChainEntity {
   @Column()
   network: string;
 
-  @Column({ nullable: true })
+  @Column()
   latestBlock: number;
 
   @Column({ nullable: true })
   latestSolanaTransaction: string;
+
+  @Column({ nullable: true })
+  lastTransactionSlotNumber: number;
+
+  @Column({ nullable: true })
+  lastTxTimestamp: string;
 }
