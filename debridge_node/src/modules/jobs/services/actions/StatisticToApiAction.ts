@@ -31,21 +31,15 @@ export class StatisticToApiAction extends IAction {
         .map(async chain => {
           const chainConfig = this.chainConfigService.get(chain.chainId);
           if (chainConfig.isSolana) {
-            const submission = await this.submissionRepository.findOne({
-              where: {
-                txHash: chain.latestSolanaTransaction,
-              },
-            });
             if (!chain.latestSolanaTransaction) {
               return undefined;
             }
-            const event = JSON.parse(submission.rawEvent);
             return {
               chainId: chain.chainId,
               lastBlock: chain.latestBlock,
               lastTxHash: chain.latestSolanaTransaction,
-              lastTransactionSlotNumber: event.slotNumber,
-              lastTxTimestamp: event.transactionTimestamp,
+              lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
+              lastTxTimestamp: chain.lastTxTimestamp,
             } as ProgressInfoDTO;
           }
           return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;

@@ -50,6 +50,7 @@ export class SolanaReaderService {
       this.logger.log(`Chain ${chainId} is synced`);
       return;
     }
+    const lastSolanaBlock = await this.solanaApiService.getLastBlock();
 
     const submissions: SubmissionEntity[] = [];
 
@@ -101,6 +102,12 @@ export class SolanaReaderService {
     submissions.sort((a, b) => a.nonce - b.nonce);
     if (submissions.length > 0) {
       await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+      await this.supportedChainRepository.update(
+        { chainId },
+        {
+          latestBlock: lastSolanaBlock,
+        },
+      );
     }
   }
 }

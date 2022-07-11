@@ -34,14 +34,17 @@ export class SubmissionProcessingService {
       logger.log(`updateSupportedChainBlock; key: latestBlock; value: ${updatedBlockOrTransaction};`);
       if (chainDetail.isSolana) {
         //check type
-        const submissionEntity = await this.submissionsRepository.findOne({
+        const lastSubmission = await this.submissionsRepository.findOne({
           where: {
             txHash: lastBlockOrTransactionOfPage as string,
           },
         });
+        const event = JSON.parse(lastSubmission.rawEvent);
         await this.supportedChainRepository.update(chainId, {
           latestSolanaTransaction: updatedBlockOrTransaction as string,
-          latestBlock: submissionEntity.blockNumber,
+          latestBlock: lastSubmission.blockNumber,
+          lastTxTimestamp: event.lastTxTimestamp,
+          lastTransactionSlotNumber: lastSubmission.blockNumber,
         });
       } else {
         await this.supportedChainRepository.update(chainId, {

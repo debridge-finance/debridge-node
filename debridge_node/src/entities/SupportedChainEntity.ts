@@ -14,4 +14,10 @@ export class SupportedChainEntity {
 
   @Column({ nullable: true })
   latestSolanaTransaction: string;
+
+  @Column({ nullable: true })
+  lastTransactionSlotNumber: number;
+
+  @Column({ nullable: true })
+  lastTxTimestamp: string;
 }
