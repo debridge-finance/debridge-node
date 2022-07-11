@@ -14,12 +14,10 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: get-version
-        working-directory: ./debridge_node
         id: package-version
         uses: martinbeentjes/npm-get-version-action@main
 
       - name: build and push to registry
-        working-directory: ./debridge_node
         uses: opspresso/action-docker@master
         env:
           USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
