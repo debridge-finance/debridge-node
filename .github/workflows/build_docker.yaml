@@ -20,6 +20,7 @@ jobs:
       - name: build and push to registry
         uses: opspresso/action-docker@master
         env:
+          working-directory: ./debridge_node
           USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           IMAGE_NAME: debridgefinance/debridge-node
