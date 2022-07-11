@@ -25,7 +25,7 @@ jobs:
           IMAGE_NAME: debridgefinance/debridge-node
           LATEST: "false"
           TAG_NAME: ${{ steps.package-version.outputs.current-version}}
-          directory: ./debridge_node
+          BUILD_PATH: ./debridge_node
           DOCKER_BUILD_ARGS: --build-arg VERSION=${{ steps.package-version.outputs.current-version }} --build-arg SSH_KEY=${{ secrets.SSH_SDK_KEY }}
 
       - name: notification
