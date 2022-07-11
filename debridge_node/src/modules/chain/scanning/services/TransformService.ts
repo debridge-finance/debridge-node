@@ -26,7 +26,7 @@ export class TransformService {
     submission.rawEvent = JSON.stringify(transaction);
     submission.debridgeId = transaction.bridgeId;
     submission.nonce = transaction.nonce;
-    //submission.blockNumber = transaction.;
+    submission.blockNumber = transaction.slotNumber;
     //submission.externalId = transaction.;
     //submission.signature = transaction.
     //

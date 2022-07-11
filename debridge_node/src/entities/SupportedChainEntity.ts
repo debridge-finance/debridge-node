@@ -9,7 +9,7 @@ export class SupportedChainEntity {
   @Column()
   network: string;
 
-  @Column({ nullable: true })
+  @Column()
   latestBlock: number;
 
   @Column({ nullable: true })

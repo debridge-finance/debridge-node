@@ -27,24 +27,30 @@ export class StatisticToApiAction extends IAction {
     const chains = await this.supportedChainRepository.find();
     this.logger.debug('chains are found');
     const progressInfo = await Promise.all(
-      chains.map(async chain => {
-        const chainConfig = this.chainConfigService.get(chain.chainId);
-        if (chainConfig.isSolana) {
-          const submission = await this.submissionRepository.findOne({
-            where: {
-              txHash: chain.latestSolanaTransaction,
-            },
-          });
-          const event = JSON.parse(submission.rawEvent);
-          return {
-            chainId: chain.chainId,
-            lastTxHash: chain.latestSolanaTransaction,
-            lastTransactionSlotNumber: event.slotNumber,
-            lastTxTimestamp: event.transactionTimestamp,
-          } as ProgressInfoDTO;
-        }
-        return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;
-      }),
+      chains
+        .map(async chain => {
+          const chainConfig = this.chainConfigService.get(chain.chainId);
+          if (chainConfig.isSolana) {
+            const submission = await this.submissionRepository.findOne({
+              where: {
+                txHash: chain.latestSolanaTransaction,
+              },
+            });
+            if (!chain.latestSolanaTransaction) {
+              return undefined;
+            }
+            const event = JSON.parse(submission.rawEvent);
+            return {
+              chainId: chain.chainId,
+              lastBlock: chain.latestBlock,
+              lastTxHash: chain.latestSolanaTransaction,
+              lastTransactionSlotNumber: event.slotNumber,
+              lastTxTimestamp: event.transactionTimestamp,
+            } as ProgressInfoDTO;
+          }
+          return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;
+        })
+        .filter(chain => chain !== undefined),
     );
     await this.debridgeApiService.uploadStatistic(progressInfo);
 

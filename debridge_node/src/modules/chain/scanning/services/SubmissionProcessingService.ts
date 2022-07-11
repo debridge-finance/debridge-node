@@ -34,8 +34,14 @@ export class SubmissionProcessingService {
       logger.log(`updateSupportedChainBlock; key: latestBlock; value: ${updatedBlockOrTransaction};`);
       if (chainDetail.isSolana) {
         //check type
+        const submissionEntity = await this.submissionsRepository.findOne({
+          where: {
+            txHash: lastBlockOrTransactionOfPage as string,
+          },
+        });
         await this.supportedChainRepository.update(chainId, {
           latestSolanaTransaction: updatedBlockOrTransaction as string,
+          latestBlock: submissionEntity.blockNumber,
         });
       } else {
         await this.supportedChainRepository.update(chainId, {
