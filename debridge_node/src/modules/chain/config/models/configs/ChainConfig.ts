@@ -3,5 +3,4 @@ export class ChainConfig {
   name: string;
   isSolana: boolean;
   interval: number;
-  firstStartBlock: number;
 }

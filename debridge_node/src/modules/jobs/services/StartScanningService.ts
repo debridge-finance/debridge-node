@@ -43,7 +43,6 @@ export class StartScanningService implements OnModuleInit {
           const chainConfigSolana = chainConfig as SolanaChainConfig;
           await this.supportedChainRepository.save({
             chainId: chainId,
-            latestBlock: chainConfigSolana.firstStartBlock,
             latestSolanaTransaction: chainConfigSolana.lastTransaction,
             network: chainConfigSolana.name,
           });

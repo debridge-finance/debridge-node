@@ -42,15 +42,22 @@ export class SolanaReaderService {
         chainId,
       },
     });
+    const lastSolanaBlock = await this.solanaApiService.getLastBlock();
+
     const latestTransactionInChain = (await this.solanaApiService.getHistoricalData(1))[0]; // get latest transaction
     let earliestTransactionInSyncSession = undefined;
     const previousSyncLastTransaction = chain.latestSolanaTransaction;
 
     if (latestTransactionInChain === previousSyncLastTransaction) {
       this.logger.log(`Chain ${chainId} is synced`);
+      await this.supportedChainRepository.update(
+        { chainId },
+        {
+          latestBlock: lastSolanaBlock,
+        },
+      );
       return;
     }
-    const lastSolanaBlock = await this.solanaApiService.getLastBlock();
 
     const submissions: SubmissionEntity[] = [];
 
