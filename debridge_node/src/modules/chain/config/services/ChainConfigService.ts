@@ -24,7 +24,6 @@ export class ChainConfigService {
         this.configs.set(config.chainId, {
           chainId: config.chainId,
           name: config.name,
-          firstStartBlock: config.firstStartBlock,
           interval: config.interval,
           lastTransaction: config.lastTransaction,
           isSolana,

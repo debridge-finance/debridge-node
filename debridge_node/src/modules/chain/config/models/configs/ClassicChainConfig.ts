@@ -6,4 +6,5 @@ export class ClassicChainConfig extends ChainConfig {
   providers: ChainProvider;
   blockConfirmation: number;
   maxBlockRange: number;
+  firstStartBlock: number;
 }

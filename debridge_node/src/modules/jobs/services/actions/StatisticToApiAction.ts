@@ -27,24 +27,19 @@ export class StatisticToApiAction extends IAction {
     const chains = await this.supportedChainRepository.find();
     this.logger.debug('chains are found');
     const progressInfo = await Promise.all(
-      chains
-        .map(async chain => {
-          const chainConfig = this.chainConfigService.get(chain.chainId);
-          if (chainConfig.isSolana) {
-            if (!chain.latestSolanaTransaction) {
-              return undefined;
-            }
-            return {
-              chainId: chain.chainId,
-              lastBlock: chain.latestBlock,
-              lastTxHash: chain.latestSolanaTransaction,
-              lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
-              lastTxTimestamp: chain.lastTxTimestamp,
-            } as ProgressInfoDTO;
-          }
-          return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;
-        })
-        .filter(chain => chain !== undefined),
+      chains.map(async chain => {
+        const chainConfig = this.chainConfigService.get(chain.chainId);
+        if (chainConfig.isSolana) {
+          return {
+            chainId: chain.chainId,
+            lastBlock: chain.latestBlock,
+            lastTxHash: chain.latestSolanaTransaction,
+            lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
+            lastTxTimestamp: chain.lastTxTimestamp,
+          } as ProgressInfoDTO;
+        }
+        return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;
+      }),
     );
     await this.debridgeApiService.uploadStatistic(progressInfo);
 
