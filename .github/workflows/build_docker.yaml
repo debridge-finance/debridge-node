@@ -9,6 +9,8 @@ jobs:
   ci:
     name: build
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./debridge_node
 
     steps:
       - uses: actions/checkout@v2
@@ -16,6 +18,7 @@ jobs:
       - name: get-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@main
+        working-directory: ./debridge_node
 
       - name: build and push to registry
         uses: opspresso/action-docker@master
