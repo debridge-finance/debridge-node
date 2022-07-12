@@ -43,6 +43,7 @@ export class SolanaReaderService {
       },
     });
     const lastSolanaBlock = await this.solanaApiService.getLastBlock();
+    this.logger.verbose(`lastSolanaBlock = ${lastSolanaBlock}`);
 
     const latestTransactionInChain = (await this.solanaApiService.getHistoricalData(1))[0]; // get latest transaction
     let earliestTransactionInSyncSession = undefined;
