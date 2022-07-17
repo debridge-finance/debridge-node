@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { Web3Service } from '../../web3/services/Web3Service';
 import { ChainScanningService } from '../../chain/scanning/services/ChainScanningService';
 import { ChainConfigService } from '../../chain/config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../chain/config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../chain/config/models/configs/EvmChainConfig';
 import { SolanaChainConfig } from '../../chain/config/models/configs/SolanaChainConfig';
 
 @Injectable()
@@ -50,7 +50,7 @@ export class StartScanningService implements OnModuleInit {
         }
         continue;
       }
-      const chainConfigClassic = chainConfig as ClassicChainConfig;
+      const chainConfigClassic = chainConfig as EvmChainConfig;
       if (chainConfigClassic.maxBlockRange <= 100) {
         this.logger.error(`Cant up application maxBlockRange(${chainConfigClassic.maxBlockRange}) < 100`);
         process.exit(1);
@@ -83,7 +83,7 @@ export class StartScanningService implements OnModuleInit {
         if (chainDetail.isSolana) {
           continue;
         }
-        const chainConfigClassic = chainDetail as ClassicChainConfig;
+        const chainConfigClassic = chainDetail as EvmChainConfig;
         await Promise.all(
           chainConfigClassic.providers.getAllProviders().map(provider => {
             return this.web3Service.validateChainId(chainConfigClassic.providers, provider);
