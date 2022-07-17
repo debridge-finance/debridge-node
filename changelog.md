@@ -43,14 +43,14 @@ SOLANA_API_REQUEST_TIMEOUT=30000
 "chainId": 7565164,
 "name": "SOLANA",
 "debridgeAddr": "",
-"firstStartBlock": <your value>,
+"firstStartBlock": 0,
 "provider": "",
 "interval": <your value>,
-"blockConfirmation": <your value>,
-"maxBlockRange": <your value>
+"blockConfirmation": 30,
+"maxBlockRange": 100
 }
 ```
-
+Not used next properties: provider, blockConfirmation, maxBlockRange, debridgeAddr. Keep it in json to consistency data.
 ## v2.2.2(21.03.2022)
 * fix memory leak issue
 * don't exit if there are no valid rpc's for the chain

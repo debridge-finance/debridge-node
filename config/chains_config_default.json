@@ -6,8 +6,8 @@
     "firstStartBlock": 0,
     "provider": "",
     "interval": 10000,
-    "blockConfirmation": 0,
-    "maxBlockRange": 9
+    "blockConfirmation": 30,
+    "maxBlockRange": 100
   },
   {
     "chainId": 1,
