@@ -1,50 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChainScanningService } from '../../../scan/services/ChainScanningService';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AddNewEventsAction } from '../../../scan/services/AddNewEventsAction';
-import { ChainConfigService, ChainProvider } from '../ChainConfigService';
-import { SolanaReaderService } from '../../../scanning/services/SolanaReaderService';
+import { ChainConfigService } from '../ChainConfigService';
+import { ChainProvider } from '../../models/ChainProvider';
+import { EvmChainConfig } from '../../models/configs/EvmChainConfig';
+import { chainConfigJsonMock } from '../../../../../tests/mocks/chain.config.json.mock';
 
-jest.mock('../../config/chains_config.json', () => {
-  return [
-    {
-      chainId: 970,
-      name: 'ETHEREUM',
-      debridgeAddr: '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA',
-      firstStartBlock: 13665321,
-      provider: 'https://debridge.io',
-      interval: 10000,
-      blockConfirmation: 12,
-      maxBlockRange: 5000,
-    },
-    {
-      chainId: 971,
-      name: 'ETHEREUM',
-      debridgeAddr: '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA',
-      firstStartBlock: 13665321,
-      providers: ['https://debridge.io'],
-      interval: 10000,
-      blockConfirmation: 12,
-      maxBlockRange: 5000,
-    },
-    {
-      chainId: 972,
-      name: 'ETHEREUM',
-      debridgeAddr: '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA',
-      firstStartBlock: 13665321,
-      providers: [
-        {
-          provider: 'debridge.io',
-          user: 'anton',
-          password: '123',
-          authType: 'BASIC',
-        },
-      ],
-      interval: 10000,
-      blockConfirmation: 12,
-      maxBlockRange: 5000,
-    },
-  ];
+jest.mock('../../../../../config/chains_config.json', () => {
+  return chainConfigJsonMock;
 });
 
 describe('ChainConfigService', () => {
@@ -54,29 +16,10 @@ describe('ChainConfigService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ScheduleModule.forRoot()],
-      providers: [
-        {
-          provide: AddNewEventsAction,
-          useValue: {
-            action: async chainId => {
-              return chainId;
-            },
-          },
-        },
-        {
-          provide: SolanaReaderService,
-          useValue: {
-            read: async chainId => {
-              return chainId;
-            },
-          },
-        },
-        ChainScanningService,
-        ChainConfigService,
-      ],
+      providers: [ChainConfigService],
     }).compile();
     service = module.get(ChainConfigService);
-    chainProvider = service.get(970).providers;
+    chainProvider = (service.get(970) as EvmChainConfig).providers;
   });
 
   describe('ChainConfigService', () => {
@@ -91,7 +34,7 @@ describe('ChainConfigService', () => {
 
       it('getChainAuth', async () => {
         expect(chainProvider.getChainAuth('https://debridge.io')).toBeUndefined();
-        const authChainProvider = service.get(972).providers;
+        const authChainProvider = (service.get(972) as EvmChainConfig).providers;
         expect(authChainProvider.getChainAuth('debridge.io')).toEqual([{ name: 'Authorization', value: 'Basic YW50b246MTIz' }]);
       });
 
@@ -134,18 +77,28 @@ describe('ChainConfigService', () => {
 
     describe('ChainConfigService', () => {
       it('gets', async () => {
-        expect(service.getChains()).toEqual([970, 971, 972]);
+        expect(service.getChains()).toEqual([7565164, 970, 971, 972]);
       });
 
       it('getChains', async () => {
         const configs = JSON.stringify(service.getChains().map(chain => service.get(chain)));
         expect(configs).toEqual(
-          `[{"chainId":970,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":970,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000, "isSolana":false},{"chainId":971,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":971,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000, "isSolana":false},{"chainId":972,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"isValid":false,"isActive":true,"provider":"debridge.io","user":"anton","password":"123","authType":"BASIC"}],"chainId":972,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000, "isSolana":false}]`,
+          `[{"chainId":7565164,"name":"SOLANA","interval":10000,"isSolana":true},{"chainId":970,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":970,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000,"isSolana":false},{"chainId":971,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":971,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000,"isSolana":false},{"chainId":972,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"isValid":false,"isActive":true,"provider":"debridge.io","user":"anton","password":"123","authType":"BASIC"}],"chainId":972,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000,"isSolana":false}]`,
         );
       });
 
       it('getConfig', async () => {
         expect(service.getConfig()).toEqual([
+          {
+            chainId: 7565164,
+            name: 'SOLANA',
+            debridgeAddr: '',
+            firstStartBlock: 0,
+            provider: '',
+            interval: 10000,
+            blockConfirmation: 30,
+            maxBlockRange: 100,
+          },
           {
             chainId: 970,
             name: 'ETHEREUM',
@@ -155,7 +108,6 @@ describe('ChainConfigService', () => {
             interval: 10000,
             blockConfirmation: 12,
             maxBlockRange: 5000,
-            isSolana: false,
           },
           {
             chainId: 971,
@@ -166,7 +118,6 @@ describe('ChainConfigService', () => {
             interval: 10000,
             blockConfirmation: 12,
             maxBlockRange: 5000,
-            isSolana: false,
           },
           {
             chainId: 972,
@@ -179,14 +130,13 @@ describe('ChainConfigService', () => {
                 user: 'anton',
                 password: '123',
                 authType: 'BASIC',
-                isActive: true,
                 isValid: false,
+                isActive: true,
               },
             ],
             interval: 10000,
             blockConfirmation: 12,
             maxBlockRange: 5000,
-            isSolana: false,
           },
         ]);
       });

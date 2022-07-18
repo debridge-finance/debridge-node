@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SubmissionEntity } from '../../../../../entities/SubmissionEntity';
@@ -8,6 +8,7 @@ import { SignAction } from '../SignAction';
 import { Repository } from 'typeorm';
 import { SubmisionStatusEnum } from '../../../../../enums/SubmisionStatusEnum';
 import { Web3Service } from '../../../../web3/services/Web3Service';
+import { ConfigServiceSimpleMock } from '../../../../../tests/mocks/config.service.simple.mock';
 
 describe('SignAction', () => {
   let service: SignAction;
@@ -16,7 +17,7 @@ describe('SignAction', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule, HttpModule],
+      imports: [HttpModule],
       providers: [
         SignAction,
         {
@@ -38,6 +39,10 @@ describe('SignAction', () => {
               };
             },
           },
+        },
+        {
+          provide: ConfigService,
+          useClass: ConfigServiceSimpleMock,
         },
         {
           provide: getRepositoryToken(SubmissionEntity),

@@ -9,6 +9,11 @@ import { UploadToApiAction } from '../UploadToApiAction';
 import { Repository } from 'typeorm';
 import { UploadStatusEnum } from '../../../../../enums/UploadStatusEnum';
 import { Web3Service } from '../../../../web3/services/Web3Service';
+import { chainConfigJsonMock } from '../../../../../tests/mocks/chain.config.json.mock';
+
+jest.mock('../../../../../config/chains_config.json', () => {
+  return chainConfigJsonMock;
+});
 
 describe('UploadToApiAction', () => {
   let service: UploadToApiAction;

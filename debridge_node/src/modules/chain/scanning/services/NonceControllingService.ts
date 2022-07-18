@@ -5,9 +5,9 @@ import { Web3Custom } from '../../../web3/services/Web3Service';
 import { DebrdigeApiService } from '../../../external/debridge_api/services/DebrdigeApiService';
 import { NonceValidationEnum } from '../enums/NonceValidationEnum';
 import { ProcessNewTransferResult } from '../entities/ProcessNewTransferResult';
-import { ChainConfig } from '../../config/models/configs/ChainConfig';
 import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
 import { ChainScanningService } from './ChainScanningService';
+import { ChainConfigService } from '../../config/services/ChainConfigService';
 
 @Injectable()
 export class NonceControllingService implements OnModuleInit {
@@ -20,6 +20,7 @@ export class NonceControllingService implements OnModuleInit {
     private readonly debridgeApiService: DebrdigeApiService,
     @Inject(forwardRef(() => ChainScanningService))
     private readonly chainScanningService: ChainScanningService,
+    private readonly chainConfigService: ChainConfigService,
   ) {}
 
   async onModuleInit() {
@@ -44,11 +45,12 @@ export class NonceControllingService implements OnModuleInit {
     this.maxNonceChains.set(chainId, nonce);
   }
 
-  async processValidationNonceError(transferResult: ProcessNewTransferResult, chainId: number, web3: Web3Custom, chain: ChainConfig) {
+  async processValidationNonceError(transferResult: ProcessNewTransferResult, chainId: number, web3: Web3Custom) {
     if (transferResult.nonceValidationStatus === NonceValidationEnum.MISSED_NONCE) {
       await this.debridgeApiService.notifyError(
         `incorrect nonce error (missed_nonce): nonce: ${transferResult.nonce}; submissionId: ${transferResult.submissionId}`,
       );
+      const chain = this.chainConfigService.get(chainId);
       if (!chain.isSolana) {
         (chain as EvmChainConfig).providers.setProviderStatus(web3.chainProvider, false);
       }

@@ -53,7 +53,7 @@ export class SubmissionProcessingService {
       }
     }
     if (result.status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
-      await this.nonceControllingService.processValidationNonceError(result, chainId, web3, chainDetail);
+      await this.nonceControllingService.processValidationNonceError(result, chainId, web3);
     }
   }
 

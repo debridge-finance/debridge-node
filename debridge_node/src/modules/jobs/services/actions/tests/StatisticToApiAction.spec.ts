@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StatisticToApiAction } from '../StatisticToApiAction';
 import { DebrdigeApiService } from '../../../../external/debridge_api/services/DebrdigeApiService';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../../entities/SupportedChainEntity';
 import { ProgressInfoDTO } from '../../../../external/debridge_api/dto/request/ValidationProgressDTO';
+import { ConfigServiceSimpleMock } from '../../../../../tests/mocks/config.service.simple.mock';
+import { ChainConfigModule } from '../../../../chain/config/ChainConfigModule';
 
 describe('StatisticToApiAction', () => {
   let service: StatisticToApiAction;
@@ -13,9 +15,13 @@ describe('StatisticToApiAction', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule, HttpModule],
+      imports: [HttpModule, ChainConfigModule],
       providers: [
         StatisticToApiAction,
+        {
+          provide: ConfigService,
+          useClass: ConfigServiceSimpleMock,
+        },
         {
           provide: DebrdigeApiService,
           useValue: {

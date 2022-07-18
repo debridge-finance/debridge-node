@@ -1,9 +1,10 @@
-import { Web3Service } from './Web3Service';
+import { Web3Service } from '../Web3Service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
-import { ChainConfigService } from '../ChainConfigService';
+import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
+import { EvmChainConfig } from '../../../chain/config/models/configs/EvmChainConfig';
 
-jest.mock('../../config/chains_config.json', () => {
+jest.mock('../../../../config/chains_config.json', () => {
   return [
     {
       chainId: 970,
@@ -88,11 +89,11 @@ describe('Web3Service', () => {
   });
 
   it('validateChainId', async () => {
-    const config = chainConfigService.get(970);
+    const config = chainConfigService.get(970) as EvmChainConfig;
     jest.spyOn(config.providers, 'setProviderValidationStatus');
     await web3Service.validateChainId(config.providers, 'https://debridge.io');
     expect(config.providers.setProviderValidationStatus).toHaveBeenCalledWith('https://debridge.io', true);
-    const notValidConfig = chainConfigService.get(971);
+    const notValidConfig = chainConfigService.get(971) as EvmChainConfig;
     const mockExit = jest.spyOn(process, 'exit').mockImplementation(code => {
       throw new Error(code.toString());
     });
@@ -101,7 +102,7 @@ describe('Web3Service', () => {
   });
 
   it('web3HttpProvider', async () => {
-    const config = chainConfigService.get(971);
+    const config = chainConfigService.get(971) as EvmChainConfig;
     config.providers.setProviderValidationStatus('https://debridge.io', true);
     config.providers.setProviderValidationStatus('debridge.io', true);
     expect((await web3Service.web3HttpProvider(config.providers)).chainProvider).toBe('debridge.io');

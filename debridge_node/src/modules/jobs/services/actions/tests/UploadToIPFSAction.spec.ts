@@ -7,7 +7,7 @@ import { ConfirmNewAssetEntity } from '../../../../../entities/ConfirmNewAssetEn
 import { Repository } from 'typeorm';
 import { UploadStatusEnum } from '../../../../../enums/UploadStatusEnum';
 import { UploadToIPFSAction } from '../UploadToIPFSAction';
-import { OrbitDbService } from '../../../orbitdb/services/OrbitDbService';
+import { OrbitDbService } from '../../../../external/orbitdb_api/services/OrbitDbService';
 
 describe('UploadToIPFSAction', () => {
   let service: UploadToIPFSAction;
