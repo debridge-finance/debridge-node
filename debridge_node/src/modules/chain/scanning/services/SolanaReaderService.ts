@@ -22,8 +22,6 @@ export class SolanaReaderService {
     private readonly solanaApiService: SolanaApiService,
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
-    @InjectRepository(SubmissionEntity)
-    private readonly submissionsRepository: Repository<SubmissionEntity>,
     private readonly transformService: TransformService,
     private readonly configService: ConfigService,
     private readonly chainProcessingService: SubmissionProcessingService,
