@@ -97,6 +97,7 @@ export class CheckAssetsEventAction extends IAction {
             nativeChainId = debridgeInfo.chainId;
             //if native chain for token is Solana network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
+              nativeTokenAddress = debridgeInfo.tokenAddress;
               const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
               tokenName = response.tokenName;
               tokenSymbol = response.tokenSymbol;
