@@ -94,7 +94,7 @@ export class SolanaApiService {
    */
   async getLastBlock(): Promise<number> {
     this.logger.log(`getLastBlock is started`);
-    const httpResult = await this.request('/getLastBlock', 'GET');
+    const httpResult = await this.request('/getLastBlock', {}, 'GET');
     const response = httpResult.data as SlotNumberResponse;
     this.logger.log(`getLastBlock is finished`);
     return response.slot;
