@@ -45,8 +45,7 @@ export class StartScanningService implements OnModuleInit {
             chainId: chainId,
             latestBlock: 0,
             latestSolanaTransaction: chainConfigSolana.lastTransaction,
-            network: chainConfigSolana.name,
-            latestBlock: 0,
+            network: chainConfigSolana.name
           });
         }
         continue;
