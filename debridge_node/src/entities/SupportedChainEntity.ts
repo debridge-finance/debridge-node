@@ -1,7 +1,6 @@
-import { Column, Entity, PrimaryColumn, Unique } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('supported_chains')
-@Unique(['chainId'])
 export class SupportedChainEntity {
   @PrimaryColumn()
   chainId: number;
