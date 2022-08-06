@@ -1,10 +1,5 @@
 FROM node:16.15.1-alpine as builder
 
-RUN npm install -g \
-    npm@8.12.2 \
-    typescript@4.7.4 \
-    @nestjs/cli@8.2.6
-
 WORKDIR /build
 
 COPY package.json /build
