@@ -36,7 +36,7 @@ export class SubmissionProcessingService {
         //check type
         const lastSubmission = await this.submissionsRepository.findOne({
           where: {
-            txHash: lastBlockOrTransactionOfPage as string,
+            txHash: updatedBlockOrTransaction as string,
           },
         });
         const event = JSON.parse(lastSubmission.rawEvent);
