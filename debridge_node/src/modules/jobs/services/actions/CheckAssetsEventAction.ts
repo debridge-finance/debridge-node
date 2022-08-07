@@ -65,6 +65,7 @@ export class CheckAssetsEventAction extends IAction {
           let nativeChainId;
           let nativeTokenAddress;
 
+          // if chainFrom is Solana
           if (chainFromConfig.isSolana) {
             const bridgeInfo = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
             nativeChainId = bridgeInfo.nativeChainId;
@@ -80,6 +81,7 @@ export class CheckAssetsEventAction extends IAction {
             else {
               ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
             }
+          // if chainFrom is EVM
           } else {
             const web3 = await this.web3Service.web3HttpProvider(chainFromConfig.providers);
             const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainFromConfig.debridgeAddr);
@@ -95,6 +97,14 @@ export class CheckAssetsEventAction extends IAction {
             const debridgeInfo = await deBridgeGateInstance.methods.getDebridge(submission.debridgeId).call();
             this.logger.log(JSON.stringify(debridgeInfo));
             nativeChainId = debridgeInfo.chainId;
+
+            // struct TokenInfo {
+            //   uint256 nativeChainId;
+            //   bytes nativeAddress;
+            // }
+            const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
+            this.logger.log(JSON.stringify(nativeTokenInfo));
+            nativeTokenAddress = nativeTokenInfo.nativeAddress;
             //if native chain for token is Solana network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
               const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
@@ -104,13 +114,6 @@ export class CheckAssetsEventAction extends IAction {
             }
             //if native chain for token is EVM network
             else {
-              // struct TokenInfo {
-              //   uint256 nativeChainId;
-              //   bytes nativeAddress;
-              // }
-              const nativeTokenInfo = await deBridgeGateInstance.methods.getNativeInfo(debridgeInfo.tokenAddress).call();
-              this.logger.log(JSON.stringify(nativeTokenInfo));
-              nativeTokenAddress = nativeTokenInfo.nativeAddress;
               ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeTokenInfo.nativeChainId, nativeTokenInfo.nativeAddress));
             }
           }

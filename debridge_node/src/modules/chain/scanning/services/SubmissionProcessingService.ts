@@ -112,7 +112,7 @@ export class SubmissionProcessingService {
       if (nonceValidationStatus !== NonceValidationEnum.SUCCESS) {
         const blockOrTransaction =
           blockOrTransactionToOverwrite !== undefined ? blockOrTransactionToOverwrite : this.getBlockNumberOrTransaction(submissionWithMaxNonceDb);
-        const message = `Incorrect nonce (${nonceValidationStatus}) for nonce: ${nonce}; max nonce in db: ${chainMaxNonce}; submissionId: ${submissionId}; blockToOverwrite: ${blockOrTransactionToOverwrite}; submissionWithMaxNonceDb.blockNumber: ${submissionWithMaxNonceDb.blockNumber}`;
+        const message = `Incorrect nonce (${nonceValidationStatus}) for nonce: ${nonce}; max nonce in db: ${chainMaxNonce}; submissionId: ${submissionId}; blockToOverwrite: ${blockOrTransactionToOverwrite}; submissionWithMaxNonceDb.blockNumber: ${submissionWithMaxNonceDb?.blockNumber}`;
         logger.error(message);
         return {
           blockOrTransactionToOverwrite: blockOrTransaction, // it would be empty only if incorrect nonce occures in the first event
