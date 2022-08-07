@@ -14,7 +14,7 @@ import { readConfiguration } from '../../../../utils/readConfiguration';
  */
 @Injectable()
 export class SolanaReaderService {
-  private readonly logger = new Logger(SupportedChainEntity.name);
+  private readonly logger = new Logger(SolanaReaderService.name);
   private readonly GET_HISTORICAL_LIMIT: number;
   private readonly GET_EVENTS_LIMIT: number;
 
