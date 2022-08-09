@@ -81,7 +81,7 @@ export class CheckAssetsEventAction extends IAction {
             else {
               ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
             }
-          // if chainFrom is EVM
+            // if chainFrom is EVM
           } else {
             const web3 = await this.web3Service.web3HttpProvider(chainFromConfig.providers);
             const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainFromConfig.debridgeAddr);

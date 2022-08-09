@@ -7,7 +7,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../../entities/SupportedChainEntity';
 import { ProgressInfoDTO } from '../../../../external/debridge_api/dto/request/ValidationProgressDTO';
 import { ConfigServiceSimpleMock } from '../../../../../tests/mocks/config.service.simple.mock';
-import { ChainConfigModule } from '../../../../chain/config/ChainConfigModule';
+import { ChainConfigService } from '../../../../chain/config/services/ChainConfigService';
+import { EvmChainConfig } from '../../../../chain/config/models/configs/EvmChainConfig';
 
 describe('StatisticToApiAction', () => {
   let service: StatisticToApiAction;
@@ -15,12 +16,20 @@ describe('StatisticToApiAction', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [HttpModule, ChainConfigModule],
+      imports: [HttpModule],
       providers: [
         StatisticToApiAction,
         {
           provide: ConfigService,
           useClass: ConfigServiceSimpleMock,
+        },
+        {
+          provide: ChainConfigService,
+          useValue: {
+            get: () => {
+              return {} as EvmChainConfig;
+            },
+          },
         },
         {
           provide: DebrdigeApiService,
