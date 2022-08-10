@@ -4,7 +4,11 @@ import { Logger } from '@nestjs/common';
 export function addHttpServiceLogging(httpService: HttpService, logger: Logger) {
   httpService.axiosRef.interceptors.request.use(
     request => {
-      logger.verbose(`Http request ${JSON.stringify(request)}`);
+      const method = request.method;
+      const url = request.url;
+      const params = JSON.stringify(request.params);
+      const data = JSON.stringify(request.data);
+      logger.verbose(`Http request ${method} ${url} params ${params} data ${data}`);
       return request;
     },
     request => {
@@ -14,10 +18,17 @@ export function addHttpServiceLogging(httpService: HttpService, logger: Logger) 
   );
   httpService.axiosRef.interceptors.response.use(
     response => {
+      const request = response.config;
+      const method = request.method;
+      const url = request.url;
+      const params = JSON.stringify(request.params);
+      const data = JSON.stringify(request.data);
+      const responseData = JSON.stringify(response.data);
+
       logger.verbose(
-        `Http response config: ${JSON.stringify(response.config)} status: ${response.status} statusText: ${
+        `Http response request: ${method} ${url} params ${params} data ${data} statusText: ${
           response.statusText
-        } headers: ${JSON.stringify(response.headers)} data: ${JSON.stringify(response.data)}`,
+        } data: ${responseData}`,
       );
       return response;
     },
