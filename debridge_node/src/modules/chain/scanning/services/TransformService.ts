@@ -6,6 +6,7 @@ import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
+import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 
 /**
  * Service for data transormation
@@ -35,6 +36,7 @@ export class TransformService {
     submission.apiStatus = UploadStatusEnum.NEW;
     submission.decimalDenominator = transaction.decimalDenominator;
     submission.assetsStatus = SubmisionAssetsStatusEnum.NEW;
+    submission.bundlrStatus = BundlrStatusEnum.NEW;
 
     return submission;
   }
@@ -56,6 +58,7 @@ export class TransformService {
       rawEvent: JSON.stringify(sendEvent),
       blockNumber: sendEvent.blockNumber,
       nonce: parseInt(sendEvent.returnValues.nonce),
+      bundlrStatus: BundlrStatusEnum.NEW,
     } as SubmissionEntity;
   }
 }

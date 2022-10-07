@@ -50,6 +50,7 @@ services:
       - THROTTLER_LIMIT=${THROTTLER_LIMIT}
       - WEB3_TIMEOUT=${WEB3_TIMEOUT}
       - ENABLE_DATAFIX=${ENABLE_DATAFIX}
+      - BUNDLR_NODE=${BUNDLR_NODE}
     depends_on:
       - postgres
       - debridge-api

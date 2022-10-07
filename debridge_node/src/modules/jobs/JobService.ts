@@ -4,6 +4,7 @@ import { SignAction } from './services/actions/SignAction';
 import { UploadToApiAction } from './services/actions/UploadToApiAction';
 import { CheckAssetsEventAction } from './services/actions/CheckAssetsEventAction';
 import { StatisticToApiAction } from './services/actions/StatisticToApiAction';
+import { UploadToBundlrAction } from './services/actions/UploadToBundlrAction';
 
 @Injectable()
 export class JobService {
@@ -12,6 +13,7 @@ export class JobService {
     private readonly uploadToApiAction: UploadToApiAction,
     private readonly checkAssetsEventAction: CheckAssetsEventAction,
     private readonly statisticToApiAction: StatisticToApiAction,
+    private readonly uploadToBundlrAction: UploadToBundlrAction,
   ) {}
 
   @Cron('*/3 * * * * *')
@@ -28,6 +30,11 @@ export class JobService {
   @Cron('*/3 * * * * *')
   async UploadToApiAction() {
     await this.uploadToApiAction.action();
+  }
+
+  @Cron('*/3 * * * * *')
+  async UploadToBundlr() {
+    await this.uploadToBundlrAction.action();
   }
 
   @Cron('*/3 * * * * *')

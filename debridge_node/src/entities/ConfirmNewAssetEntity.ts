@@ -1,6 +1,7 @@
 import { Column, Index, Entity, PrimaryColumn, Unique } from 'typeorm';
 import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
+import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
 
 @Entity('confirmNewAssets')
 @Unique(['deployId'])
@@ -43,6 +44,11 @@ export class ConfirmNewAssetEntity {
   @Column({
     nullable: true,
   })
+  bundlrTx: string;
+
+  @Column({
+    nullable: true,
+  })
   ipfsLogHash: string;
 
   @Column({
@@ -59,6 +65,10 @@ export class ConfirmNewAssetEntity {
   @Column()
   @Index()
   status: SubmisionStatusEnum;
+
+  @Column({ nullable: true })
+  @Index()
+  bundlrStatus: BundlrStatusEnum;
 
   @Column()
   @Index()
