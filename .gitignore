@@ -1,5 +1,6 @@
 .env
 debridge_node/.env
+debridge_node/bundlr_wallet.json
 secrets/*
 pgdata/
 
