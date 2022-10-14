@@ -13,14 +13,20 @@ export class BundlrService {
     this.bundlr = new Bundlr(this.configService.get('BUNDLR_NODE'), 'arweave', jwk);
   }
 
-  async upload(data: string) {
+  async upload(
+    data: string,
+    tags: {
+      name: string;
+      value: string;
+    }[],
+  ) {
     this.logger.log('Uploading to bundlr is started');
-    const transaction = await this.bundlr.createTransaction(data);
+    const transaction = await this.bundlr.createTransaction(data, { tags: [...tags, { name: 'App-Name', value: 'Debridge Node' }] });
     this.logger.verbose(`TxId ${transaction.id} is created`);
     await transaction.sign();
     this.logger.verbose(`TxId ${transaction.id} is signed`);
-    await transaction.upload();
+    const uploadTransaction = await transaction.upload();
     this.logger.log(`Uploading to bundlr is finished txId=${transaction.id}`);
-    return transaction.id;
+    return uploadTransaction.id;
   }
 }

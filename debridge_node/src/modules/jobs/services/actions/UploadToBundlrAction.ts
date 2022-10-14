@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IAction } from './IAction';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
@@ -33,9 +33,42 @@ export class UploadToBundlrAction extends IAction {
           bundlrStatus: BundlrStatusEnum.NEW,
         },
       });
+      for (const submission of submissions) {
+        await this.submissionsRepository.update(
+          {
+            submissionId: submission.submissionId,
+          },
+          {
+            bundlrStatus: BundlrStatusEnum.UPLOADING_STARTED,
+          },
+        );
+        this.logger.verbose(`Uploading submission to bundlr started ${submission.submissionId}`);
 
-      if (submissions.length > 0) {
-        await this.confirmSubmissions(submissions);
+        const bundlrTx = await this.bundlrService.upload(
+          JSON.stringify({
+            txHash: submission.txHash,
+            signature: submission.signature,
+            submissionId: submission.submissionId,
+            chainId: submission.chainFrom,
+          }),
+          [
+            {
+              name: 'submissionId',
+              value: submission.submissionId,
+            },
+          ],
+        );
+
+        await this.submissionsRepository.update(
+          {
+            submissionId: submission.submissionId,
+          },
+          {
+            bundlrStatus: BundlrStatusEnum.UPLOADED,
+            bundlrTx,
+          },
+        );
+        this.logger.verbose(`Uploading submission to bundlr finished ${submission.submissionId}`);
       }
     } catch (e) {
       this.logger.error(e);
@@ -50,55 +83,35 @@ export class UploadToBundlrAction extends IAction {
         },
       });
 
-      if (assets.length > 0) {
-        await this.confirmAssets(assets);
+      for (const asset of assets) {
+        await this.confirmNewAssetEntityRepository.update(
+          {
+            deployId: asset.deployId,
+          },
+          {
+            bundlrStatus: BundlrStatusEnum.UPLOADING_STARTED,
+          },
+        );
+        this.logger.verbose(`Uploading asset to bundlr started ${asset.deployId}`);
+
+        const bundlrTx = await this.bundlrService.upload(JSON.stringify(asset), [
+          {
+            name: 'deployId',
+            value: asset.deployId,
+          },
+        ]);
+
+        await this.confirmNewAssetEntityRepository.update(
+          {
+            deployId: asset.deployId,
+          },
+          {
+            bundlrStatus: BundlrStatusEnum.UPLOADED,
+            bundlrTx,
+          },
+        );
+        this.logger.verbose(`Uploading asset to bundlr finished ${asset.deployId}`);
       }
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
-
-  private async confirmSubmissions(submissions: SubmissionEntity[]) {
-    try {
-      const bundlrTx = await this.bundlrService.upload(
-        JSON.stringify(
-          submissions.map(submission => {
-            return {
-              txHash: submission.txHash,
-              signature: submission.signature,
-              submissionId: submission.submissionId,
-              chainId: submission.chainFrom,
-            };
-          }),
-        ),
-      );
-      await this.submissionsRepository.update(
-        {
-          submissionId: In(submissions.map(submission => submission.submissionId)),
-        },
-        {
-          bundlrStatus: BundlrStatusEnum.UPLOADED,
-          bundlrTx,
-        },
-      );
-      this.logger.log(`setting bundlrTx ${bundlrTx} to submissions`);
-    } catch (e) {
-      this.logger.error(e);
-    }
-  }
-
-  private async confirmAssets(assets: ConfirmNewAssetEntity[]) {
-    try {
-      const bundlrTx = await this.bundlrService.upload(JSON.stringify(assets));
-      await this.confirmNewAssetEntityRepository.update(
-        {
-          deployId: In(assets.map(assets => assets.deployId)),
-        },
-        {
-          bundlrStatus: BundlrStatusEnum.UPLOADED,
-          bundlrTx: bundlrTx,
-        },
-      );
     } catch (e) {
       this.logger.error(e);
     }
