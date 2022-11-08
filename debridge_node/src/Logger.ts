@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/node';
 export class Logger extends ConsoleLogger {
   error(message: any, stack?: string) {
     if (process.env.SENTRY_DSN) {
-      Sentry.captureMessage(`[${stack}] ${message}`);
+      Sentry.captureMessage(`[${stack}] ${message}`, { level: 'error' });
     }
     super.error(`[${stack}] ${message}`);
   }
