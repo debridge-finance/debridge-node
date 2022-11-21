@@ -79,7 +79,7 @@ export class UploadToBundlrAction extends IAction {
       const assets = await this.confirmNewAssetEntityRepository.find({
         where: {
           status: SubmisionStatusEnum.SIGNED,
-          apiStatus: UploadStatusEnum.NEW,
+          bundlrStatus: BundlrStatusEnum.NEW,
         },
       });
 
