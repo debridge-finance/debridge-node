@@ -8,6 +8,12 @@ import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStat
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 
+export class SolanaEvent extends EventFromTransaction {
+  slotNumber: number;
+
+  transactionHash: string;
+}
+
 /**
  * Service for data transormation
  */
@@ -15,7 +21,7 @@ import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 export class TransformService {
   constructor(private readonly configServive: ConfigService, private readonly chainConfigService: ChainConfigService) {}
 
-  generateSubmissionFromSolanaEvent(transaction: EventFromTransaction) {
+  generateSubmissionFromSolanaEvent(transaction: SolanaEvent) {
     const submission = new SubmissionEntity();
     submission.submissionId = transaction.submissionId;
     submission.txHash = transaction.transactionHash;

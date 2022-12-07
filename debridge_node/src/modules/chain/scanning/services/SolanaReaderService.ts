@@ -4,10 +4,11 @@ import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity'
 import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SolanaApiService } from '../../../external/solana_api/services/SolanaApiService';
-import { TransformService } from './TransformService';
+import { SolanaEvent, TransformService } from './TransformService';
 import { ConfigService } from '@nestjs/config';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { readConfiguration } from '../../../../utils/readConfiguration';
+import { TransactionState } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
 
 /**
  * Service for reading transaction from solana
@@ -80,7 +81,19 @@ export class SolanaReaderService {
       for (let pageNumber = 0; pageNumber < size; pageNumber++) {
         const skip = pageNumber * this.GET_EVENTS_LIMIT;
         const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactions.length);
-        const batchEvents = await this.solanaApiService.getEventsFromTransactions(transactions.slice(skip, end));
+        const batchTransactions = await this.solanaApiService.getEventsFromTransactions(transactions.slice(skip, end));
+        const batchEvents = [];
+        batchTransactions
+          .filter(transaction => transaction.transactionState === TransactionState.Ok)
+          .forEach(transaction => {
+            transaction.events.forEach(event => {
+              batchEvents.push({
+                ...event,
+                transactionHash: transaction.transactionHash,
+                slotNumber: transaction.slotNumber,
+              } as SolanaEvent);
+            });
+          });
         events.push(...batchEvents);
         this.logger.verbose(`Events ${batchEvents.length} from transaction are received`);
       }
