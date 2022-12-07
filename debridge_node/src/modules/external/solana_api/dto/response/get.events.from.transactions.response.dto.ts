@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum TransactionState {
+  Ok = 'Ok',
+  Failed = 'Failed',
+  NotDeBridge = 'NotDeBridge',
+  Other = 'Other',
+}
 
 export class EventFromTransaction {
   @ApiProperty()
@@ -19,21 +26,17 @@ export class EventFromTransaction {
   @IsString()
   bridgeId: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: 'integer',
+  })
   @IsInt()
   chainToId: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: 'integer',
+  })
   @IsInt()
   nonce: number;
-
-  @ApiProperty()
-  @IsNumber()
-  transactionTimestamp: number;
-
-  @ApiProperty()
-  @IsString()
-  transactionHash: string;
 
   @ApiProperty()
   @IsString()
@@ -106,13 +109,30 @@ export class EventFromTransaction {
   @ApiProperty()
   @IsString()
   receivedAmount: string;
+}
+
+export class WrappedEventsFromTransaction {
+  @ApiProperty({
+    type: 'integer',
+  })
+  @IsInt()
+  slotNumber: number;
 
   @ApiProperty()
   @IsNumber()
-  slotNumber: number;
-}
+  transactionTimestamp: number;
 
-export class GetEventsFromTransactionsResponseDto {
+  @ApiProperty()
+  @IsString()
+  transactionHash: string;
+
+  @ApiProperty({
+    enum: TransactionState,
+    enumName: 'TransactionState',
+  })
+  @IsEnum(TransactionState)
+  transactionState: TransactionState;
+
   @ApiProperty({
     type: EventFromTransaction,
     isArray: true,
@@ -121,4 +141,15 @@ export class GetEventsFromTransactionsResponseDto {
   @ValidateNested({ each: true })
   @Type(() => EventFromTransaction)
   events: EventFromTransaction[];
+}
+
+export class GetTransferredEventsFromTransactionsResponseDto {
+  @ApiProperty({
+    type: WrappedEventsFromTransaction,
+    isArray: true,
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WrappedEventsFromTransaction)
+  transactions: WrappedEventsFromTransaction[];
 }
