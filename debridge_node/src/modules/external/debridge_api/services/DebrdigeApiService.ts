@@ -34,6 +34,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async onModuleInit() {
+    if (!super.basicUrl || super.basicUrl === '') {
+      this.logger.warn(`debridge api is not setuped`);
+    }
     const { version } = JSON.parse(readFileSync('./package.json', { encoding: 'utf8' }));
     const updateVersionInterval = setInterval(async () => {
       try {
@@ -72,6 +75,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async uploadToApi(submissions: SubmissionEntity[]): Promise<SubmissionConfirmationResponse[]> {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return [];
+    }
     const requestBody = {
       confirmations: submissions.map(submission => {
         return {
@@ -92,6 +98,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async uploadStatistic(progressInfo: ProgressInfoDTO[]) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       progressInfo,
     } as ValidationProgressDTO;
@@ -105,6 +114,12 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async uploadConfirmNewAssetsToApi(asset: ConfirmNewAssetEntity): Promise<ConfrimNewAssetsResponseDTO> {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return {
+        registrationId: 'empty_basicUrl',
+        deployId: 'empty_basicUrl',
+      };
+    }
     const requestBody = {
       deployId: asset.deployId,
       signature: asset.signature,
@@ -125,6 +140,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async notifyError(message: string) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       message,
     } as ErrorNotificationDTO;

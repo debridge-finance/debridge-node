@@ -3,7 +3,10 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { GetHistoricalDataRequestDto } from '../dto/request/get.historical.data.request.dto';
 import { GetHistoricalDataResponseDto } from '../dto/response/get.historical.data.response.dto';
-import { EventFromTransaction, GetEventsFromTransactionsResponseDto } from '../dto/response/get.events.from.transactions.response.dto';
+import {
+  GetTransferredEventsFromTransactionsResponseDto,
+  WrappedEventsFromTransaction,
+} from '../dto/response/get.events.from.transactions.response.dto';
 import { GetEventsFromTransactionsRequestDto } from '../dto/request/get.events.from.transactions.request.dto';
 import { GetAddressInfoRequestDto } from '../dto/request/get.address.info.request.dto';
 import { GetAddressInfoResponseDto } from '../dto/response/get.address.info.response.dto';
@@ -49,14 +52,14 @@ export class SolanaApiService {
    * @param signatures
    * @return EventFromTransaction[] detailed information about sendevents by their hashes
    */
-  async getEventsFromTransactions(signatures: string[]): Promise<EventFromTransaction[]> {
+  async getEventsFromTransactions(signatures: string[]): Promise<WrappedEventsFromTransaction[]> {
     this.logger.log(`getEventsFromTransactions to ${JSON.stringify(signatures)} is started`);
     const dto = { signatures } as GetEventsFromTransactionsRequestDto;
     this.logger.verbose(`getEventsFromTransactions dto ${JSON.stringify(dto)}`);
     const httpResult = await this.request('/getEventsFromTransactions', dto);
-    const { events } = httpResult.data as GetEventsFromTransactionsResponseDto;
+    const { transactions } = httpResult.data as GetTransferredEventsFromTransactionsResponseDto;
     this.logger.log(`getEventsFromTransactions to ${JSON.stringify(signatures)} is finished`);
-    return events;
+    return transactions;
   }
 
   /**
