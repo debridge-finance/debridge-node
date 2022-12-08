@@ -72,6 +72,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async uploadToApi(submissions: SubmissionEntity[]): Promise<SubmissionConfirmationResponse[]> {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       confirmations: submissions.map(submission => {
         return {
@@ -92,6 +95,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async uploadStatistic(progressInfo: ProgressInfoDTO[]) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       progressInfo,
     } as ValidationProgressDTO;
@@ -105,6 +111,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async uploadConfirmNewAssetsToApi(asset: ConfirmNewAssetEntity): Promise<ConfrimNewAssetsResponseDTO> {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       deployId: asset.deployId,
       signature: asset.signature,
@@ -125,6 +134,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async notifyError(message: string) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       message,
     } as ErrorNotificationDTO;
