@@ -37,6 +37,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async onModuleInit() {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const { version } = JSON.parse(readFileSync('./package.json', { encoding: 'utf8' }));
     const updateVersionInterval = setInterval(async () => {
       try {
