@@ -100,7 +100,7 @@ export class SolanaReaderService {
 
       //sort in desc, we need it for correct reading data from solana
       events.sort((a, b) => b.nonce - a.nonce);
-      earliestTransactionInSyncSession = events.at(-1).transactionHash; // get earliest from batch
+      earliestTransactionInSyncSession = transactions.at(-1); // get earliest from batch
       //events for saving in database
       const eventsForSave = events.map(event => {
         try {
