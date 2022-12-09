@@ -7,6 +7,8 @@ import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity'
 import { ProgressInfoDTO } from '../../../external/debridge_api/dto/request/ValidationProgressDTO';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
+import { readConfiguration } from '../../../../utils/readConfiguration';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class StatisticToApiAction extends IAction {
@@ -17,12 +19,18 @@ export class StatisticToApiAction extends IAction {
     private readonly submissionRepository: Repository<SubmissionEntity>,
     private readonly chainConfigService: ChainConfigService,
     private readonly debridgeApiService: DebrdigeApiService,
+    private readonly configService: ConfigService,
   ) {
     super();
     this.logger = new Logger(StatisticToApiAction.name);
   }
 
   async process(): Promise<void> {
+    const apiBaseUrl = readConfiguration(this.configService, this.logger, 'API_BASE_URL');
+    if (!apiBaseUrl && apiBaseUrl === '') {
+      return;
+    }
+
     this.logger.log(`process StatisticToApiAction is started`);
     const chains = await this.supportedChainRepository.find();
     this.logger.debug('chains are found');
