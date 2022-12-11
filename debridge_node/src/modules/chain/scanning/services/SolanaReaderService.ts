@@ -61,48 +61,47 @@ export class SolanaReaderService {
       return;
     }
 
-    const submissions: SubmissionEntity[] = [];
-
-    let transactions;
+    let transactions = [];
+    let batchTransactions;
     do {
-      transactions = await this.solanaApiService.getHistoricalData(
+      batchTransactions = await this.solanaApiService.getHistoricalData(
         this.GET_HISTORICAL_LIMIT,
         earliestTransactionInSyncSession,
         previousSyncLastTransaction,
       );
-      if (transactions.length === 0) {
+      if (batchTransactions.length === 0) {
         this.logger.log(`Chain ${chainId} is synced`);
         break;
       }
-      this.logger.verbose(`Transactions ${transactions.length} are received`);
+      this.logger.verbose(`Transactions ${batchTransactions.length} are received`);
+      transactions.push(...batchTransactions);
+      earliestTransactionInSyncSession = batchTransactions.at(-1); // get earliest from batch
 
+      this.logger.log(`searchFrom = ${earliestTransactionInSyncSession}`);
+    } while (batchTransactions.length === this.GET_HISTORICAL_LIMIT); //getting all transactions
+    transactions = transactions.reverse(); //sort for having transaction from earliest to newest
+
+    //saving transactions
+    const size = Math.ceil(transactions.length / this.GET_EVENTS_LIMIT);
+    for (let pageNumber = 0; pageNumber < size; pageNumber++) {
+      const skip = pageNumber * this.GET_EVENTS_LIMIT;
+      const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactions.length);
+      const batchEvent = await this.solanaApiService.getEventsFromTransactions(transactions.slice(skip, end));
       const events = [];
-      const size = Math.ceil(transactions.length / this.GET_EVENTS_LIMIT);
-      for (let pageNumber = 0; pageNumber < size; pageNumber++) {
-        const skip = pageNumber * this.GET_EVENTS_LIMIT;
-        const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactions.length);
-        const batchTransactions = await this.solanaApiService.getEventsFromTransactions(transactions.slice(skip, end));
-        const batchEvents = [];
-        batchTransactions
-          .filter(transaction => transaction.transactionState === TransactionState.Ok)
-          .forEach(transaction => {
-            transaction.events.forEach(event => {
-              batchEvents.push({
-                ...event,
-                transactionHash: transaction.transactionHash,
-                slotNumber: transaction.slotNumber,
-              } as SolanaEvent);
-            });
+      batchEvent
+        .filter(transaction => transaction.transactionState === TransactionState.Ok)
+        .forEach(transaction => {
+          transaction.events.forEach(event => {
+            events.push({
+              ...event,
+              transactionHash: transaction.transactionHash,
+              slotNumber: transaction.slotNumber,
+            } as SolanaEvent);
           });
-        events.push(...batchEvents);
-        this.logger.verbose(`Events ${batchEvents.length} from transaction are received`);
-      }
+        });
+      this.logger.verbose(`Events ${events.length} from transaction are received`);
 
-      //sort in desc, we need it for correct reading data from solana
-      events.sort((a, b) => b.nonce - a.nonce);
-      earliestTransactionInSyncSession = transactions.at(-1); // get earliest from batch
-      //events for saving in database
-      const eventsForSave = events.map(event => {
+      const submissions = events.map(event => {
         try {
           const submission = this.transformService.generateSubmissionFromSolanaEvent(event);
           this.logger.verbose(`submission ${event.submissionId} is generated`);
@@ -113,22 +112,18 @@ export class SolanaReaderService {
           throw e;
         }
       });
-      this.logger.verbose(`Events ${eventsForSave.length} are prepared for db storing`);
-      submissions.push(...eventsForSave);
-      this.logger.log(`submission ${JSON.stringify(eventsForSave)} is stored`);
-      this.logger.log(`searchFrom = ${earliestTransactionInSyncSession}`);
-    } while (transactions.length === this.GET_HISTORICAL_LIMIT);
+      this.logger.verbose(`Events ${submissions.length} are prepared for db storing`);
+      this.logger.log(`submission ${JSON.stringify(submissions)} is stored`);
 
-    //sort in asc, we need it for correct updating last tracked value and nonxe validation
-    submissions.sort((a, b) => a.nonce - b.nonce);
-    if (submissions.length > 0) {
-      await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+      if (submissions.length > 0) {
+        await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+      }
+      await this.supportedChainRepository.update(
+        { chainId },
+        {
+          latestBlock: lastSolanaBlock,
+        },
+      );
     }
-    await this.supportedChainRepository.update(
-      { chainId },
-      {
-        latestBlock: lastSolanaBlock,
-      },
-    );
   }
 }
