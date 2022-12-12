@@ -61,34 +61,34 @@ export class SolanaReaderService {
       return;
     }
 
-    let transactions = [];
-    let batchTransactions;
+    let transactionsHashes: string[] = [];
+    let batchTransactionsHashes;
     do {
-      batchTransactions = await this.solanaApiService.getHistoricalData(
+      batchTransactionsHashes = await this.solanaApiService.getHistoricalData(
         this.GET_HISTORICAL_LIMIT,
         earliestTransactionInSyncSession,
         previousSyncLastTransaction,
       );
-      if (batchTransactions.length === 0) {
+      if (batchTransactionsHashes.length === 0) {
         this.logger.log(`Chain ${chainId} is synced`);
         break;
       }
-      this.logger.verbose(`Transactions ${batchTransactions.length} are received`);
-      transactions.push(...batchTransactions);
-      earliestTransactionInSyncSession = batchTransactions.at(-1); // get earliest from batch
+      this.logger.verbose(`Transactions ${batchTransactionsHashes.length} are received`);
+      transactionsHashes.push(...batchTransactionsHashes);
+      earliestTransactionInSyncSession = batchTransactionsHashes.at(-1); // get earliest from batch
 
       this.logger.log(`searchFrom = ${earliestTransactionInSyncSession}`);
-    } while (batchTransactions.length === this.GET_HISTORICAL_LIMIT); //getting all transactions
-    transactions = transactions.reverse(); //sort for having transaction from earliest to newest
+    } while (batchTransactionsHashes.length === this.GET_HISTORICAL_LIMIT); //getting all transactions
+    transactionsHashes = transactionsHashes.reverse(); //sort for having transaction from earliest to newest
 
     //saving transactions
-    const size = Math.ceil(transactions.length / this.GET_EVENTS_LIMIT);
-    for (let pageNumber = 0; pageNumber < size; pageNumber++) {
+    const eventSyncingPageCount = Math.ceil(transactionsHashes.length / this.GET_EVENTS_LIMIT);
+    for (let pageNumber = 0; pageNumber < eventSyncingPageCount; pageNumber++) {
       const skip = pageNumber * this.GET_EVENTS_LIMIT;
-      const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactions.length);
-      const batchEvent = await this.solanaApiService.getEventsFromTransactions(transactions.slice(skip, end));
+      const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactionsHashes.length);
+      const transactions = await this.solanaApiService.getEventsFromTransactions(transactionsHashes.slice(skip, end));
       const events = [];
-      batchEvent
+      transactions
         .filter(transaction => transaction.transactionState === TransactionState.Ok)
         .forEach(transaction => {
           transaction.events.forEach(event => {
