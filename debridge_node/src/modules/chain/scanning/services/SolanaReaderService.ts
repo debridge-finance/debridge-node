@@ -79,6 +79,17 @@ export class SolanaReaderService {
 
       this.logger.log(`searchFrom = ${earliestTransactionInSyncSession}`);
     } while (batchTransactionsHashes.length === this.GET_HISTORICAL_LIMIT); //getting all transactions
+
+    if (transactionsHashes.length === 0) {
+      await this.supportedChainRepository.update(
+        { chainId },
+        {
+          latestBlock: lastSolanaBlock,
+        },
+      );
+      return;
+    }
+
     transactionsHashes = transactionsHashes.reverse(); //sort for having transaction from earliest to newest
 
     //saving transactions
@@ -86,7 +97,9 @@ export class SolanaReaderService {
     for (let pageNumber = 0; pageNumber < eventSyncingPageCount; pageNumber++) {
       const skip = pageNumber * this.GET_EVENTS_LIMIT;
       const end = Math.min((pageNumber + 1) * this.GET_EVENTS_LIMIT, transactionsHashes.length);
-      const transactions = await this.solanaApiService.getEventsFromTransactions(transactionsHashes.slice(skip, end));
+      const txs = transactionsHashes.slice(skip, end);
+      this.logger.log(`Tx hashes for scan ${JSON.stringify(txs)}`);
+      const transactions = await this.solanaApiService.getEventsFromTransactions(txs);
       const events = [];
       transactions
         .filter(transaction => transaction.transactionState === TransactionState.Ok)
@@ -113,7 +126,6 @@ export class SolanaReaderService {
         }
       });
       this.logger.verbose(`Events ${submissions.length} are prepared for db storing`);
-      this.logger.log(`submission ${JSON.stringify(submissions)} is stored`);
 
       if (submissions.length > 0) {
         await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
@@ -121,7 +133,7 @@ export class SolanaReaderService {
       await this.supportedChainRepository.update(
         { chainId },
         {
-          latestBlock: lastSolanaBlock,
+          latestBlock: submissions.at(-1).blockNumber,
         },
       );
     }
