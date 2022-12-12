@@ -62,7 +62,7 @@ export class SolanaReaderService {
     }
 
     let transactionsHashes: string[] = [];
-    let batchTransactionsHashes;
+    let batchTransactionsHashes: string[];
     do {
       batchTransactionsHashes = await this.solanaApiService.getHistoricalData(
         this.GET_HISTORICAL_LIMIT,
