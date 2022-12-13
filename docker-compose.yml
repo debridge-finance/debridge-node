@@ -39,7 +39,7 @@ services:
     networks:
       - debridge-node-network
   debridge-node:
-    image: debridgefinance/debridge-node:2.4.2
+    image: debridgefinance/debridge-node:2.4.5
     container_name: debridge-node${DOCKER_ID}
     restart: unless-stopped
     secrets:
@@ -73,6 +73,7 @@ services:
       - ORBITDB_LOGIN=${ORBITDB_LOGIN}
       - ORBITDB_PASSWORD=${ORBITDB_PASSWORD}
       - ORBITDB_URL=${ORBITDB_URL}
+      - SOLANA_API_SYNC_INTERVAL=${SOLANA_API_SYNC_INTERVAL}
     depends_on:
       - postgres
     networks:
