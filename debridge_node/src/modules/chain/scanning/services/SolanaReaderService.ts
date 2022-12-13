@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { readConfiguration } from '../../../../utils/readConfiguration';
 import { TransactionState } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
+import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 
 /**
  * Service for reading transaction from solana
@@ -128,14 +129,11 @@ export class SolanaReaderService {
       this.logger.verbose(`Events ${submissions.length} are prepared for db storing`);
 
       if (submissions.length > 0) {
-        await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+        const result = await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
+        if (result !== ProcessNewTransferResultStatusEnum.SUCCESS) {
+          break;
+        }
       }
-      await this.supportedChainRepository.update(
-        { chainId },
-        {
-          latestBlock: submissions.at(-1).blockNumber,
-        },
-      );
     }
   }
 }

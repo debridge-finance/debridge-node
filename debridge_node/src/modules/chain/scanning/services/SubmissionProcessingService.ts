@@ -22,7 +22,12 @@ export class SubmissionProcessingService {
     private readonly chainConfigService: ChainConfigService,
   ) {}
 
-  async process(submissions: SubmissionEntity[], chainId: number, lastBlockOrTransactionOfPage: number | string, web3?: Web3Custom) {
+  async process(
+    submissions: SubmissionEntity[],
+    chainId: number,
+    lastBlockOrTransactionOfPage: number | string,
+    web3?: Web3Custom,
+  ): Promise<ProcessNewTransferResultStatusEnum> {
     const logger = new Logger(`${SubmissionProcessingService.name} chainId ${chainId}`);
     const chainDetail = this.chainConfigService.get(chainId);
     const result = await this.processNewTransfers(logger, submissions, chainDetail);
@@ -55,6 +60,7 @@ export class SubmissionProcessingService {
     if (result.status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
       await this.nonceControllingService.processValidationNonceError(result, chainId, web3, chainDetail);
     }
+    return result.status;
   }
 
   //check is solana
