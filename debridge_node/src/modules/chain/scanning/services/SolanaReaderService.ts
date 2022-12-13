@@ -10,6 +10,7 @@ import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { readConfiguration } from '../../../../utils/readConfiguration';
 import { TransactionState } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
+import { setTimeout } from 'timers/promises';
 
 /**
  * Service for reading transaction from solana
@@ -19,6 +20,7 @@ export class SolanaReaderService {
   private readonly logger = new Logger(SolanaReaderService.name);
   private readonly GET_HISTORICAL_LIMIT: number;
   private readonly GET_EVENTS_LIMIT: number;
+  private readonly SOLANA_API_SYNC_INTERVAL: number;
 
   constructor(
     private readonly solanaApiService: SolanaApiService,
@@ -32,6 +34,7 @@ export class SolanaReaderService {
   ) {
     this.GET_HISTORICAL_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_HISTORICAL_BATCH_SIZE'));
     this.GET_EVENTS_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_EVENTS_BATCH_SIZE'));
+    this.SOLANA_API_SYNC_INTERVAL = parseInt(readConfiguration(configService, this.logger, 'SOLANA_API_SYNC_INTERVAL'));
   }
 
   /**
@@ -101,6 +104,7 @@ export class SolanaReaderService {
       const txs = transactionsHashes.slice(skip, end);
       this.logger.log(`Tx hashes for scan ${JSON.stringify(txs)}`);
       const transactions = await this.solanaApiService.getEventsFromTransactions(txs);
+      await setTimeout(this.SOLANA_API_SYNC_INTERVAL);
       const events = [];
       transactions
         .filter(transaction => transaction.transactionState === TransactionState.Ok)
