@@ -9,8 +9,8 @@
 # Changelog
 
 ## v2.4.5(12.12.2022)
-* add suport running without depbridge api
-* change solana sync algorithm
+* add suport running without depbridge api (set empty API_BASE_URL on env)
+* change solana sync algorithm (save intermediate progress, wait SOLANA_API_WAIT_BATCH_INTERVAL between batch requests)
 * update solana reader
 * up packages
 ## How to update to v2.4.5
