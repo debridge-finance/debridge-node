@@ -20,7 +20,7 @@ export class SolanaReaderService {
   private readonly logger = new Logger(SolanaReaderService.name);
   private readonly GET_HISTORICAL_LIMIT: number;
   private readonly GET_EVENTS_LIMIT: number;
-  private readonly SOLANA_API_SYNC_INTERVAL: number;
+  private readonly SOLANA_API_WAIT_BATCH_INTERVAL: number;
 
   constructor(
     private readonly solanaApiService: SolanaApiService,
@@ -34,7 +34,7 @@ export class SolanaReaderService {
   ) {
     this.GET_HISTORICAL_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_HISTORICAL_BATCH_SIZE'));
     this.GET_EVENTS_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_EVENTS_BATCH_SIZE'));
-    this.SOLANA_API_SYNC_INTERVAL = parseInt(readConfiguration(configService, this.logger, 'SOLANA_API_SYNC_INTERVAL'));
+    this.SOLANA_API_WAIT_BATCH_INTERVAL = parseInt(configService.get('SOLANA_API_SYNC_INTERVAL') || '1000');
   }
 
   /**
@@ -104,7 +104,6 @@ export class SolanaReaderService {
       const txs = transactionsHashes.slice(skip, end);
       this.logger.log(`Tx hashes for scan ${JSON.stringify(txs)}`);
       const transactions = await this.solanaApiService.getEventsFromTransactions(txs);
-      await setTimeout(this.SOLANA_API_SYNC_INTERVAL);
       const events = [];
       transactions
         .filter(transaction => transaction.transactionState === TransactionState.Ok)
@@ -138,6 +137,8 @@ export class SolanaReaderService {
           break;
         }
       }
+      this.logger.verbose(`Waiting ${this.SOLANA_API_WAIT_BATCH_INTERVAL}`); //need for sync events from reader
+      await setTimeout(this.SOLANA_API_WAIT_BATCH_INTERVAL);
     }
   }
 }
