@@ -34,7 +34,7 @@ export class SolanaReaderService {
   ) {
     this.GET_HISTORICAL_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_HISTORICAL_BATCH_SIZE'));
     this.GET_EVENTS_LIMIT = parseInt(readConfiguration(configService, this.logger, 'SOLANA_GET_EVENTS_BATCH_SIZE'));
-    this.SOLANA_API_WAIT_BATCH_INTERVAL = parseInt(configService.get('SOLANA_API_SYNC_INTERVAL') || '1000');
+    this.SOLANA_API_WAIT_BATCH_INTERVAL = parseInt(configService.get('SOLANA_API_WAIT_BATCH_INTERVAL') || '1000');
   }
 
   /**

@@ -22,7 +22,7 @@ git pull origin mainnet
 
 ### Add to env
 ```
-SOLANA_API_SYNC_INTERVAL=1000
+SOLANA_API_WAIT_BATCH_INTERVAL=1000
 ```
 
 ## v2.3.3(05.08.2022)
