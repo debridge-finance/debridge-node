@@ -28,12 +28,18 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
     const logger = new Logger(DebrdigeApiService.name);
     const apiBaseUrl = readConfiguration(configService, logger, 'API_BASE_URL');
     super(httpService, logger, apiBaseUrl, '/Account/authenticate');
+    if (!apiBaseUrl || apiBaseUrl === '') {
+      this.logger.warn('API_BASE_URL is not setted');
+    }
     this.web3 = web3Service.web3();
     this.account = this.web3.eth.accounts.decrypt(JSON.parse(readFileSync('./keystore.json', 'utf-8')), process.env.KEYSTORE_PASSWORD);
     addHttpServiceLogging(httpService, this.logger);
   }
 
   async onModuleInit() {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const { version } = JSON.parse(readFileSync('./package.json', { encoding: 'utf8' }));
     const updateVersionInterval = setInterval(async () => {
       try {
@@ -57,6 +63,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async updateOrbitDb(requestBody: UpdateOrbirDbDTO) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     this.logger.log(`updateOrbitDb ${requestBody} is started`);
     const httpResult = await this.authRequest('/Validator/updateOrbitDb', requestBody, this.getLoginDto());
     this.logger.verbose(`response: ${httpResult.data}`);
@@ -64,6 +73,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async updateVersion(version: string) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     this.logger.log(`updateVersion ${version} is started`);
     const httpResult = await this.authRequest('/Validator/setNodeVersion', { version }, this.getLoginDto());
 
@@ -125,6 +137,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async notifyError(message: string) {
+    if (!super.basicUrl || super.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       message,
     } as ErrorNotificationDTO;

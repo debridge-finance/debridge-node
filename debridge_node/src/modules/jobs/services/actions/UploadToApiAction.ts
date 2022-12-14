@@ -7,6 +7,8 @@ import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { DebrdigeApiService } from '../../../external/debridge_api/services/DebrdigeApiService';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
+import { readConfiguration } from '../../../../utils/readConfiguration';
+import { ConfigService } from '@nestjs/config';
 
 //Action that update signatures to debridge API
 @Injectable()
@@ -17,6 +19,7 @@ export class UploadToApiAction extends IAction {
     @InjectRepository(ConfirmNewAssetEntity)
     private readonly confirmNewAssetEntityRepository: Repository<ConfirmNewAssetEntity>,
     private readonly debridgeApiService: DebrdigeApiService,
+    private readonly configService: ConfigService,
   ) {
     super();
     this.logger = new Logger(UploadToApiAction.name);
@@ -25,6 +28,10 @@ export class UploadToApiAction extends IAction {
   private readonly PAGE_SIZE = 100;
 
   async process(): Promise<void> {
+    const apiBaseUrl = readConfiguration(this.configService, this.logger, 'API_BASE_URL');
+    if (!apiBaseUrl && apiBaseUrl === '') {
+      return;
+    }
     this.logger.log(`process UploadToApiAction`);
 
     try {

@@ -1,0 +1,40 @@
+name: Build image
+
+on:
+  push:
+    branches:
+      - 'develop'
+
+jobs:
+  ci:
+    name: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: get-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+        with:
+          path: ./debridge_node
+
+      - name: build and push to registry
+        uses: opspresso/action-docker@master
+        env:          
+          USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          IMAGE_NAME: debridgefinance/debridge-node-develop
+          LATEST: "false"
+          TAG_NAME: ${{ steps.package-version.outputs.current-version}}
+          DOCKERFILE: "debridge_node/Dockerfile"
+          BUILD_PATH: ./debridge_node
+
+      - name: notification
+        if: cancelled() == false
+        uses: xinthink/action-telegram@v1.1
+        with:
+          botToken: ${{ secrets.TELEGRAM_CI_TOKEN }}
+          chatId: ${{ secrets.TELEGRAM_CI_TO }}
+          jobStatus: ${{ job.status }}
+          skipSuccess: false
