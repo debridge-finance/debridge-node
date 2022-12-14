@@ -8,6 +8,23 @@
 
 # Changelog
 
+## v2.4.5(12.12.2022)
+* add suport running without depbridge api
+* change solana sync algorithm
+* update solana reader
+* up packages
+## How to update to v2.4.5
+### Pull latest changes
+```shell
+git checkout mainnet
+git pull origin mainnet
+```
+
+### Add to env
+```
+SOLANA_API_SYNC_INTERVAL=1000
+```
+
 ## v2.3.3(05.08.2022)
 * fix check new assets for solana
 * up solana reader version
