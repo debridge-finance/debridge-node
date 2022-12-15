@@ -129,6 +129,9 @@ export class SolanaReaderService {
           throw e;
         }
       });
+      
+      //sort in asc, we need it for correct updating last tracked value and nonce validation
+      submissions.sort((a, b) => a.nonce - b.nonce);
       this.logger.verbose(`Events ${submissions.length} are prepared for db storing`);
 
       if (submissions.length > 0) {
