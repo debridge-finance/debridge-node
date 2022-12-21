@@ -37,9 +37,6 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async onModuleInit() {
-    if (!super.basicUrl || super.basicUrl === '') {
-      return;
-    }
     const { version } = JSON.parse(readFileSync('./package.json', { encoding: 'utf8' }));
     const updateVersionInterval = setInterval(async () => {
       try {
@@ -63,7 +60,7 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async updateOrbitDb(requestBody: UpdateOrbirDbDTO) {
-    if (!super.basicUrl || super.basicUrl === '') {
+    if (!this.basicUrl || this.basicUrl === '') {
       return;
     }
     this.logger.log(`updateOrbitDb ${requestBody} is started`);
@@ -73,7 +70,7 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async updateVersion(version: string) {
-    if (!super.basicUrl || super.basicUrl === '') {
+    if (!this.basicUrl || this.basicUrl === '') {
       return;
     }
     this.logger.log(`updateVersion ${version} is started`);
@@ -137,7 +134,7 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async notifyError(message: string) {
-    if (!super.basicUrl || super.basicUrl === '') {
+    if (!this.basicUrl || this.basicUrl === '') {
       return;
     }
     const requestBody = {
