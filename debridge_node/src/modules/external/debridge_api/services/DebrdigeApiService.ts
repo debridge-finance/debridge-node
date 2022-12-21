@@ -60,6 +60,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async updateOrbitDb(requestBody: UpdateOrbirDbDTO) {
+    if (!this.basicUrl || this.basicUrl === '') {
+      return;
+    }
     this.logger.log(`updateOrbitDb ${requestBody} is started`);
     const httpResult = await this.authRequest('/Validator/updateOrbitDb', requestBody, this.getLoginDto());
     this.logger.verbose(`response: ${httpResult.data}`);
@@ -67,6 +70,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async updateVersion(version: string) {
+    if (!this.basicUrl || this.basicUrl === '') {
+      return;
+    }
     this.logger.log(`updateVersion ${version} is started`);
     const httpResult = await this.authRequest('/Validator/setNodeVersion', { version }, this.getLoginDto());
 
@@ -128,6 +134,9 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
   }
 
   async notifyError(message: string) {
+    if (!this.basicUrl || this.basicUrl === '') {
+      return;
+    }
     const requestBody = {
       message,
     } as ErrorNotificationDTO;
