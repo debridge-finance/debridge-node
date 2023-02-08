@@ -104,7 +104,6 @@ export class SolanaReaderService {
       const txs = transactionsHashes.slice(skip, end);
       this.logger.log(`Tx hashes for scan ${JSON.stringify(txs)}`);
       const transactions = await this.solanaApiService.getEventsFromTransactions(txs);
-      const lastTxHashInBatch = txs.at(-1);
       const events = [];
       transactions
         .filter(transaction => transaction.transactionState === TransactionState.Ok)
@@ -141,13 +140,19 @@ export class SolanaReaderService {
           break;
         }
       } else {
-        const lastTransactionInBatch = (await this.solanaApiService.getEventsFromTransactions([lastTxHashInBatch]))[0];
-        await this.supportedChainRepository.update(chainId, {
-          latestSolanaTransaction: lastTxHashInBatch,
-          latestBlock: lastTransactionInBatch.slotNumber,
-          lastTxTimestamp: lastTransactionInBatch.transactionTimestamp.toString(),
-          lastTransactionSlotNumber: lastTransactionInBatch.slotNumber,
-        });
+        this.logger.log(`There are no success transaction`);
+        const lastTransactionInBatch = transactions.at(-1);
+        if (lastTransactionInBatch) {
+          await this.supportedChainRepository.update(chainId, {
+            latestSolanaTransaction: lastTransactionInBatch.transactionHash,
+            latestBlock: lastTransactionInBatch.slotNumber,
+            lastTxTimestamp: lastTransactionInBatch.transactionTimestamp.toString(),
+            lastTransactionSlotNumber: lastTransactionInBatch.slotNumber,
+          });
+          this.logger.log(
+            `updateSupportedChainBlock; transactionHash: ${lastTransactionInBatch.transactionHash}; slotNumber: ${lastTransactionInBatch.slotNumber};`,
+          );
+        }
       }
       this.logger.verbose(`Waiting ${this.SOLANA_API_WAIT_BATCH_INTERVAL}`); //need for sync events from reader
       await setTimeout(this.SOLANA_API_WAIT_BATCH_INTERVAL);
