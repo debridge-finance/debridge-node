@@ -45,8 +45,6 @@ services:
     secrets:
       - source: keystore
         target: /app/keystore.json
-      - source: bundlr_wallet
-        target: /app/bundlr_wallet.json
     volumes:
       - ./stats/debridge-node:/app/stats
       - ./config:/app/dist/config
