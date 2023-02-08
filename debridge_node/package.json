@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@bundlr-network/client": "0.10.3",
     "@fastify/static": "6.8.0",
     "@nestjs/axios": "1.0.1",
     "@nestjs/common": "9.3.6",

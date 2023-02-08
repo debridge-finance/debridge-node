@@ -16,6 +16,7 @@ import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
 import { ClassicChainConfig } from '../../../chain/config/models/configs/ClassicChainConfig';
 import { SolanaApiService } from '../../../external/solana_api/services/SolanaApiService';
+import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 
 @Injectable()
 export class CheckAssetsEventAction extends IAction {
@@ -81,7 +82,7 @@ export class CheckAssetsEventAction extends IAction {
             else {
               ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
             }
-          // if chainFrom is EVM
+            // if chainFrom is EVM
           } else {
             const web3 = await this.web3Service.web3HttpProvider(chainFromConfig.providers);
             const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainFromConfig.debridgeAddr);
@@ -154,6 +155,7 @@ export class CheckAssetsEventAction extends IAction {
             status: SubmisionStatusEnum.SIGNED,
             ipfsStatus: UploadStatusEnum.NEW,
             apiStatus: UploadStatusEnum.NEW,
+            bundlrStatus: BundlrStatusEnum.NEW,
             signature: signature,
             deployId: deployId,
           } as ConfirmNewAssetEntity);

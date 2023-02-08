@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { EventFromTransaction } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
-import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
-import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
-import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
-import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
-import { ChainConfigService } from '../../config/services/ChainConfigService';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import {
+  EventFromTransaction
+} from "../../../external/solana_api/dto/response/get.events.from.transactions.response.dto";
+import { SubmissionEntity } from "../../../../entities/SubmissionEntity";
+import { SubmisionStatusEnum } from "../../../../enums/SubmisionStatusEnum";
+import { UploadStatusEnum } from "../../../../enums/UploadStatusEnum";
+import { SubmisionAssetsStatusEnum } from "../../../../enums/SubmisionAssetsStatusEnum";
+import { ChainConfigService } from "../../config/services/ChainConfigService";
+import { BundlrStatusEnum } from "../../../../enums/BundlrStatusEnum";
 
 export class SolanaEvent extends EventFromTransaction {
   slotNumber: number;
@@ -42,6 +45,8 @@ export class TransformService {
     submission.decimalDenominator = transaction.decimalDenominator;
     submission.assetsStatus = SubmisionAssetsStatusEnum.NEW;
 
+    submission.bundlrStatus = BundlrStatusEnum.NEW;
+
     return submission;
   }
 
@@ -62,6 +67,7 @@ export class TransformService {
       rawEvent: JSON.stringify(sendEvent),
       blockNumber: sendEvent.blockNumber,
       nonce: parseInt(sendEvent.returnValues.nonce),
+      bundlrStatus: BundlrStatusEnum.NEW,
     } as SubmissionEntity;
   }
 }

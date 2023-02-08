@@ -35,3 +35,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 /orbitdb/
+
+bundlr_wallet.json
+
