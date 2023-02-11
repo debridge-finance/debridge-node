@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'develop'
+      - 'feature/bundlr_for_storing_signatures'
 
 jobs:
   ci:
