@@ -63,9 +63,17 @@ The script will show the newly generated Ethereum address, private key, password
 
 5. Put the keystore file under `secrets/keystore.json`.
 6. Store the password that decrypts the key from `keystore` in the .env file KEYSTORE_PASSWORD.
-7. Contact deBridge team  to make your wallet address to be whitelisted by deBridge governance
-8. Run the command `docker-compose up --build -d`.
-9. If there is a need to start multiple instances of the node (e.g. one for testnet and one for mainnet) on one server you can:
+7. Contact deBridge team  to make your wallet address to be whitelisted by deBridge governance.
+8. Create a arweave wallet file for the validation node. Script from `generate-arweave-wallet` folder can be used. To start generating new wallet info:
+- npm i
+- node index.js
+
+The script will show the newly generated arweave address, private key. Copy password privateKey to /`secrets/bundlr_wallet.json`
+
+9. Put the privateKey file under `secrets/bundlr_wallet.json`.
+10. Contact deBridge team  to make your arweave wallet address to be whitelisted by deBridge governance.
+11. Run the command `docker-compose up --build -d`.
+12. If there is a need to start multiple instances of the node (e.g. one for testnet and one for mainnet) on one server you can:
   - checkout or copy repo to the new directory
   - change DOCKER_ID variable in .env
   - start as described above

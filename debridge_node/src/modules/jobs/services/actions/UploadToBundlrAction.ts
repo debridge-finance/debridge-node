@@ -33,14 +33,6 @@ export class UploadToBundlrAction extends IAction {
         },
       });
       for (const submission of submissions) {
-        await this.submissionsRepository.update(
-          {
-            submissionId: submission.submissionId,
-          },
-          {
-            bundlrStatus: BundlrStatusEnum.UPLOADING_STARTED,
-          },
-        );
         this.logger.verbose(`Uploading submission to bundlr started ${submission.submissionId}`);
 
         const bundlrTx = await this.bundlrService.upload(
@@ -91,14 +83,6 @@ export class UploadToBundlrAction extends IAction {
       });
 
       for (const asset of assets) {
-        await this.confirmNewAssetEntityRepository.update(
-          {
-            deployId: asset.deployId,
-          },
-          {
-            bundlrStatus: BundlrStatusEnum.UPLOADING_STARTED,
-          },
-        );
         this.logger.verbose(`Uploading asset to bundlr started ${asset.deployId}`);
 
         const bundlrTx = await this.bundlrService.upload(JSON.stringify(asset), [
@@ -106,8 +90,27 @@ export class UploadToBundlrAction extends IAction {
             name: 'deployId',
             value: asset.deployId,
           },
+          {
+            name: 'signature',
+            value: asset.signature,
+          },
+          {
+            name: 'tokenAddress',
+            value: asset.tokenAddress,
+          },
+          {
+            name: 'decimals',
+            value: asset.decimals.toString(),
+          },
+          {
+            name: 'nativeChainId',
+            value: asset.nativeChainId.toString(),
+          },
+          {
+            name: 'debridgeId',
+            value: asset.debridgeId,
+          },
         ]);
-
         await this.confirmNewAssetEntityRepository.update(
           {
             deployId: asset.deployId,
