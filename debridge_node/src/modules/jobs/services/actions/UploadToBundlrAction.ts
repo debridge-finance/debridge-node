@@ -99,7 +99,7 @@ export class UploadToBundlrAction extends IAction {
             value: asset.tokenAddress,
           },
           {
-            name: 'decimals',
+            name: 'tokenDecimals',
             value: asset.decimals.toString(),
           },
           {
@@ -109,6 +109,14 @@ export class UploadToBundlrAction extends IAction {
           {
             name: 'debridgeId',
             value: asset.debridgeId,
+          },
+          {
+            name: 'tokenName',
+            value: asset.name,
+          },
+          {
+            name: 'tokenSymbol',
+            value: asset.symbol,
           },
         ]);
         await this.confirmNewAssetEntityRepository.update(
