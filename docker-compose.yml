@@ -39,12 +39,14 @@ services:
     networks:
       - debridge-node-network
   debridge-node:
-    image: debridgefinance/debridge-node:2.4.8
+    image: debridgefinance/debridge-node:2.5.3-alpha
     container_name: debridge-node${DOCKER_ID}
     restart: unless-stopped
     secrets:
       - source: keystore
         target: /app/keystore.json
+      - source: bundlr_wallet
+        target: /app/bundlr_wallet.json
     volumes:
       - ./stats/debridge-node:/app/stats
       - ./config:/app/dist/config
@@ -74,6 +76,7 @@ services:
       - ORBITDB_PASSWORD=${ORBITDB_PASSWORD}
       - ORBITDB_URL=${ORBITDB_URL}
       - SOLANA_API_WAIT_BATCH_INTERVAL=${SOLANA_API_WAIT_BATCH_INTERVAL}
+      - BUNDLR_NODE=${BUNDLR_NODE}
     depends_on:
       - postgres
     networks:
@@ -84,3 +87,5 @@ networks:
 secrets:
   keystore:
     file: ./secrets/keystore.json
+  bundlr_wallet:
+    file: ./secrets/bundlr_wallet.json

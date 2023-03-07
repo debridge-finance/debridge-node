@@ -12,9 +12,19 @@ import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
 import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
 import { StartScanningService } from './services/StartScanningService';
 import { ChainScanningModule } from '../chain/scanning/ChainScanningModule';
+import { UploadToBundlrAction } from './services/actions/UploadToBundlrAction';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]), ChainScanningModule],
-  providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToIPFSAction, JobService],
+  providers: [
+    StartScanningService,
+    CheckAssetsEventAction,
+    SignAction,
+    StatisticToApiAction,
+    UploadToApiAction,
+    UploadToIPFSAction,
+    UploadToBundlrAction,
+    JobService,
+  ],
 })
 export class JobModule {}

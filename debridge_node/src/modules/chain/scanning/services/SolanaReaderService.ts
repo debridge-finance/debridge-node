@@ -129,7 +129,7 @@ export class SolanaReaderService {
           throw e;
         }
       });
-      
+
       //sort in asc, we need it for correct updating last tracked value and nonce validation
       submissions.sort((a, b) => a.nonce - b.nonce);
       this.logger.verbose(`Events ${submissions.length} are prepared for db storing`);
@@ -138,6 +138,20 @@ export class SolanaReaderService {
         const result = await this.chainProcessingService.process(submissions, chainId, submissions.at(-1).txHash);
         if (result !== ProcessNewTransferResultStatusEnum.SUCCESS) {
           break;
+        }
+      } else {
+        this.logger.log(`There are no success transaction`);
+        const lastTransactionInBatch = transactions.at(-1);
+        if (lastTransactionInBatch) {
+          await this.supportedChainRepository.update(chainId, {
+            latestSolanaTransaction: lastTransactionInBatch.transactionHash,
+            latestBlock: lastTransactionInBatch.slotNumber,
+            lastTxTimestamp: lastTransactionInBatch.transactionTimestamp.toString(),
+            lastTransactionSlotNumber: lastTransactionInBatch.slotNumber,
+          });
+          this.logger.log(
+            `updateSupportedChainBlock; transactionHash: ${lastTransactionInBatch.transactionHash}; slotNumber: ${lastTransactionInBatch.slotNumber};`,
+          );
         }
       }
       this.logger.verbose(`Waiting ${this.SOLANA_API_WAIT_BATCH_INTERVAL}`); //need for sync events from reader

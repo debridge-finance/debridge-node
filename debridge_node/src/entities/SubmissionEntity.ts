@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, UpdateDateColumn, Entity, Index, PrimaryColum
 import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
+import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
 
 @Entity('submissions')
 @Unique(['submissionId'])
@@ -39,6 +40,11 @@ export class SubmissionEntity {
   @Column({
     nullable: true,
   })
+  bundlrTx: string;
+
+  @Column({
+    nullable: true,
+  })
   ipfsLogHash: string;
 
   @Column({
@@ -63,6 +69,10 @@ export class SubmissionEntity {
   @Column()
   @Index()
   apiStatus: UploadStatusEnum;
+
+  @Column({ nullable: true })
+  @Index()
+  bundlrStatus: BundlrStatusEnum;
 
   @Column()
   @Index()
