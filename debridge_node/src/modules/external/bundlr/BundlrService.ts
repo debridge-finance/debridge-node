@@ -1,16 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Bundlr from '@bundlr-network/client';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BundlrService {
   private readonly bundlr: Bundlr;
   private readonly logger = new Logger(BundlrService.name);
+  private isInitializedValue = false;
 
   constructor(private readonly configService: ConfigService) {
-    const jwk = JSON.parse(readFileSync('bundlr_wallet.json').toString());
-    this.bundlr = new Bundlr(this.configService.get('BUNDLR_NODE'), 'arweave', jwk);
+    const path = 'bundlr_wallet.json';
+    if (existsSync(path)) {
+      const jwk = JSON.parse(readFileSync(path).toString());
+      this.bundlr = new Bundlr(this.configService.get('BUNDLR_NODE'), 'arweave', jwk);
+      this.isInitializedValue = true;
+    } else {
+      this.logger.log(`bundlr_wallet.json is not exists`);
+    }
+  }
+
+  isInitialized() {
+    return this.isInitializedValue;
   }
 
   async upload(

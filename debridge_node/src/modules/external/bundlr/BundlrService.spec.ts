@@ -23,6 +23,11 @@ jest.mock('@bundlr-network/client', () => {
   };
 });
 
+jest.mock('fs', () => ({
+  existsSync: jest.fn(() => true),
+  readFileSync: jest.fn(() => '{}'),
+}));
+
 describe('BundlrService', () => {
   let service: BundlrService;
 
@@ -32,6 +37,10 @@ describe('BundlrService', () => {
       providers: [BundlrService],
     }).compile();
     service = module.get(BundlrService);
+  });
+
+  it('isInitialized true', async () => {
+    expect(service.isInitialized()).toBe(true);
   });
 
   it('Upload', async () => {
