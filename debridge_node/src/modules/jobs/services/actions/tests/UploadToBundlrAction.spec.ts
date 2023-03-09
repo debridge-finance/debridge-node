@@ -38,9 +38,8 @@ describe('UploadToBundlrAction', () => {
         {
           provide: BundlrService,
           useValue: {
-            upload: async () => {
-              return 'id';
-            },
+            upload: jest.fn().mockResolvedValue('id'),
+            isInitialized: jest.fn().mockReturnValue(true),
           },
         },
         {
