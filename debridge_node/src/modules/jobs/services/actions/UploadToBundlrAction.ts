@@ -24,6 +24,7 @@ export class UploadToBundlrAction extends IAction {
 
   async process(): Promise<void> {
     if (!this.bundlrService.isInitialized()) {
+      return;
     }
     this.logger.log(`process UploadToBundlrAction`);
 
