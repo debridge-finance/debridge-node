@@ -14,7 +14,7 @@ COPY src  /build/src
 RUN mkdir stats
 RUN npm run build
 
-FROM node:18.5.0-alpine
+FROM node:18.15.0-alpine
 WORKDIR /app
 COPY --from=builder /build/dist /app/dist
 COPY --from=builder /build/node_modules /app/node_modules
