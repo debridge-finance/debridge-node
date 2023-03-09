@@ -7,6 +7,29 @@
 <br/>
 
 # Changelog
+## v2.5.3
+* upload signatures to bundlr 
+* up packages
+
+## How to update to v2.5.3
+### Pull latest changes
+```shell
+git checkout master
+git pull origin master
+```
+
+### Generate bundlr wallet
+```
+cd generate-arweave-wallet
+npm i
+npm index.js
+```
+Copy private key to secrets/bundlr_wallet.json
+
+### Add to env
+```
+BUNDLR_NODE=http://node2.bundlr.network
+```
 
 ## v2.4.5(12.12.2022)
 * add suport running without depbridge api (set empty API_BASE_URL on env)
@@ -314,8 +337,8 @@ git checkout v1.1.0
 # 2. add env var `DEBRIDGE_NODE_NODE_OPTION=--max_old_space_size=8192`
 # you can find the full list of env vars at `.default.env` 
 
-# if `./config/chains_config.json` doesn't exist create it from `./config/chains_config_default.json`
-cp ./config/chains_config_default.json ./config/chains_config.json
+# if `./config/chains_config.json` doesn't exist create it from `./config/chains_config.json`
+cp ./config/chains_config.json ./config/chains_config.json
 #  and update ./config/chains_config.json with your values
 
 # run new version
@@ -340,8 +363,8 @@ git pull
 # 3. add env var `IPFS_URL=http://ipfs-daemon${DOCKER_ID}:5001/api/v0`
 
 
-# create ./config/chains_config.json from ./config/chains_config_default.json
-cp ./config/chains_config_default.json ./config/chains_config.json
+# create ./config/chains_config.json from ./config/chains_config.json
+cp ./config/chains_config.json ./config/chains_config.json
 # update ./config/chains_config.json with your values
 
 # run new version
