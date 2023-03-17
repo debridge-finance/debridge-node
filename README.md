@@ -77,6 +77,14 @@ The script will show the newly generated Ethereum address, private key, password
   - checkout or copy repo to the new directory
   - change DOCKER_ID variable in .env
   - start as described above
+10. debridge_node allow to save signatures in the arweave. To enable this feature need to generate arweave wallet and fill balance. 
+Generate [arweave](https://www.arweave.org/) wallet
+```
+cd generate-arweave-wallet
+npm i
+npm index.js
+```
+Copy private key to secrets/bundlr_wallet.json
 
 ## Update debridge node to the latest version
 ```shell
