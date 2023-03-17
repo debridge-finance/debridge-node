@@ -2,8 +2,8 @@ name: Build image
 
 on:
   push:
-    branches:
-      - 'master'
+    tags:
+      - '*'
 
 jobs:
   ci:
