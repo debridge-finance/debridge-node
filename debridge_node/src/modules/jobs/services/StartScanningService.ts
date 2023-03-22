@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SignAction } from './actions/SignAction';
-import { UploadToIPFSAction } from './actions/UploadToIPFSAction';
 import { UploadToApiAction } from './actions/UploadToApiAction';
 import { CheckAssetsEventAction } from './actions/CheckAssetsEventAction';
 import { StatisticToApiAction } from './actions/StatisticToApiAction';
@@ -19,7 +18,6 @@ export class StartScanningService implements OnModuleInit {
 
   constructor(
     private readonly signAction: SignAction,
-    private readonly uploadToIPFSAction: UploadToIPFSAction,
     private readonly uploadToApiAction: UploadToApiAction,
     private readonly checkAssetsEventAction: CheckAssetsEventAction,
     private readonly statisticToApiAction: StatisticToApiAction,
@@ -45,7 +43,7 @@ export class StartScanningService implements OnModuleInit {
             chainId: chainId,
             latestBlock: 0,
             latestSolanaTransaction: chainConfigSolana.lastTransaction,
-            network: chainConfigSolana.name
+            network: chainConfigSolana.name,
           });
         }
         continue;

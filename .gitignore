@@ -7,16 +7,8 @@ pgdata/
 node_modules/
 /debridge_node/log
 dist/
-/debridge_node/ipfs
-/debridge_node/test/orbitdb/orbitdb
-/debridge_node/test/orbitdb/ipfs
 data
 /debridge_node/keystore.json
-
-/orbitdb/.idea/*
-/orbitdb/dist/*
-/orbitdb/node_modules/*
-/orbitdb/orbitdb/*
 
 .DS_Store
 heap_info.json

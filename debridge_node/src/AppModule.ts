@@ -10,7 +10,6 @@ import { DebridgeApiModule } from './modules/external/debridge_api/DebridgeApiMo
 import { SolanaApiModule } from './modules/external/solana_api/SolanaApiModule';
 import { Web3Module } from './modules/web3/Web3Module';
 import { JobModule } from './modules/jobs/JobModule';
-import { OrbitDbModule } from './modules/external/orbitdb_api/OrbitDbModule';
 import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
 import { ApiModule } from './modules/api/ApiModule';
 
@@ -39,7 +38,6 @@ import { ApiModule } from './modules/api/ApiModule';
     Web3Module,
     DebridgeApiModule,
     SolanaApiModule,
-    OrbitDbModule,
     JobModule,
     ApiModule,
   ],

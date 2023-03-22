@@ -7,7 +7,6 @@ import { Account } from 'web3-core';
 import Web3 from 'web3';
 import { readFileSync } from 'fs';
 import { ProgressInfoDTO, ValidationProgressDTO } from '../dto/request/ValidationProgressDTO';
-import { UpdateOrbirDbDTO } from '../dto/request/UpdateOrbirDbDTO';
 import { HttpAuthService } from '../../common/HttpAuthService';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
@@ -57,16 +56,6 @@ export class DebrdigeApiService extends HttpAuthService implements OnModuleInit 
       timeStamp,
       killOtherSessions: false,
     };
-  }
-
-  async updateOrbitDb(requestBody: UpdateOrbirDbDTO) {
-    if (!this.basicUrl || this.basicUrl === '') {
-      return;
-    }
-    this.logger.log(`updateOrbitDb ${requestBody} is started`);
-    const httpResult = await this.authRequest('/Validator/updateOrbitDb', requestBody, this.getLoginDto());
-    this.logger.verbose(`response: ${httpResult.data}`);
-    this.logger.log(`updateOrbitDb is finished`);
   }
 
   async updateVersion(version: string) {
