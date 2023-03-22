@@ -37,7 +37,7 @@ services:
       - postgres
     networks:
       - debridge-node-network
-  
+
   #Mock ValidatorAPI
   debridge.validatorapi:
     container_name: debridge_backend_validatorapi
@@ -47,7 +47,9 @@ services:
      - ASPNETCORE_ENVIRONMENT=Production
     volumes:
       - ./config/appsettings.validatorapi.Production.json:/app/appsettings.Production.json
-    
+    networks:
+      - debridge-node-network
+
   debridge-node:
     image: debridgefinance/debridge-node:2.5.3-alpha
     container_name: debridge-node${DOCKER_ID}
