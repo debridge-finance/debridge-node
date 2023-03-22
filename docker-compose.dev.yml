@@ -41,7 +41,7 @@ services:
   #Mock ValidatorAPI
   debridge.validatorapi:
     container_name: debridge_backend_validatorapi
-    image: debridgefinance/mock-validator-api:1.0.0
+    image: debridgefinance/mock-validator-api:1.0.1
     restart: unless-stopped
     environment:
      - ASPNETCORE_ENVIRONMENT=Production
