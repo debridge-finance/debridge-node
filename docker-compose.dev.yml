@@ -17,13 +17,39 @@ services:
       - ./pg-init-scripts:/docker-entrypoint-initdb.d
     networks:
       - debridge-node-network
-  debridge-api:
-    build: ./mocks/debridge-api
-    container_name: debridge-api${DOCKER_ID}
+  debridge-solanadatareader:
+    image: debridgefinance/solana-events-reader-api:1.1.4
+    restart: unless-stopped
+    container_name: debridge-solanadatareader${DOCKER_ID}
+    environment:
+      - PORT=${SOLANA_DATA_READER_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - SOLANA_RPC=${SOLANA_RPC}
+      - SOLANA_WS=${SOLANA_WS}
+      - DEBRIDGE_PK=${DEBRIDGE_PK}
+      - SETTINGS_PK=${SETTINGS_PK}
+      - SENTRY_DSN=${SOLANA_DATA_READER_API_SENTRY_DSN}
+    depends_on:
+      - postgres
     networks:
       - debridge-node-network
+  
+  #Mock ValidatorAPI
+  debridge.validatorapi:
+    container_name: debridge_backend_validatorapi
+    image: debridgefinance/mock-validator-api:1.0.0
+    restart: unless-stopped
+    environment:
+     - ASPNETCORE_ENVIRONMENT=Production
+    volumes:
+      - ./config/appsettings.validatorapi.Production.json:/app/appsettings.Production.json
+    
   debridge-node:
-    build: debridge_node
+    image: debridgefinance/debridge-node:2.5.3-alpha
     container_name: debridge-node${DOCKER_ID}
     restart: unless-stopped
     secrets:
@@ -52,10 +78,15 @@ services:
       - THROTTLER_LIMIT=${THROTTLER_LIMIT}
       - WEB3_TIMEOUT=${WEB3_TIMEOUT}
       - ENABLE_DATAFIX=${ENABLE_DATAFIX}
+      - SOLANA_DATA_READER_API_BASE_URL=${SOLANA_DATA_READER_API_BASE_URL}
+      - SOLANA_GET_HISTORICAL_BATCH_SIZE=${SOLANA_GET_HISTORICAL_BATCH_SIZE}
+      - SOLANA_GET_EVENTS_BATCH_SIZE=${SOLANA_GET_EVENTS_BATCH_SIZE}
+      - SOLANA_API_REQUEST_TIMEOUT=${SOLANA_API_REQUEST_TIMEOUT}
+      - SOLANA_API_WAIT_BATCH_INTERVAL=${SOLANA_API_WAIT_BATCH_INTERVAL}
       - BUNDLR_NODE=${BUNDLR_NODE}
     depends_on:
       - postgres
-      - debridge-api
+      - debridge.validatorapi
     networks:
       - debridge-node-network
 networks:
