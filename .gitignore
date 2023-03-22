@@ -24,3 +24,4 @@ config/chains_config.json
 
 .idea/*
 debridge_node/bundlr_wallet.json
+.env
