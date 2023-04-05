@@ -58,6 +58,10 @@ export class UploadToBundlrAction extends IAction {
               name: 'signature',
               value: submission.signature,
             },
+            {
+              name: 'chainId',
+              value: submission.chainFrom.toString(),
+            },
           ],
         );
 
