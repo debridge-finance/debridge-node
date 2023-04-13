@@ -70,6 +70,7 @@ describe('UploadToBundlrAction', () => {
                 {
                   submissionId: '123',
                   registrationId: '1234',
+                  chainFrom: 1,
                 },
               ];
             },

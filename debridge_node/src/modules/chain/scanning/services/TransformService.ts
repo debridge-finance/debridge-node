@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { EventFromTransaction } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
@@ -19,9 +18,9 @@ export class SolanaEvent extends EventFromTransaction {
  */
 @Injectable()
 export class TransformService {
-  constructor(private readonly configServive: ConfigService, private readonly chainConfigService: ChainConfigService) {}
+  constructor(private readonly chainConfigService: ChainConfigService) {}
 
-  generateSubmissionFromSolanaEvent(transaction: SolanaEvent) {
+  generateSubmissionFromSolanaEvent(transaction: SolanaEvent): SubmissionEntity {
     const submission = new SubmissionEntity();
     submission.submissionId = transaction.submissionId;
     submission.txHash = transaction.transactionHash;
@@ -47,9 +46,9 @@ export class TransformService {
     return submission;
   }
 
-  generateSubmissionFromSentEvent(sendEvent) {
+  generateSubmissionFromSentEvent(sendEvent): SubmissionEntity {
     const submissionId = sendEvent.returnValues.submissionId;
-    return {
+    const submission = {
       submissionId,
       txHash: sendEvent.transactionHash,
       chainFrom: sendEvent.returnValues.chainIdFrom,
@@ -66,5 +65,7 @@ export class TransformService {
       nonce: parseInt(sendEvent.returnValues.nonce),
       bundlrStatus: BundlrStatusEnum.NEW,
     } as SubmissionEntity;
+
+    return submission;
   }
 }

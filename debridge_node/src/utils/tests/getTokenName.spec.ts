@@ -2,7 +2,7 @@ import { getTokenName } from '../getTokenName';
 import { Logger } from '@nestjs/common';
 const logger = new Logger();
 
-function generate(call) {
+const generate = call => {
   return {
     methods: {
       name: () => {
@@ -12,7 +12,7 @@ function generate(call) {
       },
     },
   };
-}
+};
 
 describe('getTokenName', () => {
   it('should return name', async () => {

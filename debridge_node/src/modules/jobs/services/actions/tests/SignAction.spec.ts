@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SubmissionEntity } from '../../../../../entities/SubmissionEntity';
@@ -16,8 +16,14 @@ describe('SignAction', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule, HttpModule],
+      imports: [HttpModule],
       providers: [
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('test'),
+          },
+        },
         SignAction,
         {
           provide: Web3Service,

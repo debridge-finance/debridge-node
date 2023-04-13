@@ -6,7 +6,6 @@ import { DebrdigeApiService } from '../../../external/debridge_api/services/Debr
 import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity';
 import { ProgressInfoDTO } from '../../../external/debridge_api/dto/request/ValidationProgressDTO';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
-import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { readConfiguration } from '../../../../utils/readConfiguration';
 import { ConfigService } from '@nestjs/config';
 
@@ -15,8 +14,6 @@ export class StatisticToApiAction extends IAction {
   constructor(
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
-    @InjectRepository(SubmissionEntity)
-    private readonly submissionRepository: Repository<SubmissionEntity>,
     private readonly chainConfigService: ChainConfigService,
     private readonly debridgeApiService: DebrdigeApiService,
     private readonly configService: ConfigService,

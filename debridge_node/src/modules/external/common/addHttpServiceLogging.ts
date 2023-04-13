@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Logger } from '@nestjs/common';
 
-export function addHttpServiceLogging(httpService: HttpService, logger: Logger) {
+export const addHttpServiceLogging = (httpService: HttpService, logger: Logger) => {
   httpService.axiosRef.interceptors.request.use(
     request => {
       logger.verbose(`Http request ${JSON.stringify(request)}`);
@@ -26,4 +26,4 @@ export function addHttpServiceLogging(httpService: HttpService, logger: Logger) 
       return Promise.reject(response);
     },
   );
-}
+};

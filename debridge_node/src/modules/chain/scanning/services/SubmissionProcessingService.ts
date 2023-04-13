@@ -63,8 +63,6 @@ export class SubmissionProcessingService {
     return result.status;
   }
 
-  //check is solana
-
   /**
    * Process new transfers
    * @param logger

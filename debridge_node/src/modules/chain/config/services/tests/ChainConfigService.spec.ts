@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChainScanningService } from '../../../scan/services/ChainScanningService';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AddNewEventsAction } from '../../../scan/services/AddNewEventsAction';
-import { ChainConfigService, ChainProvider } from '../ChainConfigService';
 import { SolanaReaderService } from '../../../scanning/services/SolanaReaderService';
+import { ChainConfigService } from '../ChainConfigService';
+import { ChainProvider } from '../../models/ChainProvider';
+import { AddNewEventsAction } from '../../../scanning/services/AddNewEventsAction';
+import { ChainScanningService } from '../../../scanning/services/ChainScanningService';
+import { ClassicChainConfig } from '../../models/configs/ClassicChainConfig';
 
-jest.mock('../../config/chains_config.json', () => {
+jest.mock('../../../../../config/chains_config.json', () => {
   return [
     {
       chainId: 970,
@@ -76,7 +78,7 @@ describe('ChainConfigService', () => {
       ],
     }).compile();
     service = module.get(ChainConfigService);
-    chainProvider = service.get(970).providers;
+    chainProvider = (service.get(970) as ClassicChainConfig).providers;
   });
 
   describe('ChainConfigService', () => {
@@ -91,7 +93,7 @@ describe('ChainConfigService', () => {
 
       it('getChainAuth', async () => {
         expect(chainProvider.getChainAuth('https://debridge.io')).toBeUndefined();
-        const authChainProvider = service.get(972).providers;
+        const authChainProvider = (service.get(972) as ClassicChainConfig).providers;
         expect(authChainProvider.getChainAuth('debridge.io')).toEqual([{ name: 'Authorization', value: 'Basic YW50b246MTIz' }]);
       });
 
@@ -140,7 +142,7 @@ describe('ChainConfigService', () => {
       it('getChains', async () => {
         const configs = JSON.stringify(service.getChains().map(chain => service.get(chain)));
         expect(configs).toEqual(
-          `[{"chainId":970,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":970,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000, "isSolana":false},{"chainId":971,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":971,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000, "isSolana":false},{"chainId":972,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"isValid":false,"isActive":true,"provider":"debridge.io","user":"anton","password":"123","authType":"BASIC"}],"chainId":972,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000, "isSolana":false}]`,
+          `[{"chainId":970,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":970,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000,"isSolana":false},{"chainId":971,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"provider":"https://debridge.io","isValid":false,"isActive":true,"authType":"NONE"}],"chainId":971,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000,"isSolana":false},{"chainId":972,"name":"ETHEREUM","debridgeAddr":"0x43dE2d77BF8027e25dBD179B491e8d64f38398aA","firstStartBlock":13665321,"providers":{"providerList":[{"isValid":false,"isActive":true,"provider":"debridge.io","user":"anton","password":"123","authType":"BASIC"}],"chainId":972,"providers":{}},"interval":10000,"blockConfirmation":12,"maxBlockRange":5000,"isSolana":false}]`,
         );
       });
 
@@ -155,7 +157,6 @@ describe('ChainConfigService', () => {
             interval: 10000,
             blockConfirmation: 12,
             maxBlockRange: 5000,
-            isSolana: false,
           },
           {
             chainId: 971,
@@ -166,7 +167,6 @@ describe('ChainConfigService', () => {
             interval: 10000,
             blockConfirmation: 12,
             maxBlockRange: 5000,
-            isSolana: false,
           },
           {
             chainId: 972,
@@ -186,7 +186,6 @@ describe('ChainConfigService', () => {
             interval: 10000,
             blockConfirmation: 12,
             maxBlockRange: 5000,
-            isSolana: false,
           },
         ]);
       });

@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NonceControllingService } from './NonceControllingService';
+import { NonceControllingService } from '../NonceControllingService';
 import { getEntityManagerToken } from '@nestjs/typeorm/dist/common/typeorm.utils';
+import { DebrdigeApiService } from '../../../../external/debridge_api/services/DebrdigeApiService';
+import { ChainScanningService } from '../ChainScanningService';
 
 describe('NonceControllingService', () => {
   let service: NonceControllingService;
@@ -9,6 +11,18 @@ describe('NonceControllingService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NonceControllingService,
+        {
+          provide: DebrdigeApiService,
+          useValue: {
+            notifyError: jest.fn(),
+          },
+        },
+        {
+          provide: ChainScanningService,
+          useValue: {
+            pause: jest.fn(),
+          },
+        },
         {
           provide: getEntityManagerToken(),
           useValue: {

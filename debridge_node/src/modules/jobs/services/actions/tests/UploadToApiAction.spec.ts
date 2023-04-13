@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SubmissionEntity } from '../../../../../entities/SubmissionEntity';
@@ -17,8 +17,14 @@ describe('UploadToApiAction', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule, HttpModule],
+      imports: [HttpModule],
       providers: [
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('test'),
+          },
+        },
         UploadToApiAction,
         {
           provide: DebrdigeApiService,
@@ -26,9 +32,7 @@ describe('UploadToApiAction', () => {
             uploadToApi: async (submissions: []) => {
               return submissions;
             },
-            uploadConfirmNewAssetsToApi: async () => {
-              return { registrationId: '12345' };
-            },
+            uploadConfirmNewAssetsToApi: jest.fn().mockResolvedValue({ registrationId: '12345' }),
           },
         },
         {
@@ -54,14 +58,12 @@ describe('UploadToApiAction', () => {
         {
           provide: getRepositoryToken(SubmissionEntity),
           useValue: {
-            find: async () => {
-              return [
-                {
-                  submissionId: '123',
-                  registrationId: '1234',
-                },
-              ];
-            },
+            find: jest.fn().mockResolvedValue([
+              {
+                submissionId: '123',
+                registrationId: '1234',
+              },
+            ]),
             update: async input => {
               return input;
             },

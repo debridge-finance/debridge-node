@@ -1,7 +1,6 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { Web3Service } from '../../../web3/services/Web3Service';
-import { ChainScanningService } from './ChainScanningService';
 import { SolanaReaderService } from './SolanaReaderService';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { ClassicChainConfig } from '../../config/models/configs/ClassicChainConfig';
@@ -17,8 +16,6 @@ export class AddNewEventsAction {
   private readonly locker = new Map();
 
   constructor(
-    @Inject(forwardRef(() => ChainScanningService))
-    private readonly chainScanningService: ChainScanningService,
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
     private readonly chainConfigService: ChainConfigService,
