@@ -111,6 +111,7 @@ export class ChainConfigService {
         provider: config.provider,
         user: config.user,
         password: config.password,
+        requireConfirmation: config.requireConfirmation,
         authType,
       };
     }

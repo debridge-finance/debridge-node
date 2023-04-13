@@ -110,7 +110,7 @@ export class AddNewEventsAction {
         try {
           // if providers in config less amount that needed confirmation we dont need to check
           if (chainDetail.providers.size() >= chainDetail.rpcConfirmation) {
-            const providersForConfirmation = chainDetail.providers.getAllProviders().filter(i => i !== web3.chainProvider);
+            const providersForConfirmation = chainDetail.providers.getAllProviders();
             const rpcConfirmationSubmissions = await Promise.all(
               providersForConfirmation.map(async provider => {
                 const web3ForConfirmation = await this.web3Service.createWeb3HttpProviderByProvider(provider, chainDetail.providers);
@@ -118,7 +118,12 @@ export class AddNewEventsAction {
                 // @ts-ignore
                 web3ForConfirmation.eth.setProvider = registerInstanceConfirmation.setProvider;
 
-                const events = await this.getEvents(registerInstanceConfirmation, fromBlock, lastBlockOfPage);
+                let events = [];
+                try {
+                  events = await this.getEvents(registerInstanceConfirmation, fromBlock, lastBlockOfPage);
+                } catch (e) {
+                  this.logger.error(`Error in getting events: ${e.message}`);
+                }
                 return {
                   provider,
                   submissionIds: events.map(i => i.returnValues.submissionId),
@@ -126,15 +131,19 @@ export class AddNewEventsAction {
               }),
             );
             for (const submission of submissions) {
-              let confirmations = 1;
-              rpcConfirmationSubmissions.forEach(rpcConfirmationSubmission => {
+              let confirmations = 0;
+              for (const rpcConfirmationSubmission of rpcConfirmationSubmissions) {
                 if (rpcConfirmationSubmission.submissionIds.includes(submission.submissionId)) {
                   confirmations++;
                   this.logger.log(`${rpcConfirmationSubmission.provider} returns correct ${submission.submissionId}`);
                 } else {
                   this.logger.log(`${rpcConfirmationSubmission.provider} returns incorrect ${submission.submissionId}`);
+                  if (chainDetail.providers.getRequireConfirmation(rpcConfirmationSubmission.provider)) {
+                    confirmations = 0;
+                    break;
+                  }
                 }
-              });
+              }
 
               submission.rpcConfirmation =
                 confirmations >= chainDetail.rpcConfirmation ? RpcValidationStatusEnum.VALIDATED : RpcValidationStatusEnum.NEW;
