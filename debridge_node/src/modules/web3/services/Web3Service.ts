@@ -23,37 +23,44 @@ export class Web3Service {
     return new Web3();
   }
 
+  async createWeb3HttpProviderByProvider(provider: string, chainProvider: ChainProvider) {
+    if (this.providersMap.has(provider)) {
+      const web3 = this.providersMap.get(provider);
+      const isWorking = await this.checkConnectionHttpProvider(web3);
+      if (isWorking) {
+        this.logger.verbose(`Old provider is working`);
+        return web3;
+      }
+      this.logger.error(`Old provider ${provider} is not working`);
+    }
+
+    const httpProvider = new Web3Custom.providers.HttpProvider(provider, {
+      timeout: this.web3Timeout,
+      keepAlive: true,
+      headers: chainProvider.getChainAuth(provider),
+    });
+
+    const web3 = new Web3Custom(provider, httpProvider);
+    const isWorking = await this.checkConnectionHttpProvider(web3);
+
+    if (!isWorking) {
+      chainProvider.setProviderStatus(provider, false);
+      return;
+    }
+    if (!chainProvider.getProviderValidationStatus(provider)) {
+      await this.validateChainId(chainProvider, provider);
+    }
+    chainProvider.setProviderStatus(provider, true);
+    this.providersMap.set(provider, web3);
+    return web3;
+  }
+
   async web3HttpProvider(chainProvider: ChainProvider): Promise<Web3Custom> {
     for (const provider of [...chainProvider.getNotFailedProviders(), ...chainProvider.getFailedProviders()]) {
-      if (this.providersMap.has(provider)) {
-        const web3 = this.providersMap.get(provider);
-        const isWorking = await this.checkConnectionHttpProvider(web3);
-        if (isWorking) {
-          this.logger.verbose(`Old provider is working`);
-          return web3;
-        }
-        this.logger.error(`Old provider ${provider} is not working`);
+      const web3Provider = await this.createWeb3HttpProviderByProvider(provider, chainProvider);
+      if (web3Provider) {
+        return web3Provider;
       }
-
-      const httpProvider = new Web3Custom.providers.HttpProvider(provider, {
-        timeout: this.web3Timeout,
-        keepAlive: true,
-        headers: chainProvider.getChainAuth(provider),
-      });
-
-      const web3 = new Web3Custom(provider, httpProvider);
-      const isWorking = await this.checkConnectionHttpProvider(web3);
-
-      if (!isWorking) {
-        chainProvider.setProviderStatus(provider, false);
-        continue;
-      }
-      if (!chainProvider.getProviderValidationStatus(provider)) {
-        await this.validateChainId(chainProvider, provider);
-      }
-      chainProvider.setProviderStatus(provider, true);
-      this.providersMap.set(provider, web3);
-      return web3;
     }
     const err = `Cann't connect to any provider ${chainProvider.getAllProviders()}`;
     this.logger.error(err);

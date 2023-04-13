@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ChainConfigService } from '../../chain/config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../chain/config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../chain/config/models/configs/EvmChainConfig';
 import { AddNewEventsAction } from '../../chain/scanning/services/AddNewEventsAction';
 
 /**
@@ -18,7 +18,7 @@ export class RescanService {
    * @param toBlock
    */
   rescan(chainId: number, fromBlock: number, toBlock: number) {
-    const chainDetail = this.chainConfigService.get(chainId) as ClassicChainConfig;
+    const chainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
 
     if (toBlock - fromBlock >= chainDetail.maxBlockRange) {
       const e = new HttpException('Out of range', HttpStatus.METHOD_NOT_ALLOWED);

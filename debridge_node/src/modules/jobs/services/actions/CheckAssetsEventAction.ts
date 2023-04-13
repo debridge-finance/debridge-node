@@ -14,7 +14,7 @@ import { Account } from 'web3-core';
 import { getTokenName } from '../../../../utils/getTokenName';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../../chain/config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../../chain/config/models/configs/EvmChainConfig';
 import { SolanaApiService } from '../../../external/solana_api/services/SolanaApiService';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 
@@ -59,7 +59,7 @@ export class CheckAssetsEventAction extends IAction {
       if (!confirmNewAction) {
         try {
           this.logger.log(`Process debridgeId: ${submission.debridgeId}`);
-          const chainFromConfig = this.chainConfigService.get(submission.chainFrom) as ClassicChainConfig;
+          const chainFromConfig = this.chainConfigService.get(submission.chainFrom) as EvmChainConfig;
           let tokenName;
           let tokenSymbol;
           let tokenDecimals;
@@ -193,7 +193,7 @@ export class CheckAssetsEventAction extends IAction {
   }
 
   private async getTokenInfo(nativeChainId: number, nativeTokenAddress: string) {
-    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as ClassicChainConfig;
+    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as EvmChainConfig;
     const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
     const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenAddress);
     const tokenName = await getTokenName(nativeTokenInstance, nativeTokenAddress, { logger: this.logger });

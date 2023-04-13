@@ -3,6 +3,7 @@ import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
 import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
+import { RpcValidationStatusEnum } from '../enums/RpcValidationStatusEnum';
 
 @Entity('submissions')
 @Unique(['submissionId'])
@@ -73,6 +74,10 @@ export class SubmissionEntity {
   @Column({ nullable: true })
   @Index()
   bundlrStatus: BundlrStatusEnum;
+
+  @Column({ nullable: true })
+  @Index()
+  rpcValidationStatus: RpcValidationStatusEnum;
 
   @Column()
   @Index()

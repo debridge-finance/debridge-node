@@ -11,6 +11,7 @@ import { Account } from 'web3-core';
 import { ConfigService } from '@nestjs/config';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { readConfiguration } from '../../../../utils/readConfiguration';
+import { RpcValidationStatusEnum } from '../../../../enums/RpcValidationStatusEnum';
 
 //Simple action that sign submissionId and save signatures to DB
 @Injectable()
@@ -42,6 +43,7 @@ export class SignAction extends IAction {
     const submissions = await this.submissionsRepository.find({
       where: {
         status: SubmisionStatusEnum.NEW,
+        rpcValidationStatus: RpcValidationStatusEnum.VALIDATED,
       },
     });
 
