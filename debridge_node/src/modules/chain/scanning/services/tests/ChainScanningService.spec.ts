@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ChainScanningService } from '../../modules/chain/scan/services/ChainScanningService';
 import { ScheduleModule } from '@nestjs/schedule';
-import { AddNewEventsAction } from '../../modules/chain/scan/services/AddNewEventsAction';
-import { ChainScanStatus } from '../../../../enums/ChainScanStatus';
-import { ChainConfigService } from '../ChainConfigService';
+import { ChainScanStatus } from '../../../../../enums/ChainScanStatus';
+import { ChainScanningService } from '../ChainScanningService';
+import { AddNewEventsAction } from '../AddNewEventsAction';
+import { ChainConfigService } from '../../../config/services/ChainConfigService';
 
-jest.mock('../../config/chains_config.json', () => {
+jest.mock('../../../../../config/chains_config.json', () => {
   return [
     {
       chainId: 97,

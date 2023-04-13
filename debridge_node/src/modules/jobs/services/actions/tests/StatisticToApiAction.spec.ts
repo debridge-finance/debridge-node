@@ -1,11 +1,37 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StatisticToApiAction } from '../StatisticToApiAction';
 import { DebrdigeApiService } from '../../../../external/debridge_api/services/DebrdigeApiService';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../../entities/SupportedChainEntity';
 import { ProgressInfoDTO } from '../../../../external/debridge_api/dto/request/ValidationProgressDTO';
+import { ChainConfigService } from '../../../../chain/config/services/ChainConfigService';
+
+jest.mock('../../../../../config/chains_config.json', () => {
+  return [
+    {
+      chainId: 97,
+      name: 'ETHEREUM',
+      debridgeAddr: '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA',
+      firstStartBlock: 13665321,
+      provider: 'https://debridge.io',
+      interval: 10000,
+      blockConfirmation: 12,
+      maxBlockRange: 5000,
+    },
+    {
+      chainId: 42,
+      name: 'ETHEREUM',
+      debridgeAddr: '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA',
+      firstStartBlock: 13665321,
+      provider: 'https://debridge.io',
+      interval: 10000,
+      blockConfirmation: 12,
+      maxBlockRange: 5000,
+    },
+  ];
+});
 
 describe('StatisticToApiAction', () => {
   let service: StatisticToApiAction;
@@ -16,6 +42,13 @@ describe('StatisticToApiAction', () => {
       imports: [ConfigModule, HttpModule],
       providers: [
         StatisticToApiAction,
+        ChainConfigService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('test'),
+          },
+        },
         {
           provide: DebrdigeApiService,
           useValue: {
