@@ -3,7 +3,6 @@ import { CheckAssetsEventAction } from './services/actions/CheckAssetsEventActio
 import { SignAction } from './services/actions/SignAction';
 import { StatisticToApiAction } from './services/actions/StatisticToApiAction';
 import { UploadToApiAction } from './services/actions/UploadToApiAction';
-import { UploadToIPFSAction } from './services/actions/UploadToIPFSAction';
 import { JobService } from './JobService';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -22,15 +21,6 @@ import { BundlrModule } from '../external/bundlr/BundlrModule';
     TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
     ChainScanningModule,
   ],
-  providers: [
-    StartScanningService,
-    CheckAssetsEventAction,
-    SignAction,
-    StatisticToApiAction,
-    UploadToApiAction,
-    UploadToIPFSAction,
-    UploadToBundlrAction,
-    JobService,
-  ],
+  providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToBundlrAction, JobService],
 })
 export class JobModule {}
