@@ -71,6 +71,8 @@ describe('UploadToBundlrAction', () => {
                   submissionId: '123',
                   registrationId: '1234',
                   chainFrom: 1,
+                  chainTo: 1,
+                  nonce: 1,
                 },
               ];
             },

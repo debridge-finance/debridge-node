@@ -43,7 +43,9 @@ export class UploadToBundlrAction extends IAction {
             txHash: submission.txHash,
             signature: submission.signature,
             submissionId: submission.submissionId,
-            chainId: submission.chainFrom,
+            chainIdFrom: submission.chainFrom,
+            chainIdTo: submission.chainTo,
+            nonce: submission.nonce,
           }),
           [
             {
@@ -59,8 +61,16 @@ export class UploadToBundlrAction extends IAction {
               value: submission.signature,
             },
             {
-              name: 'chainId',
+              name: 'chainIdFrom',
               value: submission.chainFrom.toString(),
+            },
+            {
+              name: 'chainIdTo',
+              value: submission.chainTo.toString(),
+            },
+            {
+              name: 'nonce',
+              value: submission.nonce.toString(),
             },
           ],
         );
