@@ -80,7 +80,6 @@ services:
 networks:
   debridge-node-network:
     name: debridge-node-network
-    internal: true
 secrets:
   keystore:
     file: ./secrets/keystore.json
