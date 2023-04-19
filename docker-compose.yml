@@ -18,7 +18,7 @@ services:
     networks:
       - debridge-node-network
   debridge-solanadatareader:
-    image: debridgefinance/solana-events-reader-api:1.1.4
+    image: debridgefinance/solana-events-reader-api:1.2.0
     restart: unless-stopped
     container_name: debridge-solanadatareader${DOCKER_ID}
     environment:
