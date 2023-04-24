@@ -38,7 +38,7 @@ services:
     networks:
       - debridge-node-network
   debridge-node:
-    image: debridgefinance/debridge-node:2.5.5-alpha
+    image: debridgefinance/debridge-node:2.5.7
     container_name: debridge-node${DOCKER_ID}
     restart: unless-stopped
     secrets:
