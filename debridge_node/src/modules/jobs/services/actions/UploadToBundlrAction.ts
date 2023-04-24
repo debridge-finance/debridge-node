@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IAction } from './IAction';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
@@ -93,10 +93,16 @@ export class UploadToBundlrAction extends IAction {
     try {
       //Process Assets
       const assets = await this.confirmNewAssetEntityRepository.find({
-        where: {
-          status: SubmisionStatusEnum.SIGNED,
-          bundlrStatus: BundlrStatusEnum.NEW,
-        },
+        where: [
+          {
+            status: SubmisionStatusEnum.SIGNED,
+            bundlrStatus: BundlrStatusEnum.NEW,
+          },
+          {
+            status: SubmisionStatusEnum.SIGNED,
+            bundlrStatus: IsNull(),
+          },
+        ],
       });
 
       for (const asset of assets) {
