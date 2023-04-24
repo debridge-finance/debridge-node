@@ -7,11 +7,11 @@
 <br/>
 
 # Changelog
-## v2.5.3
+## v2.5.7(25.04.2023)
 * upload signatures to bundlr 
 * up packages
 
-## How to update to v2.5.3
+## How to update to v2.5.7
 ### Pull latest changes
 ```shell
 git checkout master
