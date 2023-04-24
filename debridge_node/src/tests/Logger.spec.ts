@@ -13,7 +13,7 @@ describe('Logger', () => {
     const errorMessage = 'Error message';
     jest.spyOn(Sentry, 'captureMessage').mockImplementation();
     logger.error(errorMessage);
-    expect(Sentry.captureMessage).toHaveBeenCalledTimes(0);
+    expect(Sentry.captureException).toHaveBeenCalledTimes(0);
   });
 
   it('should log an error message with stack trace when Sentry DSN is provided', () => {

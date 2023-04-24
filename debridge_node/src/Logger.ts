@@ -2,10 +2,10 @@ import { ConsoleLogger } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
 
 export class Logger extends ConsoleLogger {
-  error(message: any, stack?: string) {
+  error(message: any, stack?: string, context?: string) {
     if (process.env.SENTRY_DSN) {
-      Sentry.captureMessage(`[${stack}] ${message}`);
+      Sentry.captureException(message);
     }
-    super.error(`[${stack}] ${message}`);
+    super.error(`[${context}] ${message}`);
   }
 }
