@@ -47,7 +47,7 @@ export class NonceControllingService implements OnModuleInit {
   async processValidationNonceError(transferResult: ProcessNewTransferResult, chainId: number, web3: Web3Custom, chain: ChainConfig) {
     if (transferResult.nonceValidationStatus === NonceValidationEnum.MISSED_NONCE) {
       await this.debridgeApiService.notifyError(
-        `incorrect nonce error (missed_nonce): nonce: ${transferResult.nonce}; submissionId: ${transferResult.submissionId}`,
+        `incorrect nonce error (missed_nonce): nonce: ${transferResult.nonce}; submissionId: ${transferResult.submissionId} chainId: ${chainId}`,
       );
       if (!chain.isSolana) {
         (chain as ClassicChainConfig).providers.setProviderStatus(web3.chainProvider, false);
@@ -55,7 +55,7 @@ export class NonceControllingService implements OnModuleInit {
       return NonceValidationEnum.MISSED_NONCE;
     } else if (transferResult.nonceValidationStatus === NonceValidationEnum.DUPLICATED_NONCE) {
       await this.debridgeApiService.notifyError(
-        `incorrect nonce error (duplicated_nonce): nonce: ${transferResult.nonce}; submissionId: ${transferResult.submissionId}`,
+        `incorrect nonce error (duplicated_nonce): nonce: ${transferResult.nonce}; submissionId: ${transferResult.submissionId} chainId: ${chainId}`,
       );
       this.chainScanningService.pause(chainId);
       return NonceValidationEnum.DUPLICATED_NONCE;
