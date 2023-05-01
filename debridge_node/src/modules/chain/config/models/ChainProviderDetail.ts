@@ -7,4 +7,5 @@ export interface ChainProviderDetail {
   user?: string;
   password?: string;
   authType: AuthType;
+  requireConfirmation?: boolean;
 }

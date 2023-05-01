@@ -87,6 +87,15 @@ export class ChainProvider {
   }
 
   /**
+   * Get require to provider
+   * @param {string} provider
+   */
+  getRequireConfirmation(provider: string): boolean {
+    const details = this.providers.get(provider);
+    return details.requireConfirmation;
+  }
+
+  /**
    * Set validation status to provider
    * @param {string} provider
    * @param {boolean} status

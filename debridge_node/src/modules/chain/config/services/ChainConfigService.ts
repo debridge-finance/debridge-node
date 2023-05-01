@@ -4,7 +4,7 @@ import { ChainConfig } from '../models/configs/ChainConfig';
 import { ChainProvider } from '../models/ChainProvider';
 import { ChainProviderDetail } from '../models/ChainProviderDetail';
 import { AuthType } from '../enums/AuthType';
-import { ClassicChainConfig } from '../models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../models/configs/EvmChainConfig';
 import { SolanaChainConfig } from '../models/configs/SolanaChainConfig';
 
 /**
@@ -26,6 +26,7 @@ export class ChainConfigService {
           name: config.name,
           interval: config.interval,
           lastTransaction: config.lastTransaction,
+          rpcConfirmation: config.rpcConfirmation,
           isSolana,
         } as SolanaChainConfig);
       } else {
@@ -38,8 +39,9 @@ export class ChainConfigService {
           interval: config.interval,
           blockConfirmation: config.blockConfirmation,
           maxBlockRange: config.maxBlockRange,
+          rpcConfirmation: config.rpcConfirmation,
           isSolana,
-        } as ClassicChainConfig);
+        } as EvmChainConfig);
       }
     });
   }
@@ -109,6 +111,7 @@ export class ChainConfigService {
         provider: config.provider,
         user: config.user,
         password: config.password,
+        requireConfirmation: config.requireConfirmation,
         authType,
       };
     }

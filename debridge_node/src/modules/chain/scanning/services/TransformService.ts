@@ -6,6 +6,7 @@ import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
+import { RpcValidationStatusEnum } from '../../../../enums/RpcValidationStatusEnum';
 
 export class SolanaEvent extends EventFromTransaction {
   slotNumber: number;
@@ -42,6 +43,7 @@ export class TransformService {
     submission.decimalDenominator = transaction.decimalDenominator;
     submission.assetsStatus = SubmisionAssetsStatusEnum.NEW;
     submission.bundlrStatus = BundlrStatusEnum.NEW;
+    submission.rpcValidationStatus = RpcValidationStatusEnum.VALIDATED; //todo
 
     return submission;
   }
@@ -64,6 +66,7 @@ export class TransformService {
       blockNumber: sendEvent.blockNumber,
       nonce: parseInt(sendEvent.returnValues.nonce),
       bundlrStatus: BundlrStatusEnum.NEW,
+      rpcValidationStatus: RpcValidationStatusEnum.NEW,
     } as SubmissionEntity;
 
     return submission;

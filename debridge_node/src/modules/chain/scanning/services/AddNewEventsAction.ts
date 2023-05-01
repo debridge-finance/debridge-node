@@ -3,12 +3,13 @@ import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { SolanaReaderService } from './SolanaReaderService';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity';
 import { Repository } from 'typeorm';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { TransformService } from './TransformService';
+import { RpcValidationStatusEnum } from '../../../../enums/RpcValidationStatusEnum';
 
 @Injectable()
 export class AddNewEventsAction {
@@ -61,10 +62,9 @@ export class AddNewEventsAction {
         chainId,
       },
     });
-    const chainDetail = this.chainConfigService.get(chainId) as ClassicChainConfig;
+    const chainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
 
     const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
-
     const registerInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
     // @ts-ignore
     web3.eth.setProvider = registerInstance.setProvider;
@@ -101,6 +101,58 @@ export class AddNewEventsAction {
           this.logger.error(`Error in transforming sent event to submission ${submissionId}: ${e.message}`);
         }
       });
+
+      if (chainDetail.rpcConfirmation) {
+        //validate that n rpc return the same submissions
+        try {
+          // if providers in config less amount that needed confirmation we dont need to check
+          if (chainDetail.providers.size() >= chainDetail.rpcConfirmation) {
+            const providersForConfirmation = chainDetail.providers.getAllProviders();
+            const rpcConfirmationSubmissions = await Promise.all(
+              providersForConfirmation.map(async provider => {
+                const web3ForConfirmation = await this.web3Service.createWeb3HttpProviderByProvider(provider, chainDetail.providers);
+                const registerInstanceConfirmation = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
+                // @ts-ignore
+                web3ForConfirmation.eth.setProvider = registerInstanceConfirmation.setProvider;
+
+                let events = [];
+                try {
+                  events = await this.getEvents(registerInstanceConfirmation, fromBlock, lastBlockOfPage);
+                } catch (e) {
+                  this.logger.error(`Error in getting events: ${e.message}`);
+                }
+                return {
+                  provider,
+                  submissionIds: events.map(i => i.returnValues.submissionId),
+                };
+              }),
+            );
+            for (const submission of submissions) {
+              let confirmations = 0;
+              for (const rpcConfirmationSubmission of rpcConfirmationSubmissions) {
+                if (rpcConfirmationSubmission.submissionIds.includes(submission.submissionId)) {
+                  confirmations++;
+                  this.logger.log(`${rpcConfirmationSubmission.provider} returns correct ${submission.submissionId}`);
+                } else {
+                  this.logger.log(`${rpcConfirmationSubmission.provider} returns incorrect ${submission.submissionId}`);
+                  if (chainDetail.providers.getRequireConfirmation(rpcConfirmationSubmission.provider)) {
+                    confirmations = 0;
+                    break;
+                  }
+                }
+              }
+
+              submission.rpcConfirmation =
+                confirmations >= chainDetail.rpcConfirmation ? RpcValidationStatusEnum.VALIDATED : RpcValidationStatusEnum.NEW;
+            }
+          } else {
+            this.logger.warn(`Require confirmation ${chainDetail.rpcConfirmation} but setted ${chainDetail.providers.size()} rpc`);
+          }
+        } catch (e) {
+          this.logger.error(`Error in rpc confirmations: ${e.message}`);
+        }
+      }
+
       await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
     }
   }
