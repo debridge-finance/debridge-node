@@ -7,11 +7,11 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfirmNewAssetEntity } from './entities/ConfirmNewAssetEntity';
 import { DataFixModule } from './datafixes/DataFixModule';
 import { DebridgeApiModule } from './modules/external/debridge_api/DebridgeApiModule';
-import { SolanaApiModule } from './modules/external/solana_api/SolanaApiModule';
 import { Web3Module } from './modules/web3/Web3Module';
 import { JobModule } from './modules/jobs/JobModule';
 import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
 import { ApiModule } from './modules/api/ApiModule';
+import { SolanaEventsReaderModule } from './modules/solana-events-reader/SolanaEventsReaderModule';
 
 @Module({
   imports: [
@@ -37,9 +37,9 @@ import { ApiModule } from './modules/api/ApiModule';
     TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
     Web3Module,
     DebridgeApiModule,
-    SolanaApiModule,
     JobModule,
     ApiModule,
+    SolanaEventsReaderModule,
   ],
 })
 export class AppModule {}

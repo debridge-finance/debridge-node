@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SignAction } from './actions/SignAction';
 import { UploadToApiAction } from './actions/UploadToApiAction';
-import { CheckAssetsEventAction } from './actions/CheckAssetsEventAction';
 import { StatisticToApiAction } from './actions/StatisticToApiAction';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../entities/SupportedChainEntity';
@@ -19,7 +18,6 @@ export class StartScanningService implements OnModuleInit {
   constructor(
     private readonly signAction: SignAction,
     private readonly uploadToApiAction: UploadToApiAction,
-    private readonly checkAssetsEventAction: CheckAssetsEventAction,
     private readonly statisticToApiAction: StatisticToApiAction,
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
@@ -42,7 +40,7 @@ export class StartScanningService implements OnModuleInit {
           await this.supportedChainRepository.save({
             chainId: chainId,
             latestBlock: 0,
-            latestSolanaTransaction: chainConfigSolana.lastTransaction,
+            latestNonce: chainConfigSolana.firstStartNonce,
             network: chainConfigSolana.name,
           });
         }

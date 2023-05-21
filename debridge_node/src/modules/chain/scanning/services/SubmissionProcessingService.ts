@@ -25,35 +25,35 @@ export class SubmissionProcessingService {
   async process(
     submissions: SubmissionEntity[],
     chainId: number,
-    lastBlockOrTransactionOfPage: number | string,
+    lastBlockOrNonceOfPage: number,
     web3?: Web3Custom,
   ): Promise<ProcessNewTransferResultStatusEnum> {
     const logger = new Logger(`${SubmissionProcessingService.name} chainId ${chainId}`);
     const chainDetail = this.chainConfigService.get(chainId);
     const result = await this.processNewTransfers(logger, submissions, chainDetail);
-    const updatedBlockOrTransaction: number | string =
-      result.status === ProcessNewTransferResultStatusEnum.SUCCESS ? lastBlockOrTransactionOfPage : result.blockOrTransactionToOverwrite;
+    const updatedBlockOrNonce: number | string =
+      result.status === ProcessNewTransferResultStatusEnum.SUCCESS ? lastBlockOrNonceOfPage : result.blockOrNonceToOverwrite;
 
     // updatedBlock can be undefined if incorrect nonce occures in the first event
-    if (updatedBlockOrTransaction) {
-      logger.log(`updateSupportedChainBlock; key: latestBlock; value: ${updatedBlockOrTransaction};`);
+    if (updatedBlockOrNonce) {
+      logger.log(`updateSupportedChainBlock; key: latestBlock; value: ${updatedBlockOrNonce};`);
       if (chainDetail.isSolana) {
         //check type
         const lastSubmission = await this.submissionsRepository.findOne({
           where: {
-            txHash: updatedBlockOrTransaction as string,
+            nonce: updatedBlockOrNonce,
+            chainFrom: chainId,
           },
         });
-        const event = JSON.parse(lastSubmission.rawEvent);
         await this.supportedChainRepository.update(chainId, {
-          latestSolanaTransaction: updatedBlockOrTransaction as string,
           latestBlock: lastSubmission.blockNumber,
-          lastTxTimestamp: event.transactionTimestamp,
+          latestNonce: lastSubmission.nonce,
+          lastTxTimestamp: lastSubmission.blockTime,
           lastTransactionSlotNumber: lastSubmission.blockNumber,
         });
       } else {
         await this.supportedChainRepository.update(chainId, {
-          latestBlock: updatedBlockOrTransaction as number,
+          latestBlock: updatedBlockOrNonce as number,
         });
       }
     }
@@ -72,7 +72,7 @@ export class SubmissionProcessingService {
    */
   async processNewTransfers(logger: Logger, submissions: SubmissionEntity[], chainDetail: ChainConfig): Promise<ProcessNewTransferResult> {
     const { chainId: chainIdFrom } = chainDetail;
-    let blockOrTransactionToOverwrite;
+    let blockOrNonceToOverwrite;
 
     for (const submission of submissions) {
       const submissionId = submission.submissionId;
@@ -89,7 +89,7 @@ export class SubmissionProcessingService {
       });
       if (submissionInDb) {
         logger.verbose(`Submission already found in db submissionId: ${submissionId}`);
-        blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submissionInDb);
+        blockOrNonceToOverwrite = this.getBlockNumberOrNonce(submissionInDb);
         this.nonceControllingService.setMaxNonce(chainIdFrom, submissionInDb.nonce);
         continue;
       }
@@ -114,12 +114,11 @@ export class SubmissionProcessingService {
 
       logger.verbose(`Nonce validation status ${nonceValidationStatus}; maxNonceFromDb: ${chainMaxNonce}; nonce: ${nonce};`);
       if (nonceValidationStatus !== NonceValidationEnum.SUCCESS) {
-        const blockOrTransaction =
-          blockOrTransactionToOverwrite !== undefined ? blockOrTransactionToOverwrite : this.getBlockNumberOrTransaction(submissionWithMaxNonceDb);
-        const message = `Incorrect nonce (${nonceValidationStatus}) for nonce: ${nonce}; max nonce in db: ${chainMaxNonce}; submissionId: ${submissionId}; blockToOverwrite: ${blockOrTransactionToOverwrite}; submissionWithMaxNonceDb.blockNumber: ${submissionWithMaxNonceDb?.blockNumber}`;
+        const blockOrNonce = blockOrNonceToOverwrite !== undefined ? blockOrNonceToOverwrite : this.getBlockNumberOrNonce(submissionWithMaxNonceDb);
+        const message = `Incorrect nonce (${nonceValidationStatus}) for nonce: ${nonce}; max nonce in db: ${chainMaxNonce}; submissionId: ${submissionId}; blockToOverwrite: ${blockOrNonceToOverwrite}; submissionWithMaxNonceDb.blockNumber: ${submissionWithMaxNonceDb?.blockNumber}`;
         logger.error(message);
         return {
-          blockOrTransactionToOverwrite: blockOrTransaction, // it would be empty only if incorrect nonce occures in the first event
+          blockOrNonceToOverwrite: blockOrNonce, // it would be empty only if incorrect nonce occures in the first event
           status: ProcessNewTransferResultStatusEnum.ERROR,
           nonceValidationStatus,
           submissionId,
@@ -131,7 +130,7 @@ export class SubmissionProcessingService {
         logger.verbose(`Saving submission ${submissionId} is started`);
         await this.submissionsRepository.save(submission);
         logger.verbose(`Saving submission ${submissionId} is finished`);
-        blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submission);
+        blockOrNonceToOverwrite = this.getBlockNumberOrNonce(submission);
         this.nonceControllingService.setMaxNonce(chainIdFrom, nonce);
       } catch (e) {
         logger.error(`Error in saving ${submissionId}`);
@@ -144,13 +143,13 @@ export class SubmissionProcessingService {
     };
   }
 
-  private getBlockNumberOrTransaction(submission: SubmissionEntity): number | string {
+  private getBlockNumberOrNonce(submission: SubmissionEntity): number {
     if (!submission) {
       return;
     }
     const chainDetail = this.chainConfigService.get(submission.chainFrom);
     if (chainDetail?.isSolana) {
-      return submission.txHash;
+      return submission.nonce;
     } else {
       return submission.blockNumber;
     }

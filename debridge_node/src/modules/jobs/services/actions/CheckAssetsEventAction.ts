@@ -15,12 +15,15 @@ import { getTokenName } from '../../../../utils/getTokenName';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
 import { ClassicChainConfig } from '../../../chain/config/models/configs/ClassicChainConfig';
-import { SolanaApiService } from '../../../external/solana_api/services/SolanaApiService';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
+import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
+import { PublicKey } from '@solana/web3.js';
+import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
 
 @Injectable()
 export class CheckAssetsEventAction extends IAction {
-  private account: Account;
+  readonly #account: Account;
+  readonly #solanaGrpcClient: SolanaGrpcClient;
 
   constructor(
     @InjectRepository(SubmissionEntity)
@@ -29,11 +32,12 @@ export class CheckAssetsEventAction extends IAction {
     private readonly confirmNewAssetEntityRepository: Repository<ConfirmNewAssetEntity>,
     private readonly web3Service: Web3Service,
     private readonly chainConfigService: ChainConfigService,
-    private readonly solanaApiService: SolanaApiService,
+    private readonly solanaEventsReaderService: SolanaEventsReaderService,
   ) {
     super();
+    this.#solanaGrpcClient = this.solanaEventsReaderService.getClient();
     this.logger = new Logger(CheckAssetsEventAction.name);
-    this.account = this.web3Service.web3().eth.accounts.decrypt(JSON.parse(readFileSync('./keystore.json', 'utf-8')), process.env.KEYSTORE_PASSWORD);
+    this.#account = this.web3Service.web3().eth.accounts.decrypt(JSON.parse(readFileSync('./keystore.json', 'utf-8')), process.env.KEYSTORE_PASSWORD);
   }
 
   async process() {
@@ -68,19 +72,21 @@ export class CheckAssetsEventAction extends IAction {
 
           // if chainFrom is Solana
           if (chainFromConfig.isSolana) {
-            const bridgeInfo = await this.solanaApiService.getBridgeInfo(submission.debridgeId);
-            nativeChainId = bridgeInfo.nativeChainId;
-            nativeTokenAddress = bridgeInfo.nativeTokenAddress;
+            const { response: bridgeInfo } = await this.#solanaGrpcClient.getBridgeInfoByBridgeId(Buffer.from(submission.debridgeId, 'hex'));
+            nativeChainId = U256Converter.toBigInt(bridgeInfo.nativeChainId);
             //if native chain for token is EVM network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
-              const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
-              tokenName = response.tokenName;
-              tokenSymbol = response.tokenSymbol;
-              tokenDecimals = await this.solanaApiService.getTokenDecimals(nativeTokenAddress);
+              const { response } = await this.#solanaGrpcClient.getTokenMetadata(new PublicKey(bridgeInfo.nativeTokenAddress));
+              tokenName = response.name;
+              tokenSymbol = response.symbol;
+              tokenDecimals = response.decimals;
             }
             //if native chain for token is EVM network
             else {
-              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(
+                nativeChainId,
+                '0x' + Buffer.from(bridgeInfo.nativeTokenAddress).toString('hex'),
+              ));
             }
             // if chainFrom is EVM
           } else {
@@ -108,10 +114,10 @@ export class CheckAssetsEventAction extends IAction {
             nativeTokenAddress = nativeTokenInfo.nativeAddress;
             //if native chain for token is Solana network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
-              const response = await this.solanaApiService.getAddressInfo(nativeTokenAddress);
-              tokenName = response.tokenName;
-              tokenSymbol = response.tokenSymbol;
-              tokenDecimals = await this.solanaApiService.getTokenDecimals(nativeTokenAddress);
+              const { response } = await this.#solanaGrpcClient.getTokenMetadata(new PublicKey(nativeTokenAddress));
+              tokenName = response.name;
+              tokenSymbol = response.symbol;
+              tokenDecimals = response.decimals;
             }
             //if native chain for token is EVM network
             else {
@@ -138,7 +144,7 @@ export class CheckAssetsEventAction extends IAction {
           this.logger.log(`tokenSymbol: ${tokenSymbol}`);
           this.logger.log(`tokenDecimals: ${tokenDecimals}`);
           this.logger.log(`deployId: ${deployId}`);
-          const signature = this.account.sign(deployId).signature;
+          const signature = this.#account.sign(deployId).signature;
           this.logger.log(`signature: ${signature}`);
           this.logger.log(`signed ${deployId} ${signature}`);
 

@@ -40,6 +40,7 @@ export class StatisticToApiAction extends IAction {
             lastBlock: chain.latestBlock,
             lastTxHash: chain.latestSolanaTransaction,
             lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
+            latestNonce: chain.latestNonce,
             lastTxTimestamp: chain.lastTxTimestamp,
           } as ProgressInfoDTO;
         }
