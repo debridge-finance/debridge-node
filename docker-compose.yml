@@ -99,6 +99,8 @@ services:
       - ./stats/debridge-node:/app/stats
       - ./config:/app/dist/config
     environment:
+      - DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS=${DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS}
+      - SOLANA_GRPC_SERVICE_URL=${SOLANA_GRPC_SERVICE_URL}
       - PORT=${DEBRIDGE_NODE_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_HOST=${POSTGRES_HOST}
