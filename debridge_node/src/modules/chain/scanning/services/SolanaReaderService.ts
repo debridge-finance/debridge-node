@@ -21,7 +21,7 @@ export class SolanaReaderService implements OnModuleInit {
   #duplex: ReturnType<SolanaGrpcClient['getSendEvents']>;
 
   #submissionsFromSync: SubmissionEntity[] = [];
-  #PAGE_SIZE = 10;
+  #PAGE_SIZE = 100;
   #heartbeatIntervalInstance: NodeJS.Timeout;
 
   constructor(
@@ -41,7 +41,17 @@ export class SolanaReaderService implements OnModuleInit {
     if (!this.#duplex) {
       await this.createSubscription();
     }
-    const submissions = [...this.#submissionsFromSync];
+    const chain = await this.supportedChainRepository.findOne({
+      where: {
+        chainId: solanaChainId,
+      },
+    });
+    if (!chain) {
+      const message = `Chain ${solanaChainId} is not configured`;
+      this.#logger.error(message);
+      return;
+    }
+    const submissions = [...this.#submissionsFromSync].filter(s => s.nonce > chain.latestNonce);
     submissions.sort((a, b) => a.nonce - b.nonce);
     this.#submissionsFromSync = [];
     const size = Math.ceil(submissions.length / this.#PAGE_SIZE);
@@ -61,6 +71,7 @@ export class SolanaReaderService implements OnModuleInit {
   }
 
   private async createSubscription() {
+    this.#submissionsFromSync = [];
     const chain = await this.supportedChainRepository.findOne({
       where: {
         chainId: solanaChainId,
@@ -73,7 +84,7 @@ export class SolanaReaderService implements OnModuleInit {
     }
     let latestNonce;
     if (chain?.latestNonce) {
-      latestNonce = chain?.latestNonce + 1;
+      latestNonce = chain?.latestNonce;
     } else {
       latestNonce = 0;
     }
@@ -93,14 +104,14 @@ export class SolanaReaderService implements OnModuleInit {
           clearTimeout(this.#heartbeatIntervalInstance);
           this.#heartbeatIntervalInstance = setTimeout(() => {
             this.createSubscription();
-          }, this.configService.get<number>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS', 10) * 2 * 1000);
+          }, this.configService.get<number>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS', 10) * 10 * 1000);
           break;
         }
         case 'event': {
           clearTimeout(this.#heartbeatIntervalInstance);
           this.#heartbeatIntervalInstance = setTimeout(() => {
             this.createSubscription();
-          }, this.configService.get<number>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS', 10) * 2 * 1000);
+          }, this.configService.get<number>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS', 10) * 10 * 1000);
           // @ts-ignore
           const event = response.sendEventMessage.event;
           const nonce = Number(U256Converter.toBigInt(event.submission?.nonce).toString());
