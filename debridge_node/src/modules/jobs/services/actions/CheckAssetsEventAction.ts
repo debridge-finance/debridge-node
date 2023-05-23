@@ -72,7 +72,7 @@ export class CheckAssetsEventAction extends IAction {
 
           // if chainFrom is Solana
           if (chainFromConfig.isSolana) {
-            const { response: bridgeInfo } = await this.#solanaGrpcClient.getBridgeInfoByBridgeId(Buffer.from(submission.debridgeId, 'hex'));
+            const { response: bridgeInfo } = await this.#solanaGrpcClient.getBridgeInfoByBridgeId(Buffer.from(submission.debridgeId.slice(2), 'hex'));
             nativeChainId = U256Converter.toBigInt(bridgeInfo.nativeChainId);
             //if native chain for token is EVM network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
