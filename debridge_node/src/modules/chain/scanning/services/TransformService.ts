@@ -3,7 +3,7 @@ import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
-import { ChainConfigService } from '../../config/services/ChainConfigService';
+import { solanaChainId } from '../../config/services/ChainConfigService';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { U256Converter } from '@debridge-finance/solana-grpc';
 
@@ -12,18 +12,16 @@ import { U256Converter } from '@debridge-finance/solana-grpc';
  */
 @Injectable()
 export class TransformService {
-  constructor(private readonly chainConfigService: ChainConfigService) {}
-
   generateSubmissionFromSolanaSendEvent(sendEvent): SubmissionEntity {
     const submission = new SubmissionEntity();
-    submission.submissionId = U256Converter.toBytesBE(sendEvent.submissionId).toString('hex');
+    submission.submissionId = '0x' + U256Converter.toBytesBE(sendEvent.submissionId).toString('hex');
     submission.txHash = sendEvent.transactionMetadata.transactionHash.toString('hex');
-    submission.chainFrom = this.chainConfigService.getSolanaChainId();
+    submission.chainFrom = solanaChainId;
     submission.chainTo = Number(U256Converter.toBigInt(sendEvent.submission.targetChainId).toString());
-    submission.receiverAddr = sendEvent.submission.receiver.toString('hex');
+    submission.receiverAddr = '0x' + sendEvent.submission.receiver.toString('hex');
     submission.amount = U256Converter.toBigInt(sendEvent.submission.amountToClaim).toString();
     submission.rawEvent = JSON.stringify(sendEvent);
-    submission.debridgeId = U256Converter.toBytesBE(sendEvent.submission.bridgeId).toString('hex');
+    submission.debridgeId = '0x' + U256Converter.toBytesBE(sendEvent.submission.bridgeId).toString('hex');
     submission.nonce = Number(U256Converter.toBigInt(sendEvent.submission?.nonce).toString());
     submission.blockNumber = sendEvent.transactionMetadata?.blockNumber;
     submission.blockTime = new Date(Number(sendEvent.transactionMetadata.blockTime.toString()) * 1000).toString();

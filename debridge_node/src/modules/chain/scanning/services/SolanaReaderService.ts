@@ -83,8 +83,8 @@ export class SolanaReaderService implements OnModuleInit {
     this.#duplex = this.#solanaGrpcClient.getSendEvents(BigInt(chain?.latestNonce || 0), true);
 
     for await (const response of this.#duplex.responses) {
-      if (!(response.sendEventMessage !== undefined && response.sendEventMessage.oneofKind !== undefined)) {
-        break;
+      if (response.sendEventMessage?.oneofKind == undefined) {
+        continue;
       }
       switch (response.sendEventMessage.oneofKind) {
         case undefined: {

@@ -70,13 +70,6 @@ export class ChainConfigService {
     return chainConfigs;
   }
 
-  /**
-   * Get solana chain id
-   */
-  getSolanaChainId() {
-    return solanaChainId;
-  }
-
   private generateChainProvides(config: any): ChainProvider {
     let providers: ChainProviderDetail[] = [];
     if (config.providers) {
