@@ -15,7 +15,7 @@ export class TransformService {
   generateSubmissionFromSolanaSendEvent(sendEvent): SubmissionEntity {
     const submission = new SubmissionEntity();
     submission.submissionId = '0x' + U256Converter.toBytesBE(sendEvent.submissionId).toString('hex');
-    submission.txHash = sendEvent.transactionMetadata.transactionHash.toString('hex');
+    submission.txHash = '0x' + sendEvent.transactionMetadata.transactionHash.toString('hex');
     submission.chainFrom = solanaChainId;
     submission.chainTo = Number(U256Converter.toBigInt(sendEvent.submission.targetChainId).toString());
     submission.receiverAddr = '0x' + sendEvent.submission.receiver.toString('hex');
