@@ -90,7 +90,6 @@ export class SubmissionProcessingService {
       if (submissionInDb) {
         logger.verbose(`Submission already found in db submissionId: ${submissionId}`);
         blockOrTransactionToOverwrite = this.getBlockNumberOrTransaction(submissionInDb);
-        this.nonceControllingService.setMaxNonce(chainIdFrom, submissionInDb.nonce);
         continue;
       }
 
