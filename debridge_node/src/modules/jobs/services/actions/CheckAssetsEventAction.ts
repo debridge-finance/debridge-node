@@ -70,12 +70,19 @@ export class CheckAssetsEventAction extends IAction {
           let nativeChainId;
           let nativeTokenAddress;
 
+          this.logger.verbose(`chainFromConfig: ${chainFromConfig}`);
+
           // if chainFrom is Solana
           if (chainFromConfig.isSolana) {
             const { response: bridgeInfo } = await this.#solanaGrpcClient.getBridgeInfoByBridgeId(Buffer.from(submission.debridgeId.slice(2), 'hex'));
             nativeChainId = parseInt(U256Converter.toBigInt(bridgeInfo.nativeChainId).toString());
+            nativeTokenAddress = '0x' + Buffer.from(bridgeInfo.nativeTokenAddress).toString('hex');
+
+            const nativeChainConfig = this.chainConfigService.get(nativeChainId);
+            this.logger.verbose(`nativeChainConfig: ${nativeChainConfig}`);
+
             //if native chain for token is EVM network
-            if (this.chainConfigService.get(nativeChainId).isSolana) {
+            if (nativeChainConfig.isSolana) {
               const { response } = await this.#solanaGrpcClient.getTokenMetadata(new PublicKey(bridgeInfo.nativeTokenAddress));
               tokenName = response.name;
               tokenSymbol = response.symbol;
@@ -83,10 +90,7 @@ export class CheckAssetsEventAction extends IAction {
             }
             //if native chain for token is EVM network
             else {
-              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(
-                nativeChainId,
-                '0x' + Buffer.from(bridgeInfo.nativeTokenAddress).toString('hex'),
-              ));
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
             }
             // if chainFrom is EVM
           } else {
