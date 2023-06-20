@@ -50,6 +50,7 @@ export class SubmissionProcessingService {
           latestNonce: lastSubmission.nonce,
           lastTxTimestamp: lastSubmission.blockTime,
           lastTransactionSlotNumber: lastSubmission.blockNumber,
+          latestSolanaTransaction: lastSubmission.txHash,
         });
       } else {
         await this.supportedChainRepository.update(chainId, {

@@ -24,7 +24,7 @@ export class TransformService {
     submission.debridgeId = '0x' + U256Converter.toBytesBE(sendEvent.submission.bridgeId).toString('hex');
     submission.nonce = Number(U256Converter.toBigInt(sendEvent.submission?.nonce).toString());
     submission.blockNumber = sendEvent.transactionMetadata?.blockNumber;
-    submission.blockTime = new Date(Number(sendEvent.transactionMetadata.blockTime.toString()) * 1000).toString();
+    submission.blockTime = sendEvent.transactionMetadata.blockTime.toString();
     //submission.externalId = transaction.;
     //submission.signature = transaction.
     //
