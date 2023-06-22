@@ -10,6 +10,7 @@ import { solanaChainId } from '../../config/services/ChainConfigService';
 import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
+import { SolanaHearbeat } from '../entities/SolanaHearbeat';
 
 /**
  * Service for reading transaction from solana
@@ -23,6 +24,7 @@ export class SolanaReaderService implements OnModuleInit {
   #submissionsFromSync: SubmissionEntity[] = [];
   #PAGE_SIZE = 100;
   #heartbeatIntervalInstance: NodeJS.Timeout;
+  #abortController = new AbortController();
 
   constructor(
     @InjectRepository(SupportedChainEntity)
@@ -68,7 +70,11 @@ export class SolanaReaderService implements OnModuleInit {
   }
 
   private async createSubscription() {
-    await this.#duplex?.requests?.complete();
+    if (this.#duplex) {
+      this.#abortController.abort();
+      this.#abortController = new AbortController();
+      this.#solanaGrpcClient.abortSignal = this.#abortController.signal;
+    }
     this.#submissionsFromSync = [];
     const chain = await this.supportedChainRepository.findOne({
       where: {
@@ -82,32 +88,61 @@ export class SolanaReaderService implements OnModuleInit {
     }
     this.#duplex = this.#solanaGrpcClient.getSendEvents(BigInt(chain?.latestNonce || 0), true);
 
-    for await (const response of this.#duplex.responses) {
-      if (response.sendEventMessage?.oneofKind == undefined) {
-        continue;
-      }
-      switch (response.sendEventMessage.oneofKind) {
-        case undefined: {
+    try {
+      for await (const response of this.#duplex.responses) {
+        if (response.sendEventMessage?.oneofKind == undefined) {
           continue;
         }
-        case 'heartbeat': {
-          // @ts-ignore
-          this.#logger.verbose(`Heartbeat: ${JSON.stringify(response.sendEventMessage.heartbeat)}`);
+        switch (response.sendEventMessage.oneofKind) {
+          case undefined: {
+            continue;
+          }
+          case 'heartbeat': {
+            // @ts-ignore
+            this.#logger.verbose(`Heartbeat: ${JSON.stringify(response.sendEventMessage.heartbeat)}`);
 
-          this.heartbeat();
-          break;
-        }
-        case 'event': {
-          this.heartbeat();
-          // @ts-ignore
-          const event = response.sendEventMessage.event;
-          const nonce = Number(U256Converter.toBigInt(event.submission?.nonce).toString());
-          this.#logger.log(`new event is received nonce: ${nonce}`);
+            this.heartbeat();
+            // @ts-ignore
+            this.updateLastSyncedBlock(response.sendEventMessage.heartbeat as SolanaHearbeat);
+            break;
+          }
+          case 'event': {
+            this.heartbeat();
+            // @ts-ignore
+            const event = response.sendEventMessage.event;
+            const nonce = Number(U256Converter.toBigInt(event.submission?.nonce).toString());
+            this.#logger.log(`new event is received nonce: ${nonce}`);
 
-          const submission = this.transformService.generateSubmissionFromSolanaSendEvent(event);
-          this.#submissionsFromSync.push(submission);
-          break;
+            const submission = this.transformService.generateSubmissionFromSolanaSendEvent(event);
+            this.#submissionsFromSync.push(submission);
+            break;
+          }
         }
+      }
+    } catch (e) {
+      const error = e as Record<string, unknown>;
+      if ('code' in error && error.code === 'CANCELLED') this.#logger.error('closed duplexes');
+      else this.#logger.error(e);
+    }
+  }
+
+  private async updateLastSyncedBlock(solanaHearbeat: SolanaHearbeat) {
+    const chain = await this.supportedChainRepository.findOne({
+      where: {
+        chainId: solanaChainId,
+      },
+    });
+
+    if (!chain || !chain.lastTransactionSlotNumber) {
+      return;
+    }
+    if (chain.lastTransactionSlotNumber >= parseInt(solanaHearbeat.lastEventBlock)) {
+      const lastBlock = parseInt(solanaHearbeat.resyncLastBlock);
+      if (lastBlock > chain.lastTransactionSlotNumber) {
+        await this.supportedChainRepository.update(chain.chainId, {
+          lastTransactionSlotNumber: lastBlock,
+          latestBlock: lastBlock,
+        });
       }
     }
   }
