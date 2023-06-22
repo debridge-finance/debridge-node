@@ -86,6 +86,10 @@ export class SubmissionEntity {
   @Index()
   blockNumber: number;
 
+  @Column({ nullable: true })
+  @Index()
+  blockTime: string;
+
   @Column({ nullable: true, default: 0 })
   decimalDenominator?: number;
 

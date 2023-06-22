@@ -7,6 +7,68 @@
 <br/>
 
 # Changelog
+## v2.6.0(**.**.2023)
+* integration with solana grpc service
+* up packages
+
+## How to update to v2.6.0
+### Pull latest changes
+```shell
+git checkout master
+git pull origin master
+```
+### Update env
+Add new variables
+```
+POSTGRES_SOLANA_READER_DATABASE=solana${PG_RANDOM_ID}
+DEBRIDGE_PROGRAM_PUBKEY=DEbrdGj3HsRsAzx6uH4MKyREKxVAfBydijLUF3ygsFfh
+DEBRIDGE_SETTINGS_PROGRAM_PUBKEY=DeSetTwWhjZq6Pz9Kfdo1KoS5NqtsM6G8ERbX4SSCSft
+
+RUST_LOG=info,tokio_util=warn,hyper=warn
+
+# TODO: update with your RPC HTTP
+DEBRIDGE_EVENTS_SOLANA_CLUSTER=
+# TODO: update with your RPC WSS
+DEBRIDGE_EVENTS_SOLANA_WEBSOCKET_CLUSTER=
+# Count of transaction processing in one task
+#
+# Strongly affects the number of requests to RPC in same time
+# The larger the number, the fewer parallel requests, 
+# the more - the more asynchronous tasks with parallel processing
+DEBRIDGE_EVENTS_RESYNC_SIGNATURES_CHUNK_SIZE=5
+# In case of Solana RPC errors, there is an additional check that no events
+# have been missed. This timeout determines how often service do this check.
+#
+#Param is optional
+DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS=10
+# Time to requery data from the database for stream subscribers
+# Can be left at default (1 second).
+# If the number of subscribers is large, it should be reduced to control the load on the database
+#
+#Param is optional
+DEBRIDGE_EVENTS_DB_REQUERY_TIMEOUT_IN_SEC=5
+# Time to hearbeat
+# Can be left at default (5 second).
+# How often will this service send the current status of the service, even in the absence of events
+DEBRIDGE_EVENTS_HEARTBEAT_TIMEOUT_IN_SEC=30
+
+SOLANA_GRPC_SERVICE_URL=solana-grpc-service${DOCKER_ID}:7777
+DEBRIDGE_SOLANA_EVENTS_PSQL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_SOLANA_READER_DATABASE}
+```
+
+Delete old variables
+```
+SOLANA_DATA_READER_PORT
+SOLANA_RPC
+DEBRIDGE_PK
+SETTINGS_PK
+SOLANA_DATA_READER_API_BASE_URL
+SOLANA_DATA_READER_API_SENTRY_DSN
+SOLANA_GET_HISTORICAL_BATCH_SIZE
+SOLANA_GET_EVENTS_BATCH_SIZE
+SOLANA_API_REQUEST_TIMEOUT
+SOLANA_API_WAIT_BATCH_INTERVAL
+```
 ## v2.5.7(25.04.2023)
 * upload signatures to bundlr 
 * up packages

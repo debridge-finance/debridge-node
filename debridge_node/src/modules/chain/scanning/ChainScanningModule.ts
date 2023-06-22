@@ -17,9 +17,9 @@ import { TransformService } from './services/TransformService';
   providers: [
     Web3Service,
     ChainScanningService,
+    SubmissionProcessingService,
     AddNewEventsAction,
     NonceControllingService,
-    SubmissionProcessingService,
     SolanaReaderService,
     TransformService,
   ],

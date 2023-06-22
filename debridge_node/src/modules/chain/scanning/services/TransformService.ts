@@ -1,45 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import { EventFromTransaction } from '../../../external/solana_api/dto/response/get.events.from.transactions.response.dto';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
-import { ChainConfigService } from '../../config/services/ChainConfigService';
+import { solanaChainId } from '../../config/services/ChainConfigService';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
-
-export class SolanaEvent extends EventFromTransaction {
-  slotNumber: number;
-
-  transactionHash: string;
-}
+import { U256Converter } from '@debridge-finance/solana-grpc';
 
 /**
  * Service for data transormation
  */
 @Injectable()
 export class TransformService {
-  constructor(private readonly chainConfigService: ChainConfigService) {}
-
-  generateSubmissionFromSolanaEvent(transaction: SolanaEvent): SubmissionEntity {
+  generateSubmissionFromSolanaSendEvent(sendEvent): SubmissionEntity {
     const submission = new SubmissionEntity();
-    submission.submissionId = transaction.submissionId;
-    submission.txHash = transaction.transactionHash;
-    submission.chainFrom = this.chainConfigService.getSolanaChainId();
-    submission.chainTo = transaction.chainToId;
-    submission.receiverAddr = transaction.receiver;
-    submission.amount = transaction.amount;
-    //submission.amount = transaction.amount;
-    submission.rawEvent = JSON.stringify(transaction);
-    submission.debridgeId = transaction.bridgeId;
-    submission.nonce = transaction.nonce;
-    submission.blockNumber = transaction.slotNumber;
+    submission.submissionId = '0x' + U256Converter.toBytesBE(sendEvent.submissionId).toString('hex');
+    submission.txHash = '0x' + sendEvent.transactionMetadata.transactionHash.toString('hex');
+    submission.chainFrom = solanaChainId;
+    submission.chainTo = Number(U256Converter.toBigInt(sendEvent.submission.targetChainId).toString());
+    submission.receiverAddr = '0x' + sendEvent.submission.receiver.toString('hex');
+    submission.amount = U256Converter.toBigInt(sendEvent.submission.amountToClaim).toString();
+    submission.rawEvent = JSON.stringify(sendEvent);
+    submission.debridgeId = '0x' + U256Converter.toBytesBE(sendEvent.submission.bridgeId).toString('hex');
+    submission.nonce = Number(U256Converter.toBigInt(sendEvent.submission?.nonce).toString());
+    submission.blockNumber = sendEvent.transactionMetadata?.blockNumber;
+    submission.blockTime = sendEvent.transactionMetadata.blockTime.toString();
     //submission.externalId = transaction.;
     //submission.signature = transaction.
     //
     submission.status = SubmisionStatusEnum.NEW;
     submission.ipfsStatus = UploadStatusEnum.NEW;
     submission.apiStatus = UploadStatusEnum.NEW;
-    submission.decimalDenominator = transaction.decimalDenominator;
+    submission.decimalDenominator = Number(sendEvent.denominator.toString());
     submission.assetsStatus = SubmisionAssetsStatusEnum.NEW;
     submission.bundlrStatus = BundlrStatusEnum.NEW;
 

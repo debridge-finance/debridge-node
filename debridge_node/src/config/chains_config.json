@@ -1,5 +1,15 @@
 [
   {
+    "chainId": 137,
+    "name": "MATIC",
+    "debridgeAddr": "0x43dE2d77BF8027e25dBD179B491e8d64f38398aA",
+    "firstStartBlock": 21672977,
+    "provider": "https://polygon-rpc.com/",
+    "interval": 10000,
+    "blockConfirmation": 256,
+    "maxBlockRange": 1000
+  },
+  {
     "chainId": 7565164,
     "name": "SOLANA",
     "debridgeAddr": "",
@@ -7,7 +17,6 @@
     "provider": "",
     "interval": 10000,
     "blockConfirmation": 0,
-    "maxBlockRange": 9,
-    "lastTransaction": null
+    "maxBlockRange": 0
   }
 ]

@@ -7,6 +7,10 @@ import * as Sentry from '@sentry/node';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from './Logger';
 
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 async function bootstrap() {
   dotenv.config();
   if (process.env.SENTRY_DSN) {

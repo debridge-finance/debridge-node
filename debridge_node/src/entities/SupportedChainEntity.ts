@@ -12,6 +12,9 @@ export class SupportedChainEntity {
   latestBlock: number;
 
   @Column({ nullable: true })
+  latestNonce: number;
+
+  @Column({ nullable: true })
   latestSolanaTransaction: string;
 
   @Column({ nullable: true })

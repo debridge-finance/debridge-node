@@ -7,6 +7,8 @@ import { AuthType } from '../enums/AuthType';
 import { ClassicChainConfig } from '../models/configs/ClassicChainConfig';
 import { SolanaChainConfig } from '../models/configs/SolanaChainConfig';
 
+export const solanaChainId = 7565164;
+
 /**
  * Service for controlling configs of chain
  */
@@ -14,18 +16,17 @@ import { SolanaChainConfig } from '../models/configs/SolanaChainConfig';
 export class ChainConfigService {
   private readonly configs = new Map<number, ChainConfig>();
   private readonly chains: number[] = [];
-  private readonly solanaChainId = 7565164;
 
   constructor() {
     chainConfigs.forEach(config => {
       this.chains.push(config.chainId);
-      const isSolana = config.chainId === this.solanaChainId;
+      const isSolana = config.chainId === solanaChainId;
       if (isSolana) {
         this.configs.set(config.chainId, {
           chainId: config.chainId,
           name: config.name,
           interval: config.interval,
-          lastTransaction: config.lastTransaction,
+          firstStartNonce: 0,
           isSolana,
         } as SolanaChainConfig);
       } else {
@@ -67,13 +68,6 @@ export class ChainConfigService {
    */
   getConfig() {
     return chainConfigs;
-  }
-
-  /**
-   * Get solana chain id
-   */
-  getSolanaChainId() {
-    return this.solanaChainId;
   }
 
   private generateChainProvides(config: any): ChainProvider {
