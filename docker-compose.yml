@@ -53,7 +53,7 @@ services:
       - './.cache/solana-events/:/var/opt/.debridge_events_cache'
 
   debridge-node:
-    image: debridgefinance/debridge-node-develop:2.6.0
+    image: debridgefinance/debridge-node:2.6.0
     container_name: debridge-node${DOCKER_ID}
     restart: unless-stopped
     secrets:
