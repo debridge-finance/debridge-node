@@ -10,6 +10,7 @@ import { solanaChainId } from '../../config/services/ChainConfigService';
 import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
+import { SolanaHearbeat } from '../entities/SolanaHearbeat';
 
 /**
  * Service for reading transaction from solana
@@ -95,6 +96,8 @@ export class SolanaReaderService implements OnModuleInit {
           this.#logger.verbose(`Heartbeat: ${JSON.stringify(response.sendEventMessage.heartbeat)}`);
 
           this.heartbeat();
+          // @ts-ignore
+          this.updateLastSyncedBlock(response.sendEventMessage.heartbeat as unknown as SolanaHearbeat);
           break;
         }
         case 'event': {
@@ -108,6 +111,27 @@ export class SolanaReaderService implements OnModuleInit {
           this.#submissionsFromSync.push(submission);
           break;
         }
+      }
+    }
+  }
+
+  private async updateLastSyncedBlock(solanaHearbeat: SolanaHearbeat) {
+    const chain = await this.supportedChainRepository.findOne({
+      where: {
+        chainId: solanaChainId,
+      },
+    });
+
+    if (!chain || !chain.lastTransactionSlotNumber) {
+      return;
+    }
+    if (chain.lastTransactionSlotNumber >= parseInt(solanaHearbeat.lastEventBlock)) {
+      const lastBlock = parseInt(solanaHearbeat.resyncLastBlock);
+      if (lastBlock > chain.lastTransactionSlotNumber) {
+        await this.supportedChainRepository.update(chain.chainId, {
+          lastTransactionSlotNumber: lastBlock,
+          latestBlock: lastBlock,
+        });
       }
     }
   }
