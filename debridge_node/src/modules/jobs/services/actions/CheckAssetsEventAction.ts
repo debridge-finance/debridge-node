@@ -114,7 +114,9 @@ export class CheckAssetsEventAction extends IAction {
             nativeTokenAddress = nativeTokenInfo.nativeAddress;
             //if native chain for token is Solana network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
-              const { response } = await this.#solanaGrpcClient.getTokenMetadata(new PublicKey(nativeTokenAddress));
+              const nativeTokenAddressBuffer = Buffer.from(nativeTokenAddress.substring(2), 'hex');
+              const pubKey = new PublicKey(nativeTokenAddressBuffer);
+              const { response } = await this.#solanaGrpcClient.getTokenMetadata(pubKey);
               tokenName = response.name;
               tokenSymbol = response.symbol;
               tokenDecimals = response.decimals;

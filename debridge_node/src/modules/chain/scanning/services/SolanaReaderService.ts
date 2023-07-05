@@ -133,14 +133,13 @@ export class SolanaReaderService implements OnModuleInit {
       },
     });
 
-    if (!chain || !chain.lastTransactionSlotNumber) {
+    if (!chain || !chain.latestBlock) {
       return;
     }
-    if (chain.lastTransactionSlotNumber >= parseInt(solanaHearbeat.lastEventBlock)) {
+    if (chain.latestBlock >= parseInt(solanaHearbeat.lastEventBlock)) {
       const lastBlock = parseInt(solanaHearbeat.resyncLastBlock);
-      if (lastBlock > chain.lastTransactionSlotNumber) {
+      if (lastBlock > chain.latestBlock) {
         await this.supportedChainRepository.update(chain.chainId, {
-          lastTransactionSlotNumber: lastBlock,
           latestBlock: lastBlock,
         });
       }
