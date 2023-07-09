@@ -48,7 +48,7 @@
     "rxjs": "7.8.1",
     "tsc-alias": "1.8.6",
     "typeorm": "0.3.16",
-    "web3": "1.10.0",
+    "web3": "4.0.2",
     "web3-eth-contract": "1.10.0"
   },
   "devDependencies": {
