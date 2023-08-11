@@ -96,3 +96,21 @@ docker-compose up -d --remove-orphans
 ```
 
 # [Changelog](./changelog.md)
+
+
+# Config
+
+## Working with multi-rpc nodes config
+
+1. For each RPC node in the list:
+    * Try to get the last block from the RPC node.
+    * If the operation succeeds, return the RPC node.
+    * Otherwise, mark the RPC node as not working and move it to the end of the list.
+2. If we reach this point, all RPC nodes are not working.
+    * Raise an exception.
+
+This function first iterates over the list of RPC nodes. For each RPC node, it tries to get the last block from the node. If the operation succeeds, the function returns the RPC node. Otherwise, the function marks the RPC node as not working and moves it to the end of the list.
+If the function reaches the end of the list without finding a working RPC node, it raises an exception. This indicates that all RPC nodes are not working.
+![Working with multi-rpc nodes config](https://github.com/debridge-finance/debridge-node/assets/98714075/64bbf9ef-b838-4e8b-9eab-8519c645e568)
+
+
