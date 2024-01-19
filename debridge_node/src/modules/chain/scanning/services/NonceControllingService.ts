@@ -6,7 +6,7 @@ import { DebrdigeApiService } from '../../../external/debridge_api/services/Debr
 import { NonceValidationEnum } from '../enums/NonceValidationEnum';
 import { ProcessNewTransferResult } from '../entities/ProcessNewTransferResult';
 import { ChainConfig } from '../../config/models/configs/ChainConfig';
-import { ClassicChainConfig } from '../../config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
 import { ChainScanningService } from './ChainScanningService';
 
 @Injectable()
@@ -50,7 +50,7 @@ export class NonceControllingService implements OnModuleInit {
         `incorrect nonce error (missed_nonce): nonce: ${transferResult.nonce}; submissionId: ${transferResult.submissionId} chainId: ${chainId}`,
       );
       if (!chain.isSolana) {
-        (chain as ClassicChainConfig).providers.setProviderStatus(web3.chainProvider, false);
+        (chain as EvmChainConfig).providers.setProviderStatus(web3.chainProvider, false);
       }
       return NonceValidationEnum.MISSED_NONCE;
     } else if (transferResult.nonceValidationStatus === NonceValidationEnum.DUPLICATED_NONCE) {

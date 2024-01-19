@@ -4,7 +4,7 @@ import { ChainConfig } from '../models/configs/ChainConfig';
 import { ChainProvider } from '../models/ChainProvider';
 import { ChainProviderDetail } from '../models/ChainProviderDetail';
 import { AuthType } from '../enums/AuthType';
-import { ClassicChainConfig } from '../models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../models/configs/EvmChainConfig';
 import { SolanaChainConfig } from '../models/configs/SolanaChainConfig';
 
 export const solanaChainId = 7565164;
@@ -40,7 +40,7 @@ export class ChainConfigService {
           blockConfirmation: config.blockConfirmation,
           maxBlockRange: config.maxBlockRange,
           isSolana,
-        } as ClassicChainConfig);
+        } as EvmChainConfig);
       }
     });
   }

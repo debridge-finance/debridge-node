@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { Web3Service } from '../../web3/services/Web3Service';
 import { ChainScanningService } from '../../chain/scanning/services/ChainScanningService';
 import { ChainConfigService } from '../../chain/config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../chain/config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../chain/config/models/configs/EvmChainConfig';
 import { SolanaChainConfig } from '../../chain/config/models/configs/SolanaChainConfig';
 
 @Injectable()
@@ -46,21 +46,21 @@ export class StartScanningService implements OnModuleInit {
         }
         continue;
       }
-      const chainConfigClassic = chainConfig as ClassicChainConfig;
-      if (chainConfigClassic.maxBlockRange <= 100) {
-        this.logger.error(`Cant up application maxBlockRange(${chainConfigClassic.maxBlockRange}) < 100`);
+      const chainConfigEvm = chainConfig as EvmChainConfig;
+      if (chainConfigEvm.maxBlockRange <= 100) {
+        this.logger.error(`Cant up application maxBlockRange(${chainConfigEvm.maxBlockRange}) < 100`);
         process.exit(1);
       }
-      if (chainConfigClassic.blockConfirmation <= 8) {
-        this.logger.error(`Cant up application maxBlockRange(${chainConfigClassic.blockConfirmation}) < 8`);
+      if (chainConfigEvm.blockConfirmation <= 8) {
+        this.logger.error(`Cant up application maxBlockRange(${chainConfigEvm.blockConfirmation}) < 8`);
         process.exit(1);
       }
 
       if (!configInDd) {
         await this.supportedChainRepository.save({
           chainId: chainId,
-          latestBlock: chainConfigClassic.firstStartBlock,
-          network: chainConfigClassic.name,
+          latestBlock: chainConfigEvm.firstStartBlock,
+          network: chainConfigEvm.name,
         });
       }
     }
@@ -79,10 +79,10 @@ export class StartScanningService implements OnModuleInit {
         if (chainDetail.isSolana) {
           continue;
         }
-        const chainConfigClassic = chainDetail as ClassicChainConfig;
+        const chainConfigEvm = chainDetail as EvmChainConfig;
         await Promise.all(
-          chainConfigClassic.providers.getAllProviders().map(provider => {
-            return this.web3Service.validateChainId(chainConfigClassic.providers, provider);
+          chainConfigEvm.providers.getAllProviders().map(provider => {
+            return this.web3Service.validateChainId(chainConfigEvm, provider);
           }),
         );
       } catch (e) {
