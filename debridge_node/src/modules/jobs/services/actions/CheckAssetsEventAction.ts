@@ -14,7 +14,7 @@ import { Account } from 'web3-core';
 import { getTokenName } from '../../../../utils/getTokenName';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../../chain/config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../../chain/config/models/configs/EvmChainConfig';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
 import { PublicKey } from '@solana/web3.js';
@@ -63,7 +63,7 @@ export class CheckAssetsEventAction extends IAction {
       if (!confirmNewAction) {
         try {
           this.logger.log(`Process debridgeId: ${submission.debridgeId}`);
-          const chainFromConfig = this.chainConfigService.get(submission.chainFrom) as ClassicChainConfig;
+          const chainFromConfig = this.chainConfigService.get(submission.chainFrom) as EvmChainConfig;
           let tokenName;
           let tokenSymbol;
           let tokenDecimals;
@@ -90,7 +90,7 @@ export class CheckAssetsEventAction extends IAction {
             }
             // if chainFrom is EVM
           } else {
-            const web3 = await this.web3Service.web3HttpProvider(chainFromConfig.providers);
+            const web3 = await this.web3Service.web3HttpProvider(chainFromConfig);
             const deBridgeGateInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainFromConfig.debridgeAddr);
             // struct DebridgeInfo {
             //   uint256 chainId; // native chain id
@@ -199,8 +199,8 @@ export class CheckAssetsEventAction extends IAction {
   }
 
   private async getTokenInfo(nativeChainId: number, nativeTokenAddress: string) {
-    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as ClassicChainConfig;
-    const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail.providers);
+    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as EvmChainConfig;
+    const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail);
     const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenAddress);
     const tokenName = await getTokenName(nativeTokenInstance, nativeTokenAddress, { logger: this.logger });
     const tokenSymbol = await nativeTokenInstance.methods.symbol().call();

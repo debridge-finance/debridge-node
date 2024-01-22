@@ -3,7 +3,7 @@ import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { SolanaReaderService } from './SolanaReaderService';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
-import { ClassicChainConfig } from '../../config/models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity';
 import { Repository } from 'typeorm';
@@ -61,9 +61,9 @@ export class AddNewEventsAction {
         chainId,
       },
     });
-    const chainDetail = this.chainConfigService.get(chainId) as ClassicChainConfig;
+    const chainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
 
-    const web3 = await this.web3Service.web3HttpProvider(chainDetail.providers);
+    const web3 = await this.web3Service.web3HttpProvider(chainDetail);
 
     const registerInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
     // @ts-ignore

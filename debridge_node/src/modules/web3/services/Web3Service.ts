@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Web3 from 'web3';
 import { ConfigService } from '@nestjs/config';
-import { ChainProvider } from '../../chain/config/models/ChainProvider';
+import { abi as deBridgeGateAbi } from '../../../assets/DeBridgeGate.json';
+import { EvmChainConfig } from '../../chain/config/models/configs/EvmChainConfig';
 
 export class Web3Custom extends Web3 {
   constructor(readonly chainProvider: string, httpProvider) {
@@ -23,7 +24,8 @@ export class Web3Service {
     return new Web3();
   }
 
-  async web3HttpProvider(chainProvider: ChainProvider): Promise<Web3Custom> {
+  async web3HttpProvider(chainConfig: EvmChainConfig): Promise<Web3Custom> {
+    const chainProvider = chainConfig.providers;
     for (const provider of [...chainProvider.getNotFailedProviders(), ...chainProvider.getFailedProviders()]) {
       if (this.providersMap.has(provider)) {
         const web3 = this.providersMap.get(provider);
@@ -49,7 +51,7 @@ export class Web3Service {
         continue;
       }
       if (!chainProvider.getProviderValidationStatus(provider)) {
-        await this.validateChainId(chainProvider, provider);
+        await this.validateChainId(chainConfig, provider);
       }
       chainProvider.setProviderStatus(provider, true);
       this.providersMap.set(provider, web3);
@@ -74,7 +76,8 @@ export class Web3Service {
     return false;
   }
 
-  async validateChainId(chainProvider: ChainProvider, provider: string) {
+  async validateChainId(chainConfig: EvmChainConfig, provider: string) {
+    const chainProvider = chainConfig.providers;
     try {
       const httpProvider = new Web3Custom.providers.HttpProvider(provider, {
         timeout: this.web3Timeout,
@@ -82,9 +85,13 @@ export class Web3Service {
         headers: chainProvider.getChainAuth(provider),
       });
       const web3 = new Web3Custom(provider, httpProvider);
-      const web3ChainId = await web3.eth.getChainId();
-      if (web3ChainId !== chainProvider.getChainId()) {
-        this.logger.error(`Checking correct RPC from config is failed (in config ${chainProvider.getChainId()} in rpc ${web3ChainId})`);
+      const contractInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainConfig.debridgeAddr);
+      // @ts-ignore
+      web3.eth.setProvider = contractInstance.setProvider;
+
+      const contractChainId = Number(await contractInstance.methods.getChainId().call());
+      if (contractChainId !== chainProvider.getChainId()) {
+        this.logger.error(`Checking correct RPC from config is failed (in config ${chainProvider.getChainId()} in contract ${contractChainId})`);
         process.exit(1);
       }
       chainProvider.setProviderValidationStatus(provider, true);

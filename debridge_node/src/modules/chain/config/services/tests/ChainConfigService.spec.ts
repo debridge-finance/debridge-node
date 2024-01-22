@@ -5,7 +5,7 @@ import { ChainConfigService } from '../ChainConfigService';
 import { ChainProvider } from '../../models/ChainProvider';
 import { AddNewEventsAction } from '../../../scanning/services/AddNewEventsAction';
 import { ChainScanningService } from '../../../scanning/services/ChainScanningService';
-import { ClassicChainConfig } from '../../models/configs/ClassicChainConfig';
+import { EvmChainConfig } from '../../models/configs/EvmChainConfig';
 
 jest.mock('../../../../../config/chains_config.json', () => {
   return [
@@ -78,7 +78,7 @@ describe('ChainConfigService', () => {
       ],
     }).compile();
     service = module.get(ChainConfigService);
-    chainProvider = (service.get(970) as ClassicChainConfig).providers;
+    chainProvider = (service.get(970) as EvmChainConfig).providers;
   });
 
   describe('ChainConfigService', () => {
@@ -93,7 +93,7 @@ describe('ChainConfigService', () => {
 
       it('getChainAuth', async () => {
         expect(chainProvider.getChainAuth('https://debridge.io')).toBeUndefined();
-        const authChainProvider = (service.get(972) as ClassicChainConfig).providers;
+        const authChainProvider = (service.get(972) as EvmChainConfig).providers;
         expect(authChainProvider.getChainAuth('debridge.io')).toEqual([{ name: 'Authorization', value: 'Basic YW50b246MTIz' }]);
       });
 
