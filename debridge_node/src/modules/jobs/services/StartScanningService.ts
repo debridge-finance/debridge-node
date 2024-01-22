@@ -68,6 +68,7 @@ export class StartScanningService implements OnModuleInit {
 
   private async setupCheckEventsTimeout() {
     const chains = await this.supportedChainRepository.find();
+    const correctChains: SupportedChainEntity[] = [];
 
     for (const chain of chains) {
       try {
@@ -85,13 +86,14 @@ export class StartScanningService implements OnModuleInit {
             return this.web3Service.validateChainId(chainConfigEvm, provider);
           }),
         );
+        correctChains.push(chain);
       } catch (e) {
         this.logger.error(`Error in validation configs for chain ${chain.chainId}: ${e.message}`);
         process.exit(1);
       }
     }
 
-    for (const chain of chains) {
+    for (const chain of correctChains) {
       this.chainScanningService.start(chain.chainId);
     }
   }
