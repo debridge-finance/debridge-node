@@ -149,7 +149,7 @@ export class SolanaReaderService implements OnModuleInit {
 
   private heartbeat() {
     clearTimeout(this.#heartbeatIntervalInstance);
-    const timeout = Number(this.configService.getOrThrow<string>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS')) * 1000 + 10_000;
+    const timeout = Number(this.configService.getOrThrow<string>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS')) * 1000 + 10_000; // timeout from config + 10s
     this.#heartbeatIntervalInstance = setTimeout(async () => {
       this.createSubscription();
       this.#logger.error(`Duplex is not active for ${timeout}s`);
