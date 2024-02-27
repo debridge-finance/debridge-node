@@ -13,10 +13,16 @@ import { AuthService } from './auth/auth.service';
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        ttl: configService.get('THROTTLER_TTL', 60),
-        limit: configService.get('THROTTLER_LIMIT', 10),
-      }),
+      useFactory: (configService: ConfigService) => {
+        return {
+          throttlers: [
+            {
+              ttl: Number(configService.get<string>('THROTTLER_TTL', '60')),
+              limit: Number(configService.get<string>('THROTTLER_LIMIT', '10')),
+            },
+          ],
+        };
+      },
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
