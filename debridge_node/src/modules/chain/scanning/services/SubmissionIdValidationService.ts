@@ -1,27 +1,52 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { buildSubmissionId } from '../../../../utils/buildSubmissionId';
 import { Web3Custom } from '../../../web3/services/Web3Service';
 import { ChainConfig } from '../../config/models/configs/ChainConfig';
-import { ClassicChainConfig } from '../../config/models/configs/ClassicChainConfig';
 import { DebrdigeApiService } from '../../../external/debridge_api/services/DebrdigeApiService';
+import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
+import { ChainScanningService } from './ChainScanningService';
+
+type Status =
+  | {
+      status: true;
+    }
+  | {
+      status: false;
+    }
+  | {
+      status: false;
+      calculatedSubmissionId: string;
+    };
 
 @Injectable()
 export class SubmissionIdValidationService {
   private readonly logger = new Logger(SubmissionIdValidationService.name);
+  private readonly attemptsByChainId = new Map<number, number>();
 
-  constructor(private readonly debridgeApiService: DebrdigeApiService) {}
+  constructor(
+    private readonly debridgeApiService: DebrdigeApiService,
+    @Inject(forwardRef(() => ChainScanningService))
+    private readonly chainScanningService: ChainScanningService,
+  ) {}
 
-  validate(submission: SubmissionEntity): { status: boolean; calculatedSubmissionId?: string } {
+  validate(submission: SubmissionEntity): Status {
     try {
       if (this.oldSubmissions.includes(submission.submissionId)) {
         this.logger.log(`Submission ${submission.submissionId} is one of old`);
+        this.attemptsByChainId.set(submission.chainFrom, 0);
         return {
           status: true,
         };
       }
       const calculatedSubmissionId = buildSubmissionId(submission);
       const status = submission.submissionId === calculatedSubmissionId;
+      if (status) {
+        this.attemptsByChainId.set(submission.chainFrom, 0);
+      } else {
+        const currentAttempt = Number(this.attemptsByChainId.get(submission.chainFrom) || 0);
+        this.attemptsByChainId.set(submission.chainFrom, currentAttempt + 1);
+      }
 
       this.logger.log(
         `SubmissionId validation for submission ${submission.submissionId} has status ${status}: calculatedSubmissionId: ${calculatedSubmissionId}`,
@@ -47,9 +72,17 @@ export class SubmissionIdValidationService {
     calculatedSubmissionId?: string,
   ): Promise<void> {
     this.logger.error(`incorrect submissionId: ${submissionId}, correctSubmissionId: ${calculatedSubmissionId}`);
-    await this.debridgeApiService.notifyError(`incorrect submissionId: ${submissionId}, correctSubmissionId: ${calculatedSubmissionId}`);
     if (!chain.isSolana) {
-      (chain as ClassicChainConfig).providers.setProviderStatus(web3.chainProvider, false);
+      (chain as EvmChainConfig).providers.setProviderStatus(web3.chainProvider, false);
+    }
+    const attempts = Number(this.attemptsByChainId.get(chain.chainId) || 0);
+    if (attempts > chain.maxAttemptsSubmissionIdCalculation) {
+      this.chainScanningService.pause(chain.chainId);
+      await this.debridgeApiService.notifyError(
+        `Chain ${chain.chainId} scanning is stopped(incorrect submissionId: ${submissionId}, correctSubmissionId: ${calculatedSubmissionId})`,
+      );
+    } else {
+      await this.debridgeApiService.notifyError(`incorrect submissionId: ${submissionId}, correctSubmissionId: ${calculatedSubmissionId}`);
     }
   }
 

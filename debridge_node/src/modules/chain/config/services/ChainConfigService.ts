@@ -8,6 +8,7 @@ import { EvmChainConfig } from '../models/configs/EvmChainConfig';
 import { SolanaChainConfig } from '../models/configs/SolanaChainConfig';
 
 export const solanaChainId = 7565164;
+const defaultMaxAttemptsSubmissionIdCalculation = 10;
 
 /**
  * Service for controlling configs of chain
@@ -28,6 +29,7 @@ export class ChainConfigService {
           interval: config.interval,
           firstStartNonce: 0,
           isSolana,
+          maxAttemptsSubmissionIdCalculation: config.maxAttemptsSubmissionIdCalculation || defaultMaxAttemptsSubmissionIdCalculation,
         } as SolanaChainConfig);
       } else {
         this.configs.set(config.chainId, {
@@ -40,6 +42,7 @@ export class ChainConfigService {
           blockConfirmation: config.blockConfirmation,
           maxBlockRange: config.maxBlockRange,
           isSolana,
+          maxAttemptsSubmissionIdCalculation: config.maxAttemptsSubmissionIdCalculation || defaultMaxAttemptsSubmissionIdCalculation,
         } as EvmChainConfig);
       }
     });
