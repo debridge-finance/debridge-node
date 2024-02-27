@@ -7,17 +7,10 @@ import { DebrdigeApiService } from '../../../external/debridge_api/services/Debr
 import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
 import { ChainScanningService } from './ChainScanningService';
 
-type Status =
-  | {
-      status: true;
-    }
-  | {
-      status: false;
-    }
-  | {
-      status: false;
-      calculatedSubmissionId: string;
-    };
+type Status = {
+  status: boolean;
+  calculatedSubmissionId?: string;
+};
 
 @Injectable()
 export class SubmissionIdValidationService {
