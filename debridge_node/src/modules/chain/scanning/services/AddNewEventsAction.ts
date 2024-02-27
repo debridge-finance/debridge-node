@@ -9,6 +9,7 @@ import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity'
 import { Repository } from 'typeorm';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { TransformService } from './TransformService';
+import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 
 @Injectable()
 export class AddNewEventsAction {
@@ -101,7 +102,10 @@ export class AddNewEventsAction {
           this.logger.error(`Error in transforming sent event to submission ${submissionId}: ${e.message}`);
         }
       });
-      await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
+      const status = await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
+      if (status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
+        break;
+      }
     }
   }
 

@@ -7,6 +7,7 @@
     "provider": "https://polygon-rpc.com/",
     "interval": 10000,
     "blockConfirmation": 256,
+    "maxAttemptsSubmissionIdCalculation": 10,
     "maxBlockRange": 1000
   },
   {

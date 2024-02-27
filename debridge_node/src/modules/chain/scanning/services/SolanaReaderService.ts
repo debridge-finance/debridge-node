@@ -29,12 +29,10 @@ export class SolanaReaderService implements OnModuleInit {
   constructor(
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
-    @InjectRepository(SubmissionEntity)
-    private readonly submissionsRepository: Repository<SubmissionEntity>,
     private readonly transformService: TransformService,
     private readonly configService: ConfigService,
     private readonly chainProcessingService: SubmissionProcessingService,
-    private readonly solanaEventsReaderService: SolanaEventsReaderService,
+    solanaEventsReaderService: SolanaEventsReaderService,
   ) {
     this.#solanaGrpcClient = solanaEventsReaderService.getClient();
   }
@@ -61,7 +59,11 @@ export class SolanaReaderService implements OnModuleInit {
       const submissionsForProcessing = submissions.slice(skip, end);
       const lastSubmission = submissionsForProcessing.at(-1);
       const processingResult = await this.chainProcessingService.process(submissionsForProcessing, solanaChainId, lastSubmission.nonce);
-      if (processingResult === ProcessNewTransferResultStatusEnum.ERROR) {
+      if (
+        [ProcessNewTransferResultStatusEnum.ERROR_SUBMISSION_VALIDATION, ProcessNewTransferResultStatusEnum.ERROR_NONCE_VALIDATION].includes(
+          processingResult,
+        )
+      ) {
         this.#submissionsFromSync = [];
         this.createSubscription();
         break;
