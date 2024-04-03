@@ -32,6 +32,9 @@ export class ChainConfigService {
           maxAttemptsSubmissionIdCalculation: config.maxAttemptsSubmissionIdCalculation || defaultMaxAttemptsSubmissionIdCalculation,
         } as SolanaChainConfig);
       } else {
+        if (config.firstStartBlock === 0) {
+          throw new Error(`firstStartBlock cannot be empty for chain ${config.chainId}`);
+        }
         this.configs.set(config.chainId, {
           chainId: config.chainId,
           name: config.name,
