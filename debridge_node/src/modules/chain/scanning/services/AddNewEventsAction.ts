@@ -74,7 +74,7 @@ export class AddNewEventsAction {
     web3.eth.setProvider = registerInstance.setProvider;
 
     const toBlock = to || (await web3.eth.getBlockNumber()) - chainDetail.blockConfirmation;
-    let fromBlock = from || (supportedChain.latestBlock > 0 ? supportedChain.latestBlock : toBlock - 1);
+    let fromBlock = from || supportedChain.latestBlock;
 
     logger.debug(`Getting events from ${fromBlock} to ${toBlock} ${supportedChain.network}`);
 

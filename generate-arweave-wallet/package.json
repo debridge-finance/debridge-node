@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "arweave": "1.14.4"
+    "arweave": "1.15.0"
   }
 }
