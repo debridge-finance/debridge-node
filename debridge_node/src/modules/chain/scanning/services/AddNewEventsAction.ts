@@ -152,7 +152,7 @@ export class AddNewEventsAction {
     }
   }
 
-  async getEvents(registerInstance, fromBlock: number, toBlock) {
+  async getEvents(registerInstance: Contract, fromBlock: number, toBlock: number) {
     if (fromBlock >= toBlock) return;
 
     /* get events */
