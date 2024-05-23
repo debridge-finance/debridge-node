@@ -4,9 +4,9 @@ import { Web3Service } from '../../../web3/services/Web3Service';
 import { SolanaReaderService } from './SolanaReaderService';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity';
-import { EntityManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { TransformService } from './TransformService';
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
@@ -20,8 +20,6 @@ export class AddNewEventsAction {
   constructor(
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
-    @InjectEntityManager()
-    private readonly entityManager: EntityManager,
     private readonly chainConfigService: ChainConfigService,
     private readonly web3Service: Web3Service,
     private readonly solanaReaderService: SolanaReaderService,
@@ -109,46 +107,6 @@ export class AddNewEventsAction {
       if (status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
         break;
       }
-    }
-
-    await this.validateAndUpdateProgressWithLatestNonce(registerInstance, chainId);
-  }
-
-  private async validateAndUpdateProgressWithLatestNonce(contract: Contract, chainId: number): Promise<void> {
-    const logger = new Logger(`${AddNewEventsAction.name} chainId ${chainId} validateAndUpdateProgressWithLatestNonce`);
-
-    const lastNonceFromContract = Number(await contract.methods.nonce().call());
-    logger.verbose(`lastNonceFromContract ${lastNonceFromContract}`);
-
-    const recordsDbWithMaxNonce = await this.entityManager.query(
-      `SELECT submissions.nonce as nonce, submissions."blockNumber" as "blockNumber"
-      FROM public.submissions as submissions
-        JOIN (SELECT "chainFrom", MAX(nonce) as nonce
-              FROM public.submissions as submissions
-              JOIN public.supported_chains as chains
-              ON (chains."chainId" = submissions."chainFrom")
-              WHERE (submissions."blockNumber" <= chains."latestBlock"  OR chains."chainId"='7565164')  GROUP BY "chainFrom")
-        as nonces
-        ON (nonces."chainFrom" = submissions."chainFrom" AND nonces.nonce = submissions.nonce)
-      WHERE submissions."chainFrom" = ${chainId}
-      `,
-    );
-    logger.verbose(`records from database ${JSON.stringify(recordsDbWithMaxNonce)}`);
-    if (!recordsDbWithMaxNonce.length) {
-      return;
-    }
-    const recordDbWithMaxNonce = recordsDbWithMaxNonce[0];
-
-    const lastNonceFromDb = recordDbWithMaxNonce.nonce;
-    if (lastNonceFromContract > lastNonceFromDb) {
-      const blockNumberWithLastNonceFromDb = recordDbWithMaxNonce.blockNumber;
-      logger.verbose(`blockNumberWithLastNonceFromDb ${blockNumberWithLastNonceFromDb}`);
-
-      await this.supportedChainRepository.update(chainId, {
-        latestBlock: blockNumberWithLastNonceFromDb,
-      });
-
-      logger.log(`last processed block is update with value ${blockNumberWithLastNonceFromDb}`);
     }
   }
 
