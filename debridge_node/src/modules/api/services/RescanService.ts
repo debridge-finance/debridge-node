@@ -9,7 +9,10 @@ import { AddNewEventsAction } from '../../chain/scanning/services/AddNewEventsAc
 export class RescanService {
   private readonly logger = new Logger();
 
-  constructor(private readonly addNewEventsAction: AddNewEventsAction, private readonly chainConfigService: ChainConfigService) {}
+  constructor(
+    private readonly addNewEventsAction: AddNewEventsAction,
+    private readonly chainConfigService: ChainConfigService,
+  ) {}
 
   /**
    * Rescan

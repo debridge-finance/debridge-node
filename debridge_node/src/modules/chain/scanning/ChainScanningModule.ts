@@ -11,6 +11,7 @@ import { NonceControllingService } from './services/NonceControllingService';
 import { SubmissionProcessingService } from './services/SubmissionProcessingService';
 import { SolanaReaderService } from './services/SolanaReaderService';
 import { TransformService } from './services/TransformService';
+import { SubmissionIdValidationService } from './services/SubmissionIdValidationService';
 
 @Module({
   imports: [ConfigModule, ScheduleModule.forRoot(), TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity])],
@@ -22,6 +23,7 @@ import { TransformService } from './services/TransformService';
     NonceControllingService,
     SolanaReaderService,
     TransformService,
+    SubmissionIdValidationService,
   ],
   exports: [ChainScanningService],
 })
