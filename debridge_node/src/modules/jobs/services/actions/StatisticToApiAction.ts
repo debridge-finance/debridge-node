@@ -34,7 +34,7 @@ export class StatisticToApiAction extends IAction {
     const progressInfo = await Promise.all(
       chains.map(async chain => {
         const chainConfig = this.chainConfigService.get(chain.chainId);
-        if (chainConfig.isSolana) {
+        if (chainConfig && chainConfig.isSolana) {
           return {
             chainId: chain.chainId,
             lastBlock: chain.latestBlock,

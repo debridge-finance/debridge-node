@@ -92,6 +92,11 @@ export class StartScanningService implements OnModuleInit {
     }
 
     for (const chain of chains) {
+      const chainDetails = await this.chainConfigService.get(chain.chainId);
+      if (!chainDetails) {
+        this.logger.warn(`Chain ${chain.chainId} is skipped. It's presented in database but not in config.`);
+        continue;
+      }
       this.chainScanningService.start(chain.chainId);
     }
   }
