@@ -32,30 +32,20 @@ export class StatisticToApiAction extends IAction {
     const chains = await this.supportedChainRepository.find();
     this.logger.debug('chains are found');
     const progressInfo = await Promise.all(
-      chains
-        .filter(chain => {
-          const chainConfig = this.chainConfigService.get(chain.chainId);
-          if (!chainConfig) {
-            this.logger.warn(`Chain ${chain.chainId} is skipped. Chain ${chain.chainId} is not presented in config.`);
-            return false;
-          }
-
-          return true;
-        })
-        .map(async chain => {
-          const chainConfig = this.chainConfigService.get(chain.chainId);
-          if (chainConfig.isSolana) {
-            return {
-              chainId: chain.chainId,
-              lastBlock: chain.latestBlock,
-              lastTxHash: chain.latestSolanaTransaction,
-              lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
-              latestNonce: chain.latestNonce,
-              lastTxTimestamp: chain.lastTxTimestamp,
-            } as ProgressInfoDTO;
-          }
-          return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;
-        }),
+      chains.map(async chain => {
+        const chainConfig = this.chainConfigService.get(chain.chainId);
+        if (chainConfig && chainConfig.isSolana) {
+          return {
+            chainId: chain.chainId,
+            lastBlock: chain.latestBlock,
+            lastTxHash: chain.latestSolanaTransaction,
+            lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
+            latestNonce: chain.latestNonce,
+            lastTxTimestamp: chain.lastTxTimestamp,
+          } as ProgressInfoDTO;
+        }
+        return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;
+      }),
     );
     await this.debridgeApiService.uploadStatistic(progressInfo);
 
