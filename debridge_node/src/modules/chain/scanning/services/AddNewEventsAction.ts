@@ -9,6 +9,8 @@ import { SupportedChainEntity } from '../../../../entities/SupportedChainEntity'
 import { Repository } from 'typeorm';
 import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { TransformService } from './TransformService';
+import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
+import Contract from 'web3-eth-contract';
 
 @Injectable()
 export class AddNewEventsAction {
@@ -70,7 +72,7 @@ export class AddNewEventsAction {
     web3.eth.setProvider = registerInstance.setProvider;
 
     const toBlock = to || (await web3.eth.getBlockNumber()) - chainDetail.blockConfirmation;
-    let fromBlock = from || (supportedChain.latestBlock > 0 ? supportedChain.latestBlock : toBlock - 1);
+    let fromBlock = from || supportedChain.latestBlock;
 
     logger.debug(`Getting events from ${fromBlock} to ${toBlock} ${supportedChain.network}`);
 
@@ -101,11 +103,14 @@ export class AddNewEventsAction {
           this.logger.error(`Error in transforming sent event to submission ${submissionId}: ${e.message}`);
         }
       });
-      await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
+      const status = await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
+      if (status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
+        break;
+      }
     }
   }
 
-  async getEvents(registerInstance, fromBlock: number, toBlock) {
+  async getEvents(registerInstance: Contract, fromBlock: number, toBlock: number) {
     if (fromBlock >= toBlock) return;
 
     /* get events */
