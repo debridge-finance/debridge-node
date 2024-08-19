@@ -13,8 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
+      - name: Update openssl
+        run: sudo apt-get update && sudo apt-get install --only-upgrade openssl
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: get-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@main
