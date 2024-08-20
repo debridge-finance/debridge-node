@@ -6,7 +6,6 @@ WORKDIR /build
 COPY package.json /build
 COPY package-lock.json /build
 RUN npm ci
-RUN npm rebuild
 
 COPY tsconfig.json /build
 COPY tsconfig.build.json /build
