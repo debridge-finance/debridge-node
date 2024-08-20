@@ -1,11 +1,11 @@
 FROM node:20.16.0-alpine as builder
-RUN apk update && apk add --virtual build-dependencies build-base gcc
 
 WORKDIR /build
 
 COPY package.json /build
 COPY package-lock.json /build
 RUN npm ci
+RUN npm rebuild
 
 COPY tsconfig.json /build
 COPY tsconfig.build.json /build
@@ -16,7 +16,6 @@ RUN mkdir stats
 RUN npm run build
 
 FROM node:20.16.0-alpine
-RUN apk update && apk add --virtual build-dependencies build-base gcc
 WORKDIR /app
 COPY --from=builder /build/dist /app/dist
 COPY --from=builder /build/node_modules /app/node_modules
