@@ -1,5 +1,5 @@
 FROM node:20.16.0-alpine as builder
-RUN apk update && apk add build-base
+RUN apk update && apk add --virtual build-dependencies build-base gcc
 
 WORKDIR /build
 
