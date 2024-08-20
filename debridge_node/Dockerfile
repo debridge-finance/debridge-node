@@ -1,4 +1,5 @@
-FROM node:20.13.1-alpine as builder
+FROM node:20.16.0 as builder
+RUN apt-get update && apt-get install build-essential
 
 WORKDIR /build
 
@@ -14,7 +15,7 @@ COPY src  /build/src
 RUN mkdir stats
 RUN npm run build
 
-FROM node:20.13.1-alpine
+FROM node:20.16.0-alpine
 WORKDIR /app
 COPY --from=builder /build/dist /app/dist
 COPY --from=builder /build/node_modules /app/node_modules
