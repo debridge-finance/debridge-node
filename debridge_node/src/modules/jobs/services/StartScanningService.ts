@@ -47,8 +47,8 @@ export class StartScanningService implements OnModuleInit {
         continue;
       }
       const chainConfigEvm = chainConfig as EvmChainConfig;
-      if (chainConfigEvm.maxBlockRange <= 100) {
-        this.logger.error(`Cant up application maxBlockRange(${chainConfigEvm.maxBlockRange}) < 100`);
+      if (chainConfigEvm.maxBlockRange < 50) {
+        this.logger.error(`Cant up application maxBlockRange(${chainConfigEvm.maxBlockRange}) < 50`);
         process.exit(1);
       }
       if (chainConfigEvm.blockConfirmation <= 8) {
