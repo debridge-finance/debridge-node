@@ -1,11 +1,11 @@
 const wallet = require('ethereumjs-wallet');
 const Web3 = require('web3');
-var generator = require('generate-password');
+const generator = require('generate-password');
 
 const addressData = wallet.default.generate();
 const web3 = new Web3('');
 
-var password = generator.generate({
+const password = generator.generate({
 	length: 40,
 	numbers: true
 });

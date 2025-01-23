@@ -17,8 +17,8 @@ import { ChainConfigService } from '../../../chain/config/services/ChainConfigSe
 import { EvmChainConfig } from '../../../chain/config/models/configs/EvmChainConfig';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
-import { PublicKey } from '@solana/web3.js';
 import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
+import { createSolanaPublicKey } from '../../../../utils/createSolanaPublicKey';
 
 @Injectable()
 export class CheckAssetsEventAction extends IAction {
@@ -79,7 +79,7 @@ export class CheckAssetsEventAction extends IAction {
             //if native chain for token is EVM network
             const nativeChainConfig = this.chainConfigService.get(nativeChainId);
             if (nativeChainConfig.isSolana) {
-              const { response } = await this.#solanaGrpcClient.getTokenMetadata(new PublicKey(bridgeInfo.nativeTokenAddress));
+              const { response } = await this.#solanaGrpcClient.getTokenMetadata(createSolanaPublicKey(bridgeInfo.nativeTokenAddress));
               tokenName = response.name;
               tokenSymbol = response.symbol;
               tokenDecimals = response.decimals;
@@ -114,7 +114,7 @@ export class CheckAssetsEventAction extends IAction {
             nativeTokenAddress = nativeTokenInfo.nativeAddress;
             //if native chain for token is Solana network
             if (this.chainConfigService.get(nativeChainId).isSolana) {
-              const { response } = await this.#solanaGrpcClient.getTokenMetadata(new PublicKey(nativeTokenAddress));
+              const { response } = await this.#solanaGrpcClient.getTokenMetadata(createSolanaPublicKey(nativeTokenAddress));
               tokenName = response.name;
               tokenSymbol = response.symbol;
               tokenDecimals = response.decimals;

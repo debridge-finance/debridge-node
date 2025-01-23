@@ -47,8 +47,8 @@ export class StartScanningService implements OnModuleInit {
         continue;
       }
       const chainConfigEvm = chainConfig as EvmChainConfig;
-      if (chainConfigEvm.maxBlockRange <= 100) {
-        this.logger.error(`Cant up application maxBlockRange(${chainConfigEvm.maxBlockRange}) < 100`);
+      if (chainConfigEvm.maxBlockRange < 50) {
+        this.logger.error(`Cant up application maxBlockRange(${chainConfigEvm.maxBlockRange}) < 50`);
         process.exit(1);
       }
       if (chainConfigEvm.blockConfirmation <= 8) {
@@ -92,6 +92,11 @@ export class StartScanningService implements OnModuleInit {
     }
 
     for (const chain of chains) {
+      const chainDetails = await this.chainConfigService.get(chain.chainId);
+      if (!chainDetails) {
+        this.logger.warn(`Chain ${chain.chainId} is skipped. It's presented in database but not in config.`);
+        continue;
+      }
       this.chainScanningService.start(chain.chainId);
     }
   }

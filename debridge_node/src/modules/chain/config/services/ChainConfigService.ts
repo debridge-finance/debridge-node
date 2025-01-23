@@ -8,6 +8,7 @@ import { EvmChainConfig } from '../models/configs/EvmChainConfig';
 import { SolanaChainConfig } from '../models/configs/SolanaChainConfig';
 
 export const solanaChainId = 7565164;
+const defaultMaxAttemptsSubmissionIdCalculation = 10;
 
 /**
  * Service for controlling configs of chain
@@ -28,8 +29,12 @@ export class ChainConfigService {
           interval: config.interval,
           firstStartNonce: 0,
           isSolana,
+          maxAttemptsSubmissionIdCalculation: config.maxAttemptsSubmissionIdCalculation || defaultMaxAttemptsSubmissionIdCalculation,
         } as SolanaChainConfig);
       } else {
+        if (config.firstStartBlock === 0) {
+          throw new Error(`firstStartBlock cannot be empty for chain ${config.chainId}`);
+        }
         this.configs.set(config.chainId, {
           chainId: config.chainId,
           name: config.name,
@@ -40,6 +45,7 @@ export class ChainConfigService {
           blockConfirmation: config.blockConfirmation,
           maxBlockRange: config.maxBlockRange,
           isSolana,
+          maxAttemptsSubmissionIdCalculation: config.maxAttemptsSubmissionIdCalculation || defaultMaxAttemptsSubmissionIdCalculation,
         } as EvmChainConfig);
       }
     });

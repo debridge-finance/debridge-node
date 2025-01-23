@@ -10,6 +10,7 @@ import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferR
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { ChainConfig } from '../../config/models/configs/ChainConfig';
 import { Web3Custom } from '../../../web3/services/Web3Service';
+import { SubmissionIdValidationService } from './SubmissionIdValidationService';
 
 @Injectable()
 export class SubmissionProcessingService {
@@ -20,6 +21,7 @@ export class SubmissionProcessingService {
     private readonly submissionsRepository: Repository<SubmissionEntity>,
     private readonly nonceControllingService: NonceControllingService,
     private readonly chainConfigService: ChainConfigService,
+    private readonly submissionIdValidationService: SubmissionIdValidationService,
   ) {}
 
   async process(
@@ -58,8 +60,20 @@ export class SubmissionProcessingService {
         });
       }
     }
-    if (result.status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
-      await this.nonceControllingService.processValidationNonceError(result, chainId, web3, chainDetail);
+    switch (result.status) {
+      case ProcessNewTransferResultStatusEnum.ERROR_NONCE_VALIDATION: {
+        await this.nonceControllingService.processValidationNonceError(result, chainId, web3, chainDetail);
+        break;
+      }
+      case ProcessNewTransferResultStatusEnum.ERROR_SUBMISSION_VALIDATION: {
+        await this.submissionIdValidationService.processValidationSubmissionIdError(
+          web3,
+          chainDetail,
+          result.submissionId,
+          result.calculatedSubmissionId,
+        );
+        break;
+      }
     }
     return result.status;
   }
@@ -120,10 +134,21 @@ export class SubmissionProcessingService {
         logger.error(message);
         return {
           blockOrNonceToOverwrite: blockOrNonce, // it would be empty only if incorrect nonce occures in the first event
-          status: ProcessNewTransferResultStatusEnum.ERROR,
+          status: ProcessNewTransferResultStatusEnum.ERROR_NONCE_VALIDATION,
           nonceValidationStatus,
           submissionId,
           nonce,
+        };
+      }
+
+      const submissionIdValidation = await this.submissionIdValidationService.validate(submission);
+      if (!submissionIdValidation.status) {
+        return {
+          status: ProcessNewTransferResultStatusEnum.ERROR_SUBMISSION_VALIDATION,
+          nonceValidationStatus,
+          submissionId,
+          nonce,
+          calculatedSubmissionId: submissionIdValidation.calculatedSubmissionId,
         };
       }
 
