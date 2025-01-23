@@ -12,11 +12,11 @@ import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
 import { StartScanningService } from './services/StartScanningService';
 import { ChainScanningModule } from '../chain/scanning/ChainScanningModule';
 import { UploadToBundlrAction } from './services/actions/UploadToBundlrAction';
-import { BundlrModule } from '../external/bundlr/BundlrModule';
+import { ArweaveModule } from '../external/arweave/ArweaveModule';
 
 @Module({
   imports: [
-    BundlrModule,
+    ArweaveModule,
     ConfigModule,
     TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
     ChainScanningModule,
