@@ -6,7 +6,7 @@ import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
-import { BundlrService } from '../../../external/bundlr/BundlrService';
+import { TurboService } from '../../../external/arweave/TurboService';
 
 //Action that update signatures to bundlr
 @Injectable()
@@ -16,14 +16,14 @@ export class UploadToBundlrAction extends IAction {
     private readonly submissionsRepository: Repository<SubmissionEntity>,
     @InjectRepository(ConfirmNewAssetEntity)
     private readonly confirmNewAssetEntityRepository: Repository<ConfirmNewAssetEntity>,
-    private readonly bundlrService: BundlrService,
+    private readonly arweaveService: TurboService,
   ) {
     super();
     this.logger = new Logger(UploadToBundlrAction.name);
   }
 
   async process(): Promise<void> {
-    if (!this.bundlrService.isInitialized()) {
+    if (!this.arweaveService.isInitialized()) {
       return;
     }
     this.logger.log(`process UploadToBundlrAction`);
@@ -38,7 +38,7 @@ export class UploadToBundlrAction extends IAction {
       for (const submission of submissions) {
         this.logger.verbose(`Uploading submission to bundlr started ${submission.submissionId}`);
 
-        const bundlrTx = await this.bundlrService.upload(
+        const bundlrTx = await this.arweaveService.upload(
           JSON.stringify({
             txHash: submission.txHash,
             signature: submission.signature,
@@ -108,7 +108,7 @@ export class UploadToBundlrAction extends IAction {
       for (const asset of assets) {
         this.logger.verbose(`Uploading asset to bundlr started ${asset.deployId}`);
 
-        const bundlrTx = await this.bundlrService.upload(JSON.stringify(asset), [
+        const bundlrTx = await this.arweaveService.upload(JSON.stringify(asset), [
           {
             name: 'deployId',
             value: asset.deployId,

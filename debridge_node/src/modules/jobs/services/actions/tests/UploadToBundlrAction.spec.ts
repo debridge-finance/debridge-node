@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import { UploadStatusEnum } from '../../../../../enums/UploadStatusEnum';
 import { Web3Service } from '../../../../web3/services/Web3Service';
 import { UploadToBundlrAction } from '../UploadToBundlrAction';
-import { BundlrService } from '../../../../external/bundlr/BundlrService';
+import { TurboService } from '../../../../external/arweave/TurboService';
 
 jest.mock('../../../../../config/chains_config.json', () => {
   return [
@@ -36,7 +36,7 @@ describe('UploadToBundlrAction', () => {
       providers: [
         UploadToBundlrAction,
         {
-          provide: BundlrService,
+          provide: TurboService,
           useValue: {
             upload: jest.fn().mockResolvedValue('id'),
             isInitialized: jest.fn().mockReturnValue(true),
