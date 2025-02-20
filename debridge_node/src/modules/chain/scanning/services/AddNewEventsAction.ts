@@ -105,8 +105,8 @@ export class AddNewEventsAction {
       });
       submissions.sort((a, b) => {
         if (a.blockNumber === b.blockNumber) {
-          const submissions = [`${a.submissionId} ${a.nonce}`, `${b.submissionId} ${b.nonce}`].join(',');
-          logger.log(`Submissions in block#${a.blockNumber} ${submissions}`);
+          const submissionsInfo = [`${a.submissionId} ${a.nonce}`, `${b.submissionId} ${b.nonce}`].join(',');
+          logger.log(`Submissions in block#${a.blockNumber} ${submissionsInfo}`);
 
           return a.nonce - b.nonce;
         }
