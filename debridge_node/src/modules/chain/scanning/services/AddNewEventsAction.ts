@@ -103,6 +103,16 @@ export class AddNewEventsAction {
           this.logger.error(`Error in transforming sent event to submission ${submissionId}: ${e.message}`);
         }
       });
+      submissions.sort((a, b) => {
+        if (a.blockNumber === b.blockNumber) {
+          const submissions = [`${a.submissionId} ${a.nonce}`, `${b.submissionId} ${b.nonce}`].join(',');
+          logger.log(`Submissions in block#${a.blockNumber} ${submissions}`);
+
+          return a.nonce - b.nonce;
+        }
+
+        return 0;
+      });
       const status = await this.chainProcessingService.process(submissions, chainId, lastBlockOfPage, web3);
       if (status !== ProcessNewTransferResultStatusEnum.SUCCESS) {
         break;
