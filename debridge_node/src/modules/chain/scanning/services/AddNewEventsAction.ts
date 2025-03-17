@@ -27,7 +27,7 @@ export class AddNewEventsAction {
     private readonly solanaReaderService: SolanaReaderService,
     private readonly chainProcessingService: SubmissionProcessingService,
     private readonly transformService: TransformService,
-  ) {}
+  ) { }
 
   async action(chainId: number) {
     if (this.locker.get(chainId)) {
@@ -52,74 +52,58 @@ export class AddNewEventsAction {
   }
 
   /**
-   * Process events by period
-   * @param {string} chainId
-   * @param {number} from
-   * @param {number} to
+   * Processes blockchain events for a given chain within a block range.
+   * @param chainId - The ID of the blockchain to process events for.
+   * @param from - Optional starting block number (defaults to the last processed block).
+   * @param to - Optional ending block number (defaults to the latest confirmed block).
    */
-  async process(chainId: number, from: number = undefined, to: number = undefined) {
+  async process(chainId: number, from?: number, to?: number): Promise<void> {
     const logger = new Logger(`${AddNewEventsAction.name} chainId ${chainId}`);
-    logger.verbose(`process checkNewEvents - chainId: ${chainId}; from: ${from}; to: ${to}`);
-    const supportedChain = await this.supportedChainRepository.findOne({
-      where: {
-        chainId,
-      },
-    });
-    const chainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
+    logger.verbose(`Processing checkNewEvents - chainId: ${chainId}; from: ${from}; to: ${to}`);
 
-    const web3 = await this.web3Service.web3HttpProvider(chainDetail);
-
-    const registerInstance = new web3.eth.Contract(deBridgeGateAbi as any, chainDetail.debridgeAddr);
+    // Fetch chain details and initialize Web3 provider
+    const supportedChain = await this.supportedChainRepository.findOne({ where: { chainId } });
+    const chainConfig = this.chainConfigService.get(chainId) as EvmChainConfig;
+    const web3 = await this.web3Service.web3HttpProvider(chainConfig);
+    const gateContract = new web3.eth.Contract(deBridgeGateAbi as any, chainConfig.debridgeAddr);
     // @ts-ignore
-    web3.eth.setProvider = registerInstance.setProvider;
+    web3.eth.setProvider = gateContract.setProvider;
 
-    const toBlock = to || await this.getConfirmedBlockNumber(web3, chainDetail.blockConfirmation);
-    let fromBlock = from || supportedChain.latestBlock;
+    // Set block range: use provided values or defaults
+    const toBlock = to ?? (await this.getConfirmedBlockNumber(web3, chainConfig.blockConfirmation));
+    let fromBlock = from ?? supportedChain.latestBlock;
+    logger.debug(`Getting events from block ${fromBlock} to ${toBlock} on ${supportedChain.network}`);
 
-    logger.debug(`Getting events from ${fromBlock} to ${toBlock} ${supportedChain.network}`);
-
+    // Handle invalid block range (fromBlock > toBlock)
     if (fromBlock > toBlock) {
-      this.logger.error(`Invalid block range: fromBlock (${fromBlock}) > toBlock (${toBlock})`);
+      logger.error(`Invalid block range: fromBlock (${fromBlock}) > toBlock (${toBlock})`);
 
       // Find the latest block number for the given chainId from the submissions repository
       const lastEvent = await this.submissionsRepository.findOne({
-          where: {
-              chainFrom: chainId,
-          },
-          order: {
-              blockNumber: 'DESC', // Ensure we get the highest block number
-          },
+        where: { chainFrom: chainId },
+        order: { blockNumber: 'DESC' }, // Get the highest block number
       });
 
-      // If no record is found, use a default or throw an error based on your requirements
+      const newLatestBlock = lastEvent?.blockNumber ?? toBlock;
       if (!lastEvent) {
-          this.logger.warn(`No events found for chainId ${chainId}. Setting latestBlock to toBlock (${toBlock}).`);
-          await this.supportedChainRepository.update(chainId, {
-              latestBlock: toBlock,
-          });
-          return;
+        logger.warn(`No events found for chainId ${chainId}. Using toBlock (${toBlock}) as latest.`);
+      } else {
+        logger.debug(`Found last event block number: ${newLatestBlock} for chainId ${chainId}`);
       }
 
-      const lastEventBlockNumber = lastEvent.blockNumber;
-      this.logger.debug(`Found last event block number: ${lastEventBlockNumber} for chainId ${chainId}`);
-
-      // Update the supported chain with the latest block number
-      await this.supportedChainRepository.update(chainId, {
-          latestBlock: lastEventBlockNumber,
-      });
-
-      this.logger.log(`Updated latestBlock for chainId ${chainId} to ${lastEventBlockNumber}`);
+      await this.supportedChainRepository.update(chainId, { latestBlock: newLatestBlock });
+      logger.log(`Updated latestBlock for chainId ${chainId} to ${newLatestBlock}`);
       return;
     }
 
-    for (fromBlock; fromBlock < toBlock; fromBlock += chainDetail.maxBlockRange) {
-      const lastBlockOfPage = Math.min(fromBlock + chainDetail.maxBlockRange, toBlock);
+    for (fromBlock; fromBlock < toBlock; fromBlock += chainConfig.maxBlockRange) {
+      const lastBlockOfPage = Math.min(fromBlock + chainConfig.maxBlockRange, toBlock);
       logger.log(`supportedChain.network: ${supportedChain.network} ${fromBlock}-${lastBlockOfPage}`);
       if (supportedChain.latestBlock === lastBlockOfPage) {
         logger.warn(`latestBlock in db ${supportedChain.latestBlock} == lastBlockOfPage ${lastBlockOfPage}`);
         continue;
       }
-      const sentEvents = await this.getEvents(registerInstance, fromBlock, lastBlockOfPage);
+      const sentEvents = await this.getEvents(gateContract, fromBlock, lastBlockOfPage);
       logger.log(`sentEvents: ${JSON.stringify(sentEvents)}`);
       if (!sentEvents || sentEvents.length === 0) {
         logger.verbose(`Not found any events for ${chainId} ${fromBlock} - ${lastBlockOfPage}`);
@@ -167,15 +151,14 @@ export class AddNewEventsAction {
     // Get the latest block number from the RPC (the most recent block in the blockchain)
     const lastRPCBlock = await web3.eth.getBlockNumber();
     this.logger.debug(`Last rpc block is ${lastRPCBlock}`);
-    
     // Subtract the confirmation count to get the block number considered confirmed
     return lastRPCBlock - blockConfirmation;
   }
 
-  async getEvents(registerInstance: Contract, fromBlock: number, toBlock: number) {
+  async getEvents(gateContract: Contract, fromBlock: number, toBlock: number) {
     if (fromBlock >= toBlock) return;
 
     /* get events */
-    return await registerInstance.getPastEvents('Sent', { fromBlock, toBlock });
+    return await gateContract.getPastEvents('Sent', { fromBlock, toBlock });
   }
 }
