@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
-import { Web3Service } from '../../../web3/services/Web3Service';
+import { Web3Custom, Web3Service } from '../../../web3/services/Web3Service';
 import { SolanaReaderService } from './SolanaReaderService';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 import { EvmChainConfig } from '../../config/models/configs/EvmChainConfig';
@@ -11,6 +11,7 @@ import { SubmissionProcessingService } from './SubmissionProcessingService';
 import { TransformService } from './TransformService';
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 import Contract from 'web3-eth-contract';
+import { SubmissionEntity } from 'src/entities/SubmissionEntity';
 
 @Injectable()
 export class AddNewEventsAction {
@@ -20,6 +21,7 @@ export class AddNewEventsAction {
   constructor(
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
+    private readonly submissionsRepository: Repository<SubmissionEntity>,
     private readonly chainConfigService: ChainConfigService,
     private readonly web3Service: Web3Service,
     private readonly solanaReaderService: SolanaReaderService,
@@ -71,10 +73,44 @@ export class AddNewEventsAction {
     // @ts-ignore
     web3.eth.setProvider = registerInstance.setProvider;
 
-    const toBlock = to || (await web3.eth.getBlockNumber()) - chainDetail.blockConfirmation;
+    const toBlock = to || await this.getConfirmedBlockNumber(web3, chainDetail.blockConfirmation);
     let fromBlock = from || supportedChain.latestBlock;
 
     logger.debug(`Getting events from ${fromBlock} to ${toBlock} ${supportedChain.network}`);
+
+    if (fromBlock > toBlock) {
+      this.logger.error(`Invalid block range: fromBlock (${fromBlock}) > toBlock (${toBlock})`);
+
+      // Find the latest block number for the given chainId from the submissions repository
+      const lastEvent = await this.submissionsRepository.findOne({
+          where: {
+              chainFrom: chainId,
+          },
+          order: {
+              blockNumber: 'DESC', // Ensure we get the highest block number
+          },
+      });
+
+      // If no record is found, use a default or throw an error based on your requirements
+      if (!lastEvent) {
+          this.logger.warn(`No events found for chainId ${chainId}. Setting latestBlock to toBlock (${toBlock}).`);
+          await this.supportedChainRepository.update(chainId, {
+              latestBlock: toBlock,
+          });
+          return;
+      }
+
+      const lastEventBlockNumber = lastEvent.blockNumber;
+      this.logger.debug(`Found last event block number: ${lastEventBlockNumber} for chainId ${chainId}`);
+
+      // Update the supported chain with the latest block number
+      await this.supportedChainRepository.update(chainId, {
+          latestBlock: lastEventBlockNumber,
+      });
+
+      this.logger.log(`Updated latestBlock for chainId ${chainId} to ${lastEventBlockNumber}`);
+      return;
+    }
 
     for (fromBlock; fromBlock < toBlock; fromBlock += chainDetail.maxBlockRange) {
       const lastBlockOfPage = Math.min(fromBlock + chainDetail.maxBlockRange, toBlock);
@@ -119,6 +155,21 @@ export class AddNewEventsAction {
         break;
       }
     }
+  }
+
+  /**
+   * Retrieves the block number with the specified number of confirmations.
+   * @param web3 - An instance of Web3Custom to interact with the blockchain.
+   * @param blockConfirmation - The number of blocks to subtract from the latest block to ensure confirmation.
+   * @returns A promise resolving to the block number that has the specified number of confirmations.
+   */
+  private async getConfirmedBlockNumber(web3: Web3Custom, blockConfirmation: number): Promise<number> {
+    // Get the latest block number from the RPC (the most recent block in the blockchain)
+    const lastRPCBlock = await web3.eth.getBlockNumber();
+    this.logger.debug(`Last rpc block is ${lastRPCBlock}`);
+    
+    // Subtract the confirmation count to get the block number considered confirmed
+    return lastRPCBlock - blockConfirmation;
   }
 
   async getEvents(registerInstance: Contract, fromBlock: number, toBlock: number) {
