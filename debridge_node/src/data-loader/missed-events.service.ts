@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../entities/SubmissionEntity';
-import missedEvents from '../../../config/datafixes/missedEvents.json';
+import missedEvents from '../config/datafixes/missed_events.json';
 import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
@@ -28,29 +28,37 @@ export class MissedEventsService implements OnModuleInit {
   #processMissedEvents = async () => {
     try {
       this.#logger.log(`Found ${missedEvents.length} missed events to process`);
-      
+
       for (const event of missedEvents) {
         await this.#processEvent(event);
       }
-      
+
       this.#logger.log('Finished processing missed events');
     } catch (error) {
       this.#logger.error(`Error processing missed events: ${error.message}`, error.stack);
     }
-  }
+  };
 
   #processEvent = async (event: any) => {
-    try {      
+    try {
       // Check if submission already exists
-      const existingSubmission = await this.#submissionRepository.findOne({ where: {     } });
-      
+      if (!event.submissionId) {
+        this.#logger.log(`Submission ${event.submissionId} doesn't have submission id, skipping`);
+        return;
+      }
+      const existingSubmission = await this.#submissionRepository.findOne({
+        where: {
+          submissionId: event.submissionId,
+        },
+      });
+
       if (existingSubmission) {
         this.#logger.log(`Submission ${event.submissionId} already exists in database, skipping`);
         return;
       }
-      
+
       this.#logger.log(`Adding missed submission ${event.submissionId} to database`);
-      
+
       // Create new submission entity
       const submission = {
         submissionId: event.submissionId,
@@ -67,15 +75,14 @@ export class MissedEventsService implements OnModuleInit {
         bundlrStatus: BundlrStatusEnum.NEW,
         assetsStatus: SubmisionAssetsStatusEnum.NEW,
         nonce: event.nonce,
-        blockNumber: event.blockNumber
+        blockNumber: event.blockNumber,
       } as SubmissionEntity;
 
-      
       // Save to database
       await this.#submissionRepository.save(submission);
       this.#logger.log(`Successfully added submission ${event.submissionId} to database`);
     } catch (error) {
       this.#logger.error(`Error processing event with ${event.submissionId}: ${error.message}`, error.stack);
     }
-  }
+  };
 }
