@@ -34,6 +34,6 @@ async function bootstrap() {
   const config = new DocumentBuilder().setTitle('Initiator').setVersion('1.0').addBearerAuth().build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-  await app.listen(configService.get('PORT') || 3000);
+  await app.listen(configService.get<number>('PORT') || 3000);
 }
 bootstrap();
