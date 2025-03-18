@@ -12,9 +12,11 @@ import { JobModule } from './modules/jobs/JobModule';
 import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
 import { ApiModule } from './modules/api/ApiModule';
 import { SolanaEventsReaderModule } from './modules/solana-events-reader/SolanaEventsReaderModule';
+import { DataLoaderModule } from './data-loader/data-loader.module';
 
 @Module({
   imports: [
+    DataLoaderModule,
     ChainConfigModule,
     DataFixModule,
     ConfigModule.forRoot(),

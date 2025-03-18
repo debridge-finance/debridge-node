@@ -28,7 +28,7 @@ export class AddNewEventsAction {
     private readonly solanaReaderService: SolanaReaderService,
     private readonly chainProcessingService: SubmissionProcessingService,
     private readonly transformService: TransformService,
-  ) { }
+  ) {}
 
   async action(chainId: number) {
     if (this.locker.get(chainId)) {
