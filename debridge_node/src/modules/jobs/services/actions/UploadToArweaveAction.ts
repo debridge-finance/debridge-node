@@ -84,7 +84,7 @@ export class UploadToArweaveAction extends IAction {
             bundlrTx,
           },
         );
-        this.logger.verbose(`Uploading submission to bundlr finished ${submission.submissionId}`);
+        this.logger.verbose(`Uploading submission to arweave finished ${submission.submissionId}`);
       }
     } catch (e) {
       this.logger.error(e);
@@ -106,7 +106,7 @@ export class UploadToArweaveAction extends IAction {
       });
 
       for (const asset of assets) {
-        this.logger.verbose(`Uploading asset to bundlr started ${asset.deployId}`);
+        this.logger.verbose(`Uploading asset to arweave started ${asset.deployId}`);
 
         const bundlrTx = await this.arweaveService.upload(JSON.stringify(asset), [
           {
@@ -151,7 +151,7 @@ export class UploadToArweaveAction extends IAction {
             bundlrTx,
           },
         );
-        this.logger.verbose(`Uploading asset to bundlr finished ${asset.deployId}`);
+        this.logger.verbose(`Uploading asset to arweave finished ${asset.deployId}`);
       }
     } catch (e) {
       this.logger.error(e);
