@@ -11,7 +11,7 @@ import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
 import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
 import { StartScanningService } from './services/StartScanningService';
 import { ChainScanningModule } from '../chain/scanning/ChainScanningModule';
-import { UploadToBundlrAction } from './services/actions/UploadToBundlrAction';
+import { UploadToArweaveAction } from './services/actions/UploadToArweaveAction';
 import { ArweaveModule } from '../external/arweave/ArweaveModule';
 
 @Module({
@@ -21,6 +21,6 @@ import { ArweaveModule } from '../external/arweave/ArweaveModule';
     TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
     ChainScanningModule,
   ],
-  providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToBundlrAction, JobService],
+  providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToArweaveAction, JobService],
 })
 export class JobModule {}

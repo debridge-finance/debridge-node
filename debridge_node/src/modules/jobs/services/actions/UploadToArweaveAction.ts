@@ -8,9 +8,9 @@ import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntit
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { TurboService } from '../../../external/arweave/TurboService';
 
-//Action that update signatures to bundlr
+//Action that update signatures to arweave
 @Injectable()
-export class UploadToBundlrAction extends IAction {
+export class UploadToArweaveAction extends IAction {
   constructor(
     @InjectRepository(SubmissionEntity)
     private readonly submissionsRepository: Repository<SubmissionEntity>,
@@ -19,14 +19,14 @@ export class UploadToBundlrAction extends IAction {
     private readonly arweaveService: TurboService,
   ) {
     super();
-    this.logger = new Logger(UploadToBundlrAction.name);
+    this.logger = new Logger(UploadToArweaveAction.name);
   }
 
   async process(): Promise<void> {
     if (!this.arweaveService.isInitialized()) {
       return;
     }
-    this.logger.log(`process UploadToBundlrAction`);
+    this.logger.log(`process UploadToArweaveAction`);
 
     try {
       const submissions = await this.submissionsRepository.find({
@@ -36,7 +36,7 @@ export class UploadToBundlrAction extends IAction {
         },
       });
       for (const submission of submissions) {
-        this.logger.verbose(`Uploading submission to bundlr started ${submission.submissionId}`);
+        this.logger.verbose(`Uploading submission to arweave started ${submission.submissionId}`);
 
         const bundlrTx = await this.arweaveService.upload(
           JSON.stringify({
