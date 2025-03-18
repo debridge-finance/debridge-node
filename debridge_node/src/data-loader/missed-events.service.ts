@@ -39,7 +39,7 @@ export class MissedEventsService implements OnModuleInit {
     }
   };
 
-  #processEvent = async (event: any) => {
+  async #processEvent(event: any) {
     try {
       // Check if submission already exists
       if (!event.submissionId) {
@@ -84,5 +84,5 @@ export class MissedEventsService implements OnModuleInit {
     } catch (error) {
       this.#logger.error(`Error processing event with ${event.submissionId}: ${error.message}`, error.stack);
     }
-  };
+  }
 }
