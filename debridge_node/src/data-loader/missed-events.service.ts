@@ -3,6 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../entities/SubmissionEntity';
 import missedEvents from '../../../config/datafixes/missedEvents.json';
+import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
+import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
+import { UploadStatusEnum } from '../enums/UploadStatusEnum';
+import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
 
 @Injectable()
 export class MissedEventsService implements OnModuleInit {
@@ -24,61 +28,54 @@ export class MissedEventsService implements OnModuleInit {
   #processMissedEvents = async () => {
     try {
       this.#logger.log(`Found ${missedEvents.length} missed events to process`);
-
+      
       for (const event of missedEvents) {
         await this.#processEvent(event);
       }
-
+      
       this.#logger.log('Finished processing missed events');
     } catch (error) {
       this.#logger.error(`Error processing missed events: ${error.message}`, error.stack);
     }
-  };
+  }
 
   #processEvent = async (event: any) => {
-    try {
-      const { submissionId } = event;
-
+    try {      
       // Check if submission already exists
-      const existingSubmission = await this.#submissionRepository.findOne({ where: { submissionId } });
-
+      const existingSubmission = await this.#submissionRepository.findOne({ where: {     } });
+      
       if (existingSubmission) {
-        this.#logger.log(`Submission ${submissionId} already exists in database, skipping`);
+        this.#logger.log(`Submission ${event.submissionId} already exists in database, skipping`);
         return;
       }
-
-      this.#logger.log(`Adding missed submission ${submissionId} to database`);
-
+      
+      this.#logger.log(`Adding missed submission ${event.submissionId} to database`);
+      
       // Create new submission entity
-      const submission = new SubmissionEntity();
-      submission.submissionId = event.submissionId;
-      submission.txHash = event.txHash;
-      submission.chainFrom = event.chainFrom;
-      submission.chainTo = event.chainTo;
-      submission.debridgeId = event.debridgeId;
-      submission.receiverAddr = event.receiverAddr;
-      submission.amount = event.amount.toString();
-      submission.rawEvent = event.rawEvent;
-      submission.signature = event.signature || null;
-      submission.bundlrTx = event.bundlrTx || null;
-      submission.ipfsLogHash = event.ipfsLogHash || null;
-      submission.ipfsKeyHash = event.ipfsKeyHash || null;
-      submission.externalId = event.externalId || null;
-      submission.status = event.status;
-      submission.ipfsStatus = event.ipfsStatus;
-      submission.apiStatus = event.apiStatus;
-      submission.bundlrStatus = event.bundlrStatus;
-      submission.assetsStatus = event.assetsStatus;
-      submission.nonce = event.nonce || null;
-      submission.blockNumber = event.blockNumber || null;
-      submission.blockTime = event.blockTime || null;
-      submission.decimalDenominator = event.decimalDenominator || 0;
+      const submission = {
+        submissionId: event.submissionId,
+        txHash: event.txHash,
+        chainFrom: event.chainFrom,
+        chainTo: event.chainTo,
+        debridgeId: event.debridgeId,
+        receiverAddr: event.receiverAddr,
+        amount: event.amount,
+        rawEvent: event.rawEvent,
+        status: SubmisionStatusEnum.NEW,
+        ipfsStatus: UploadStatusEnum.NEW,
+        apiStatus: UploadStatusEnum.NEW,
+        bundlrStatus: BundlrStatusEnum.NEW,
+        assetsStatus: SubmisionAssetsStatusEnum.NEW,
+        nonce: event.nonce,
+        blockNumber: event.blockNumber
+      } as SubmissionEntity;
 
+      
       // Save to database
       await this.#submissionRepository.save(submission);
-      this.#logger.log(`Successfully added submission ${submissionId} to database`);
+      this.#logger.log(`Successfully added submission ${event.submissionId} to database`);
     } catch (error) {
-      this.#logger.error(`Error processing event with submissionId ${event.submissionId}: ${error.message}`, error.stack);
+      this.#logger.error(`Error processing event with ${event.submissionId}: ${error.message}`, error.stack);
     }
-  };
+  }
 }
