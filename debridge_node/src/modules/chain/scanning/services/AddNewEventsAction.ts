@@ -21,13 +21,14 @@ export class AddNewEventsAction {
   constructor(
     @InjectRepository(SupportedChainEntity)
     private readonly supportedChainRepository: Repository<SupportedChainEntity>,
+    @InjectRepository(SubmissionEntity)
     private readonly submissionsRepository: Repository<SubmissionEntity>,
     private readonly chainConfigService: ChainConfigService,
     private readonly web3Service: Web3Service,
     private readonly solanaReaderService: SolanaReaderService,
     private readonly chainProcessingService: SubmissionProcessingService,
     private readonly transformService: TransformService,
-  ) { }
+  ) {}
 
   async action(chainId: number) {
     if (this.locker.get(chainId)) {
