@@ -7,8 +7,8 @@ import { ConfirmNewAssetEntity } from '../../../../../entities/ConfirmNewAssetEn
 import { Repository } from 'typeorm';
 import { UploadStatusEnum } from '../../../../../enums/UploadStatusEnum';
 import { Web3Service } from '../../../../web3/services/Web3Service';
-import { UploadToBundlrAction } from '../UploadToBundlrAction';
-import { BundlrService } from '../../../../external/bundlr/BundlrService';
+import { UploadToArweaveAction } from '../UploadToArweaveAction';
+import { TurboService } from '../../../../external/arweave/TurboService';
 
 jest.mock('../../../../../config/chains_config.json', () => {
   return [
@@ -26,7 +26,7 @@ jest.mock('../../../../../config/chains_config.json', () => {
 });
 
 describe('UploadToBundlrAction', () => {
-  let service: UploadToBundlrAction;
+  let service: UploadToArweaveAction;
   let submissionRepository: Repository<SubmissionEntity>;
   let confirmNewAssetRepository: Repository<ConfirmNewAssetEntity>;
 
@@ -34,9 +34,9 @@ describe('UploadToBundlrAction', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule, HttpModule],
       providers: [
-        UploadToBundlrAction,
+        UploadToArweaveAction,
         {
-          provide: BundlrService,
+          provide: TurboService,
           useValue: {
             upload: jest.fn().mockResolvedValue('id'),
             isInitialized: jest.fn().mockReturnValue(true),
@@ -100,7 +100,7 @@ describe('UploadToBundlrAction', () => {
         },
       ],
     }).compile();
-    service = module.get(UploadToBundlrAction);
+    service = module.get(UploadToArweaveAction);
     submissionRepository = module.get(getRepositoryToken(SubmissionEntity));
     confirmNewAssetRepository = module.get(getRepositoryToken(ConfirmNewAssetEntity));
   });
