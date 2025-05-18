@@ -1,5 +1,5 @@
 import { Column, Index, Entity, PrimaryColumn, Unique } from 'typeorm';
-import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../enums/SubmissionStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
 import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
 
@@ -64,7 +64,7 @@ export class ConfirmNewAssetEntity {
 
   @Column()
   @Index()
-  status: SubmisionStatusEnum;
+  status: SubmissionStatusEnum;
 
   @Column()
   @Index()

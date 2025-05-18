@@ -6,7 +6,7 @@ import { SolanaGrpcClient } from '@debridge-finance/solana-grpc';
 export class SolanaEventsReaderService {
   readonly #client: SolanaGrpcClient;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(configService: ConfigService) {
     const url = configService.get('SOLANA_GRPC_SERVICE_URL');
     this.#client = new SolanaGrpcClient(url);
   }

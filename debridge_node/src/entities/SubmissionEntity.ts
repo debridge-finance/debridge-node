@@ -1,8 +1,10 @@
 import { Column, CreateDateColumn, UpdateDateColumn, Entity, Index, PrimaryColumn, Unique } from 'typeorm';
-import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
-import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
+import { SubmissionStatusEnum } from '../enums/SubmissionStatusEnum';
+import { SubmissionAssetsStatusEnum } from '../enums/SubmissionAssetsStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
 import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
+import { BalanceValidationStatusEnum } from '../enums/BalanceValidationStatusEnum';
+import { SubmissionTypeEnum } from '../enums/SubmissionTypeEnum';
 
 @Entity('submissions')
 @Unique(['submissionId'])
@@ -60,7 +62,7 @@ export class SubmissionEntity {
 
   @Column()
   @Index()
-  status: SubmisionStatusEnum;
+  status: SubmissionStatusEnum;
 
   @Column()
   @Index()
@@ -72,11 +74,15 @@ export class SubmissionEntity {
 
   @Column({ nullable: true })
   @Index()
-  bundlrStatus: BundlrStatusEnum;
+  balanceValidationStatus?: BalanceValidationStatusEnum;
+
+  @Column({ nullable: true })
+  @Index()
+  bundlrStatus?: BundlrStatusEnum;
 
   @Column()
   @Index()
-  assetsStatus: SubmisionAssetsStatusEnum;
+  assetsStatus: SubmissionAssetsStatusEnum;
 
   @Column({ nullable: true })
   @Index()
@@ -92,6 +98,12 @@ export class SubmissionEntity {
 
   @Column({ nullable: true, default: 0 })
   decimalDenominator?: number;
+
+  @Column({ nullable: true })
+  type?: SubmissionTypeEnum;
+
+  @Column({ nullable: true })
+  executionFee?: string;
 
   @CreateDateColumn()
   createdAt: Date;

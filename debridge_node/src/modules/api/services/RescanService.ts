@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ChainConfigService } from '../../chain/config/services/ChainConfigService';
 import { EvmChainConfig } from '../../chain/config/models/configs/EvmChainConfig';
-import { AddNewEventsAction } from '../../chain/scanning/services/AddNewEventsAction';
+import { EvmNewEventsReaderAction } from '../../chain/scanning/services/EvmNewEventsReaderAction';
 
 /**
  * Rescan service
@@ -10,7 +10,7 @@ export class RescanService {
   private readonly logger = new Logger();
 
   constructor(
-    private readonly addNewEventsAction: AddNewEventsAction,
+    private readonly addNewEventsAction: EvmNewEventsReaderAction,
     private readonly chainConfigService: ChainConfigService,
   ) {}
 
