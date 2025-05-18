@@ -13,6 +13,7 @@ import { ChainConfigModule } from './modules/chain/config/ChainConfigModule';
 import { ApiModule } from './modules/api/ApiModule';
 import { SolanaEventsReaderModule } from './modules/solana-events-reader/SolanaEventsReaderModule';
 import { DataLoaderModule } from './data-loader/data-loader.module';
+import { MonitoringSendEventEntity } from './entities/MonitoringSendEventEntity';
 
 @Module({
   imports: [
@@ -33,10 +34,10 @@ import { DataLoaderModule } from './data-loader/data-loader.module';
         password: configService.get('POSTGRES_PASSWORD', 'password'),
         database: configService.get('POSTGRES_DATABASE', 'postgres'),
         synchronize: true,
-        entities: [SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity],
+        entities: [SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, MonitoringSendEventEntity],
       }),
     }),
-    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
+    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, MonitoringSendEventEntity]),
     Web3Module,
     DebridgeApiModule,
     JobModule,

@@ -6,7 +6,7 @@ import { SubmissionEntity } from '../../../../../entities/SubmissionEntity';
 import { ConfirmNewAssetEntity } from '../../../../../entities/ConfirmNewAssetEntity';
 import { SignAction } from '../SignAction';
 import { Repository } from 'typeorm';
-import { SubmisionStatusEnum } from '../../../../../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../../../../../enums/SubmissionStatusEnum';
 import { Web3Service } from '../../../../web3/services/Web3Service';
 
 describe('SignAction', () => {
@@ -83,7 +83,7 @@ describe('SignAction', () => {
       },
       {
         signature: '123',
-        status: SubmisionStatusEnum.SIGNED,
+        status: SubmissionStatusEnum.SIGNED,
       },
     );
   });

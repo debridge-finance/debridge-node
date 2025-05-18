@@ -41,7 +41,7 @@ export class StatisticToApiAction extends IAction {
             lastTxHash: chain.latestSolanaTransaction,
             lastTransactionSlotNumber: chain.lastTransactionSlotNumber,
             latestNonce: chain.latestNonce,
-            lastTxTimestamp: chain.lastTxTimestamp,
+            lastTxTimestamp: chain.lastTxTimestamp?.toString(),
           } as ProgressInfoDTO;
         }
         return { chainId: chain.chainId, lastBlock: chain.latestBlock } as ProgressInfoDTO;

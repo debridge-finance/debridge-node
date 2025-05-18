@@ -3,7 +3,7 @@ import { IAction } from './IAction';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
-import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../../../../enums/SubmissionStatusEnum';
 import { DebrdigeApiService } from '../../../external/debridge_api/services/DebrdigeApiService';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
@@ -37,7 +37,7 @@ export class UploadToApiAction extends IAction {
     try {
       const submissions = await this.submissionsRepository.find({
         where: {
-          status: SubmisionStatusEnum.SIGNED,
+          status: SubmissionStatusEnum.SIGNED,
           apiStatus: UploadStatusEnum.NEW,
         },
       });
@@ -58,7 +58,7 @@ export class UploadToApiAction extends IAction {
       //Process Assets
       const assets = await this.confirmNewAssetEntityRepository.find({
         where: {
-          status: SubmisionStatusEnum.SIGNED,
+          status: SubmissionStatusEnum.SIGNED,
           apiStatus: UploadStatusEnum.NEW,
         },
       });

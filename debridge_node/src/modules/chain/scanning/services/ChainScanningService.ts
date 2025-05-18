@@ -1,7 +1,7 @@
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ChainScanStatus } from '../../../../enums/ChainScanStatus';
-import { AddNewEventsAction } from './AddNewEventsAction';
+import { EvmNewEventsReaderAction } from './EvmNewEventsReaderAction';
 import { ChainConfigService } from '../../config/services/ChainConfigService';
 
 /**
@@ -12,8 +12,8 @@ export class ChainScanningService {
   private readonly logger = new Logger(ChainScanningService.name);
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,
-    @Inject(forwardRef(() => AddNewEventsAction))
-    private readonly addNewEventsAction: AddNewEventsAction,
+    @Inject(forwardRef(() => EvmNewEventsReaderAction))
+    private readonly addNewEventsAction: EvmNewEventsReaderAction,
     private readonly chainConfigService: ChainConfigService,
   ) {}
 

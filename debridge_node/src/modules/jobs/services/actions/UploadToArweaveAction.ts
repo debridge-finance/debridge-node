@@ -3,7 +3,7 @@ import { IAction } from './IAction';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
-import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../../../../enums/SubmissionStatusEnum';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
 import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { TurboService } from '../../../external/arweave/TurboService';
@@ -31,7 +31,7 @@ export class UploadToArweaveAction extends IAction {
     try {
       const submissions = await this.submissionsRepository.find({
         where: {
-          status: SubmisionStatusEnum.SIGNED,
+          status: SubmissionStatusEnum.SIGNED,
           bundlrStatus: BundlrStatusEnum.NEW,
         },
       });
@@ -95,11 +95,11 @@ export class UploadToArweaveAction extends IAction {
       const assets = await this.confirmNewAssetEntityRepository.find({
         where: [
           {
-            status: SubmisionStatusEnum.SIGNED,
+            status: SubmissionStatusEnum.SIGNED,
             bundlrStatus: BundlrStatusEnum.NEW,
           },
           {
-            status: SubmisionStatusEnum.SIGNED,
+            status: SubmissionStatusEnum.SIGNED,
             bundlrStatus: IsNull(),
           },
         ],

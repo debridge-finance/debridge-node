@@ -3,7 +3,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SolanaReaderService } from '../../../scanning/services/SolanaReaderService';
 import { ChainConfigService } from '../ChainConfigService';
 import { ChainProvider } from '../../models/ChainProvider';
-import { AddNewEventsAction } from '../../../scanning/services/AddNewEventsAction';
+import { EvmNewEventsReaderAction } from '../../../scanning/services/EvmNewEventsReaderAction';
 import { ChainScanningService } from '../../../scanning/services/ChainScanningService';
 import { EvmChainConfig } from '../../models/configs/EvmChainConfig';
 
@@ -58,7 +58,7 @@ describe('ChainConfigService', () => {
       imports: [ScheduleModule.forRoot()],
       providers: [
         {
-          provide: AddNewEventsAction,
+          provide: EvmNewEventsReaderAction,
           useValue: {
             action: async chainId => {
               return chainId;

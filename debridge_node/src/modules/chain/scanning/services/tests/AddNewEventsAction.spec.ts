@@ -1,4 +1,4 @@
-import { AddNewEventsAction } from '../AddNewEventsAction';
+import { EvmNewEventsReaderAction } from '../EvmNewEventsReaderAction';
 import { ChainConfigService } from '../../../config/services/ChainConfigService';
 import { Web3Service } from '../../../../web3/services/Web3Service';
 import { SolanaReaderService } from '../SolanaReaderService';
@@ -10,7 +10,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SupportedChainEntity } from '../../../../../entities/SupportedChainEntity';
 
 describe('AddNewEventsAction', () => {
-  let service: AddNewEventsAction;
+  let service: EvmNewEventsReaderAction;
   let processMock;
   let syncTransactionsMock;
   let getPastEventsMock;
@@ -114,10 +114,10 @@ describe('AddNewEventsAction', () => {
           },
         },
         TransformService,
-        AddNewEventsAction,
+        EvmNewEventsReaderAction,
       ],
     }).compile();
-    service = module.get(AddNewEventsAction);
+    service = module.get(EvmNewEventsReaderAction);
   });
 
   it('should solana be executed', async () => {

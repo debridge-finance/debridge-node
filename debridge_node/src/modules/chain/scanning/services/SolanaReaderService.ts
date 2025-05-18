@@ -11,6 +11,7 @@ import { SolanaEventsReaderService } from '../../../solana-events-reader/service
 import { ProcessNewTransferResultStatusEnum } from '../enums/ProcessNewTransferResultStatusEnum';
 import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
 import { SolanaHearbeat } from '../entities/SolanaHearbeat';
+import { MonitoringSendEventEntity } from '../../../../entities/MonitoringSendEventEntity';
 
 /**
  * Service for reading transaction from solana
@@ -19,26 +20,36 @@ import { SolanaHearbeat } from '../entities/SolanaHearbeat';
 export class SolanaReaderService implements OnModuleInit {
   readonly #logger = new Logger(SolanaReaderService.name);
   readonly #solanaGrpcClient: SolanaGrpcClient;
+  readonly #supportedChainRepository: Repository<SupportedChainEntity>;
+  readonly #transformService: TransformService;
+  readonly #configService: ConfigService;
+  readonly #chainProcessingService: SubmissionProcessingService;
+
   #duplex: ReturnType<SolanaGrpcClient['getSendEvents']>;
 
   #submissionsFromSync: SubmissionEntity[] = [];
+  #monitoringSendEvents: MonitoringSendEventEntity[] = [];
   #PAGE_SIZE = 100;
   #heartbeatIntervalInstance: NodeJS.Timeout;
   #abortController = new AbortController();
 
   constructor(
     @InjectRepository(SupportedChainEntity)
-    private readonly supportedChainRepository: Repository<SupportedChainEntity>,
-    private readonly transformService: TransformService,
-    private readonly configService: ConfigService,
-    private readonly chainProcessingService: SubmissionProcessingService,
+    supportedChainRepository: Repository<SupportedChainEntity>,
+    transformService: TransformService,
+    configService: ConfigService,
+    chainProcessingService: SubmissionProcessingService,
     solanaEventsReaderService: SolanaEventsReaderService,
   ) {
     this.#solanaGrpcClient = solanaEventsReaderService.getClient();
+    this.#supportedChainRepository = supportedChainRepository;
+    this.#transformService = transformService;
+    this.#configService = configService;
+    this.#chainProcessingService = chainProcessingService;
   }
 
   async syncTransactions() {
-    const chain = await this.supportedChainRepository.findOne({
+    const chain = await this.#supportedChainRepository.findOne({
       where: {
         chainId: solanaChainId,
       },
@@ -49,36 +60,46 @@ export class SolanaReaderService implements OnModuleInit {
       return;
     }
     const submissions = [...this.#submissionsFromSync].filter(s => s.nonce >= chain.latestNonce);
+    const monitoringSendEvents = [...this.#monitoringSendEvents].filter(s => s.nonce >= chain.latestNonce);
+
     submissions.sort((a, b) => a.nonce - b.nonce);
     this.#submissionsFromSync = [];
+    this.#monitoringSendEvents = [];
     const size = Math.ceil(submissions.length / this.#PAGE_SIZE);
     //pagination
     for (let pageNumber = 0; pageNumber < size; pageNumber++) {
       const skip = pageNumber * this.#PAGE_SIZE;
       const end = Math.min((pageNumber + 1) * this.#PAGE_SIZE, submissions.length);
       const submissionsForProcessing = submissions.slice(skip, end);
+      const monitoringSendForProcessing = monitoringSendEvents.slice(skip, end);
       const lastSubmission = submissionsForProcessing.at(-1);
-      const processingResult = await this.chainProcessingService.process(submissionsForProcessing, solanaChainId, lastSubmission.nonce);
+      const processingResult = await this.#chainProcessingService.process(
+        submissionsForProcessing,
+        monitoringSendForProcessing,
+        solanaChainId,
+        lastSubmission.nonce,
+      );
       if (
         [ProcessNewTransferResultStatusEnum.ERROR_SUBMISSION_VALIDATION, ProcessNewTransferResultStatusEnum.ERROR_NONCE_VALIDATION].includes(
           processingResult,
         )
       ) {
         this.#submissionsFromSync = [];
-        this.createSubscription();
+        this.#monitoringSendEvents = [];
+        this.#createSubscription();
         break;
       }
     }
   }
 
-  private async createSubscription() {
+  async #createSubscription() {
     if (this.#duplex) {
       this.#abortController.abort();
       this.#abortController = new AbortController();
       this.#solanaGrpcClient.abortSignal = this.#abortController.signal;
     }
     this.#submissionsFromSync = [];
-    const chain = await this.supportedChainRepository.findOne({
+    const chain = await this.#supportedChainRepository.findOne({
       where: {
         chainId: solanaChainId,
       },
@@ -103,20 +124,22 @@ export class SolanaReaderService implements OnModuleInit {
             // @ts-ignore
             this.#logger.verbose(`Heartbeat: ${JSON.stringify(response.sendEventMessage.heartbeat)}`);
 
-            this.heartbeat();
+            this.#heartbeat();
             // @ts-ignore
-            this.updateLastSyncedBlock(response.sendEventMessage.heartbeat as SolanaHearbeat);
+            this.#updateLastSyncedBlock(response.sendEventMessage.heartbeat as SolanaHearbeat);
             break;
           }
           case 'event': {
-            this.heartbeat();
+            this.#heartbeat();
             // @ts-ignore
             const event = response.sendEventMessage.event;
             const nonce = Number(U256Converter.toBigInt(event.submission?.nonce).toString());
             this.#logger.log(`new event is received nonce: ${nonce}`);
 
-            const submission = this.transformService.generateSubmissionFromSolanaSendEvent(event);
+            const submission = this.#transformService.generateSubmissionFromSolanaSendEvent(event);
+            const monitoringSendEvent = this.#transformService.generateMonitoringSendEventFromSolanaEvent(event);
             this.#submissionsFromSync.push(submission);
+            this.#monitoringSendEvents.push(monitoringSendEvent);
             break;
           }
         }
@@ -128,8 +151,8 @@ export class SolanaReaderService implements OnModuleInit {
     }
   }
 
-  private async updateLastSyncedBlock(solanaHearbeat: SolanaHearbeat) {
-    const chain = await this.supportedChainRepository.findOne({
+ async #updateLastSyncedBlock(solanaHearbeat: SolanaHearbeat) {
+    const chain = await this.#supportedChainRepository.findOne({
       where: {
         chainId: solanaChainId,
       },
@@ -141,7 +164,7 @@ export class SolanaReaderService implements OnModuleInit {
     if (chain.lastTransactionSlotNumber >= parseInt(solanaHearbeat.lastEventBlock)) {
       const lastBlock = parseInt(solanaHearbeat.resyncLastBlock);
       if (lastBlock > chain.lastTransactionSlotNumber) {
-        await this.supportedChainRepository.update(chain.chainId, {
+        await this.#supportedChainRepository.update(chain.chainId, {
           lastTransactionSlotNumber: lastBlock,
           latestBlock: lastBlock,
         });
@@ -149,16 +172,16 @@ export class SolanaReaderService implements OnModuleInit {
     }
   }
 
-  private heartbeat() {
+  #heartbeat() {
     clearTimeout(this.#heartbeatIntervalInstance);
-    const timeout = this.configService.get<number>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS') * 10 * 1000;
+    const timeout = this.#configService.get<number>('DEBRIDGE_EVENTS_CONSISTENCY_CHECK_TIMEOUT_SECS') * 10 * 1000;
     this.#heartbeatIntervalInstance = setTimeout(async () => {
-      this.createSubscription();
+      this.#createSubscription();
       this.#logger.error(`Duplex is not active for ${timeout}s`);
     }, timeout);
   }
 
   onModuleInit() {
-    this.createSubscription();
+    this.#createSubscription();
   }
 }

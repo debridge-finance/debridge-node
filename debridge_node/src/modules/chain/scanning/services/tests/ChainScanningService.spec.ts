@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChainScanStatus } from '../../../../../enums/ChainScanStatus';
 import { ChainScanningService } from '../ChainScanningService';
-import { AddNewEventsAction } from '../AddNewEventsAction';
+import { EvmNewEventsReaderAction } from '../EvmNewEventsReaderAction';
 import { ChainConfigService } from '../../../config/services/ChainConfigService';
 
 jest.mock('../../../../../config/chains_config.json', () => {
@@ -28,7 +28,7 @@ describe('ChainScanningService', () => {
       imports: [ScheduleModule.forRoot()],
       providers: [
         {
-          provide: AddNewEventsAction,
+          provide: EvmNewEventsReaderAction,
           useValue: {
             action: async chainId => {
               return chainId;

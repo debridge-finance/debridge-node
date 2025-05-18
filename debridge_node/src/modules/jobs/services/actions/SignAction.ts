@@ -3,7 +3,7 @@ import { IAction } from './IAction';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
-import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../../../../enums/SubmissionStatusEnum';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
 import Web3 from 'web3';
 import { readFileSync } from 'fs';
@@ -41,7 +41,7 @@ export class SignAction extends IAction {
     //TODO: check is supported chainIdTo
     const submissions = await this.submissionsRepository.find({
       where: {
-        status: SubmisionStatusEnum.NEW,
+        status: SubmissionStatusEnum.NEW,
       },
     });
 
@@ -54,7 +54,7 @@ export class SignAction extends IAction {
         },
         {
           signature,
-          status: SubmisionStatusEnum.SIGNED,
+          status: SubmissionStatusEnum.SIGNED,
         },
       );
     }

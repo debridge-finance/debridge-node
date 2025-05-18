@@ -4,9 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { SubmissionEntity } from '../../../../entities/SubmissionEntity';
 import { ConfirmNewAssetEntity } from '../../../../entities/ConfirmNewAssetEntity';
-import { SubmisionStatusEnum } from '../../../../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../../../../enums/SubmissionStatusEnum';
 import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
-import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
+import { SubmissionAssetsStatusEnum } from '../../../../enums/SubmissionAssetsStatusEnum';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { abi as ERC20Abi } from '../../../../assets/ERC20.json';
 import { readFileSync } from 'fs';
@@ -44,7 +44,7 @@ export class CheckAssetsEventAction extends IAction {
     this.logger.log(`Check assets event`);
     const submissions = await this.submissionsRepository.find({
       where: {
-        assetsStatus: SubmisionAssetsStatusEnum.NEW,
+        assetsStatus: SubmissionAssetsStatusEnum.NEW,
       },
     });
 
@@ -158,7 +158,7 @@ export class CheckAssetsEventAction extends IAction {
             decimals: tokenDecimals,
             submissionChainFrom: submission.chainFrom,
             submissionChainTo: submission.chainTo,
-            status: SubmisionStatusEnum.SIGNED,
+            status: SubmissionStatusEnum.SIGNED,
             ipfsStatus: UploadStatusEnum.NEW,
             apiStatus: UploadStatusEnum.NEW,
             bundlrStatus: BundlrStatusEnum.NEW,
@@ -181,7 +181,7 @@ export class CheckAssetsEventAction extends IAction {
           submissionId: In(newSubmitionIds),
         },
         {
-          assetsStatus: SubmisionAssetsStatusEnum.ASSETS_CREATED,
+          assetsStatus: SubmissionAssetsStatusEnum.ASSETS_CREATED,
         },
       );
     }
@@ -191,7 +191,7 @@ export class CheckAssetsEventAction extends IAction {
           submissionId: In(assetsWasCreatedSubmitions),
         },
         {
-          assetsStatus: SubmisionAssetsStatusEnum.ASSETS_ALREADY_CREATED,
+          assetsStatus: SubmissionAssetsStatusEnum.ASSETS_ALREADY_CREATED,
         },
       );
     }

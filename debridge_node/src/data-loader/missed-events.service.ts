@@ -4,9 +4,9 @@ import { Repository } from 'typeorm';
 import { SubmissionEntity } from '../entities/SubmissionEntity';
 import missedEvents from '../config/datafixes/missed_events.json';
 import { BundlrStatusEnum } from '../enums/BundlrStatusEnum';
-import { SubmisionAssetsStatusEnum } from '../enums/SubmisionAssetsStatusEnum';
+import { SubmissionAssetsStatusEnum } from '../enums/SubmissionAssetsStatusEnum';
 import { UploadStatusEnum } from '../enums/UploadStatusEnum';
-import { SubmisionStatusEnum } from '../enums/SubmisionStatusEnum';
+import { SubmissionStatusEnum } from '../enums/SubmissionStatusEnum';
 
 @Injectable()
 export class MissedEventsService implements OnModuleInit {
@@ -69,11 +69,11 @@ export class MissedEventsService implements OnModuleInit {
         receiverAddr: event.receiverAddr,
         amount: event.amount,
         rawEvent: event.rawEvent,
-        status: SubmisionStatusEnum.NEW,
+        status: SubmissionStatusEnum.NEW,
         ipfsStatus: UploadStatusEnum.NEW,
         apiStatus: UploadStatusEnum.NEW,
         bundlrStatus: BundlrStatusEnum.NEW,
-        assetsStatus: SubmisionAssetsStatusEnum.NEW,
+        assetsStatus: SubmissionAssetsStatusEnum.NEW,
         nonce: event.nonce,
         blockNumber: event.blockNumber,
       } as SubmissionEntity;

@@ -1,4 +1,4 @@
-export enum SubmisionAssetsStatusEnum {
+export enum SubmissionAssetsStatusEnum {
   NEW = 1,
   ASSETS_CREATED = 2,
   ASSETS_ALREADY_CREATED = 3,

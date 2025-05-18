@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SubmissionEntity } from '../../entities/SubmissionEntity';
 import { SupportedChainEntity } from '../../entities/SupportedChainEntity';
 import { ConfirmNewAssetEntity } from '../../entities/ConfirmNewAssetEntity';
+import { MonitoringSendEventEntity } from '../../entities/MonitoringSendEventEntity';
 import { StartScanningService } from './services/StartScanningService';
 import { ChainScanningModule } from '../chain/scanning/ChainScanningModule';
 import { UploadToArweaveAction } from './services/actions/UploadToArweaveAction';
@@ -18,7 +19,7 @@ import { ArweaveModule } from '../external/arweave/ArweaveModule';
   imports: [
     ArweaveModule,
     ConfigModule,
-    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity]),
+    TypeOrmModule.forFeature([SubmissionEntity, SupportedChainEntity, ConfirmNewAssetEntity, MonitoringSendEventEntity]),
     ChainScanningModule,
   ],
   providers: [StartScanningService, CheckAssetsEventAction, SignAction, StatisticToApiAction, UploadToApiAction, UploadToArweaveAction, JobService],
