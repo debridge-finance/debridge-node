@@ -9,9 +9,9 @@ import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { abi as ERC20Abi } from '../../../../assets/ERC20.json';
+import { abi as DSToken } from '../../../../assets/ERC20.json';
 import { readFileSync } from 'fs';
 import { Account } from 'web3-core';
-import { getTokenName } from '../../../../utils/getTokenName';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
 import { EvmChainConfig } from '../../../chain/config/models/configs/EvmChainConfig';
@@ -86,7 +86,7 @@ export class CheckAssetsEventAction extends IAction {
             }
             //if native chain for token is EVM network
             else {
-              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.#getEvmTokenInfo(nativeChainId, nativeTokenAddress));
             }
             // if chainFrom is EVM
           } else {
@@ -121,7 +121,7 @@ export class CheckAssetsEventAction extends IAction {
             }
             //if native chain for token is EVM network
             else {
-              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeTokenInfo.nativeChainId, nativeTokenInfo.nativeAddress));
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.#getEvmTokenInfo(nativeTokenInfo.nativeChainId, nativeTokenInfo.nativeAddress));
             }
           }
 
@@ -198,14 +198,21 @@ export class CheckAssetsEventAction extends IAction {
     this.logger.log(`Finish Check assets event`);
   }
 
-  private async getTokenInfo(nativeChainId: number, nativeTokenAddress: string) {
-    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as EvmChainConfig;
+  async #getEvmTokenInfo(chainId: number, tokenAddress: string, abi: any = ERC20Abi) {
+    const tokenChainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
     const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail);
-    const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenAddress);
-    const tokenName = await getTokenName(nativeTokenInstance, nativeTokenAddress, { logger: this.logger });
-    const tokenSymbol = await nativeTokenInstance.methods.symbol().call();
+    const nativeTokenInstance = new tokenWeb3.eth.Contract(abi, tokenAddress);
     const tokenDecimals = await nativeTokenInstance.methods.decimals().call();
-    // nativeAdress = nativeTokenInfo.nativeAddress;
-    return { tokenName, tokenSymbol, tokenDecimals };
+    try {
+      const [tokenName, tokenSymbol] = await Promise.all([nativeTokenInstance.methods.name().call(), nativeTokenInstance.methods.symbol().call()]);
+
+      return { tokenName, tokenSymbol, tokenDecimals };
+    } catch (e) {
+      if (e.message.includes('NUMERIC_FAULT')) {
+        return await this.#getEvmTokenInfo(chainId, tokenAddress, DSToken);
+      }
+
+      throw e;
+    }
   }
 }
