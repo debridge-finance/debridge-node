@@ -11,7 +11,6 @@ import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { abi as ERC20Abi } from '../../../../assets/ERC20.json';
 import { readFileSync } from 'fs';
 import { Account } from 'web3-core';
-import { getTokenName } from '../../../../utils/getTokenName';
 import { Web3Service } from '../../../web3/services/Web3Service';
 import { ChainConfigService } from '../../../chain/config/services/ChainConfigService';
 import { EvmChainConfig } from '../../../chain/config/models/configs/EvmChainConfig';
@@ -19,6 +18,8 @@ import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
 import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
 import { createSolanaPublicKey } from '../../../../utils/createSolanaPublicKey';
+import { getEvmTokenName } from '../../../../utils/getEvmTokenName';
+import { getEvmTokenSymbol } from '../../../../utils/getEvmTokenSymbol';
 
 @Injectable()
 export class CheckAssetsEventAction extends IAction {
@@ -86,7 +87,7 @@ export class CheckAssetsEventAction extends IAction {
             }
             //if native chain for token is EVM network
             else {
-              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeChainId, nativeTokenAddress));
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.#getEvmTokenInfo(nativeChainId, nativeTokenAddress));
             }
             // if chainFrom is EVM
           } else {
@@ -121,7 +122,7 @@ export class CheckAssetsEventAction extends IAction {
             }
             //if native chain for token is EVM network
             else {
-              ({ tokenName, tokenSymbol, tokenDecimals } = await this.getTokenInfo(nativeTokenInfo.nativeChainId, nativeTokenInfo.nativeAddress));
+              ({ tokenName, tokenSymbol, tokenDecimals } = await this.#getEvmTokenInfo(nativeTokenInfo.nativeChainId, nativeTokenInfo.nativeAddress));
             }
           }
 
@@ -198,14 +199,15 @@ export class CheckAssetsEventAction extends IAction {
     this.logger.log(`Finish Check assets event`);
   }
 
-  private async getTokenInfo(nativeChainId: number, nativeTokenAddress: string) {
-    const tokenChainDetail = this.chainConfigService.get(nativeChainId) as EvmChainConfig;
+  async #getEvmTokenInfo(chainId: number, tokenAddress: string) {
+    const tokenChainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
     const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail);
-    const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, nativeTokenAddress);
-    const tokenName = await getTokenName(nativeTokenInstance, nativeTokenAddress, { logger: this.logger });
-    const tokenSymbol = await nativeTokenInstance.methods.symbol().call();
-    const tokenDecimals = await nativeTokenInstance.methods.decimals().call();
-    // nativeAdress = nativeTokenInfo.nativeAddress;
+    const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, tokenAddress);
+    const [tokenDecimals, tokenName, tokenSymbol] = await Promise.all([
+      nativeTokenInstance.methods.decimals().call(),
+      getEvmTokenName(this.logger, tokenWeb3, tokenAddress),
+      getEvmTokenSymbol(this.logger, tokenWeb3, tokenAddress),
+    ]);
     return { tokenName, tokenSymbol, tokenDecimals };
   }
 }
