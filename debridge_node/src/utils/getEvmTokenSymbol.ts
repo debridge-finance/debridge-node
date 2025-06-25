@@ -6,10 +6,7 @@ import { Logger } from '@nestjs/common';
 const getDSTokenSymbol = async (web3: Web3, tokenAddress: string): Promise<string> => {
   const contract = new web3.eth.Contract(DSTokenAbi as any, tokenAddress);
   const symbol: string = await contract.methods.symbol().call();
-  const formattedSymbol = Buffer.from(symbol.slice(2), 'hex')
-    .toString('utf-8')
-    // eslint-disable-next-line no-control-regex
-    .replace(/\u0000/g, '');
+  const formattedSymbol = web3.utils.hexToUtf8(symbol).replace(/\u0000/g, '');
 
   return formattedSymbol;
 };

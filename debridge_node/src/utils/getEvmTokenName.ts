@@ -6,10 +6,7 @@ import { Logger } from '@nestjs/common';
 const getDSTokenName = async (web3: Web3, tokenAddress: string): Promise<string> => {
   const contract = new web3.eth.Contract(DSTokenAbi as any, tokenAddress);
   const name: string = await contract.methods.name().call();
-  const formattedName = Buffer.from(name.slice(2), 'hex')
-    .toString('utf-8')
-    // eslint-disable-next-line no-control-regex
-    .replace(/\u0000/g, '');
+  const formattedName = web3.utils.hexToUtf8(name).replace(/\u0000/g, '');;
 
   return formattedName;
 };
