@@ -1,10 +1,10 @@
 import { abi as ERC20Abi } from './../assets/ERC20.json';
-import { abi as DSToken } from './../assets/DSToken.json';
+import { abi as DSTokenAbi } from './../assets/DSToken.json';
 import Web3 from 'web3';
 import { Logger } from '@nestjs/common';
 
 const getDSTokenSymbol = async (web3: Web3, tokenAddress: string): Promise<string> => {
-  const contract = new web3.eth.Contract(DSToken as any, tokenAddress);
+  const contract = new web3.eth.Contract(DSTokenAbi as any, tokenAddress);
   const symbol: string = await contract.methods.symbol().call();
   const formattedSymbol = Buffer.from(symbol.slice(2), 'hex')
     .toString('utf-8')
