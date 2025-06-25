@@ -72,9 +72,9 @@
       "name": "name",
       "outputs": [
         {
-          "internalType": "string",
+          "internalType": "bytes32",
           "name": "",
-          "type": "string"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",
@@ -85,9 +85,9 @@
       "name": "symbol",
       "outputs": [
         {
-          "internalType": "string",
+          "internalType": "bytes32",
           "name": "",
-          "type": "string"
+          "type": "bytes32"
         }
       ],
       "stateMutability": "view",

@@ -9,7 +9,6 @@ import { UploadStatusEnum } from '../../../../enums/UploadStatusEnum';
 import { SubmisionAssetsStatusEnum } from '../../../../enums/SubmisionAssetsStatusEnum';
 import { abi as deBridgeGateAbi } from '../../../../assets/DeBridgeGate.json';
 import { abi as ERC20Abi } from '../../../../assets/ERC20.json';
-import { abi as DSToken } from '../../../../assets/ERC20.json';
 import { readFileSync } from 'fs';
 import { Account } from 'web3-core';
 import { Web3Service } from '../../../web3/services/Web3Service';
@@ -19,6 +18,8 @@ import { BundlrStatusEnum } from '../../../../enums/BundlrStatusEnum';
 import { SolanaEventsReaderService } from '../../../solana-events-reader/services/SolanaEventsReaderService';
 import { SolanaGrpcClient, U256Converter } from '@debridge-finance/solana-grpc';
 import { createSolanaPublicKey } from '../../../../utils/createSolanaPublicKey';
+import { getEvmTokenName } from '../../../../utils/getEvmTokenName';
+import { getEvmTokenSymbol } from '../../../../utils/getEvmTokenSymbol';
 
 @Injectable()
 export class CheckAssetsEventAction extends IAction {
@@ -202,17 +203,11 @@ export class CheckAssetsEventAction extends IAction {
     const tokenChainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
     const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail);
     const nativeTokenInstance = new tokenWeb3.eth.Contract(abi, tokenAddress);
-    const tokenDecimals = await nativeTokenInstance.methods.decimals().call();
-    try {
-      const [tokenName, tokenSymbol] = await Promise.all([nativeTokenInstance.methods.name().call(), nativeTokenInstance.methods.symbol().call()]);
-
-      return { tokenName, tokenSymbol, tokenDecimals };
-    } catch (e) {
-      if (e.message.includes('NUMERIC_FAULT')) {
-        return await this.#getEvmTokenInfo(chainId, tokenAddress, DSToken);
-      }
-
-      throw e;
-    }
+    const [tokenDecimals, tokenName, tokenSymbol] = await Promise.all([
+      nativeTokenInstance.methods.decimals().call(),
+      getEvmTokenName(this.logger, tokenWeb3, tokenAddress),
+      getEvmTokenSymbol(this.logger, tokenWeb3, tokenAddress),
+    ]);
+    return { tokenName, tokenSymbol, tokenDecimals };
   }
 }
