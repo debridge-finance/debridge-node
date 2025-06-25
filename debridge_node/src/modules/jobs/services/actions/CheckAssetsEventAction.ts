@@ -199,10 +199,10 @@ export class CheckAssetsEventAction extends IAction {
     this.logger.log(`Finish Check assets event`);
   }
 
-  async #getEvmTokenInfo(chainId: number, tokenAddress: string, abi: any = ERC20Abi) {
+  async #getEvmTokenInfo(chainId: number, tokenAddress: string) {
     const tokenChainDetail = this.chainConfigService.get(chainId) as EvmChainConfig;
     const tokenWeb3 = await this.web3Service.web3HttpProvider(tokenChainDetail);
-    const nativeTokenInstance = new tokenWeb3.eth.Contract(abi, tokenAddress);
+    const nativeTokenInstance = new tokenWeb3.eth.Contract(ERC20Abi as any, tokenAddress);
     const [tokenDecimals, tokenName, tokenSymbol] = await Promise.all([
       nativeTokenInstance.methods.decimals().call(),
       getEvmTokenName(this.logger, tokenWeb3, tokenAddress),
